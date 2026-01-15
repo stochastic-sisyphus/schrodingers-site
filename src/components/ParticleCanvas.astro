@@ -18,8 +18,6 @@
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
   }
-  resizeCanvas();
-  window.addEventListener('resize', resizeCanvas);
 
   // Particle class
   class Particle {
@@ -59,7 +57,11 @@
     }
   }
 
-  // Create particles
+  // Initialize canvas and particles
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+
+  // Create particles after canvas is sized
   const particleCount = 100;
   const particles: Particle[] = [];
   
