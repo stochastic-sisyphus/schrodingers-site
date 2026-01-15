@@ -1,0 +1,23 @@
+{
+  "name": "schrodingers-site",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro check && astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "pages:dev": "wrangler pages dev ./dist",
+    "pages:deploy": "wrangler pages deploy ./dist"
+  },
+  "dependencies": {
+    "astro": "^4.0.0",
+    "@astrojs/cloudflare": "^10.0.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.3.0",
+    "typescript": "^5.3.0",
+    "wrangler": "^3.20.0"
+  }
+}
