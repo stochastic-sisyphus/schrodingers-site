@@ -31,7 +31,6 @@ body {
   color: var(--highlight);
   line-height: 1.6;
   overflow: hidden;
-  min-height: 100vh;
   min-height: 100dvh;
 }
 

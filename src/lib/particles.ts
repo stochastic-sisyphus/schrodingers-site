@@ -3,19 +3,8 @@
  * Creates organic, slowly drifting particles with depth variation
  */
 
-// Palette colors for particles - weighted toward lighter values for visibility
-const PARTICLE_COLORS = [
-  '#445868',   // --mid
-  '#445868',   // --mid (duplicate for weighting)
-  '#627888',   // --light
-  '#627888',   // --light
-  '#627888',   // --light
-  '#8498a6',   // --accent
-  '#8498a6',   // --accent
-  '#8498a6',   // --accent
-  '#a6b6c2',   // --highlight
-  '#a6b6c2',   // --highlight
-];
+// Frame time constant for 60fps normalization
+const FRAME_TIME_60FPS = 1000 / 60;
 
 export interface Particle {
   x: number;
@@ -32,7 +21,36 @@ export interface Particle {
   wobbleY: number;     // wobble amplitude y
 }
 
-export function createParticle(canvasWidth: number, canvasHeight: number): Particle {
+export interface ParticleSystemOptions {
+  particleCount?: number;
+  colors?: string[];
+}
+
+/**
+ * Read particle colors from CSS custom properties
+ * Weighted toward lighter values for visibility
+ */
+export function getColorsFromCSS(): string[] {
+  const style = getComputedStyle(document.documentElement);
+  const mid = style.getPropertyValue('--mid').trim() || '#445868';
+  const light = style.getPropertyValue('--light').trim() || '#627888';
+  const accent = style.getPropertyValue('--accent').trim() || '#8498a6';
+  const highlight = style.getPropertyValue('--highlight').trim() || '#a6b6c2';
+
+  // Weighted distribution: more lighter colors for visibility
+  return [
+    mid, mid,
+    light, light, light,
+    accent, accent, accent,
+    highlight, highlight,
+  ];
+}
+
+export function createParticle(
+  canvasWidth: number,
+  canvasHeight: number,
+  colors: string[]
+): Particle {
   const z = Math.random();  // depth 0 (far) to 1 (close)
 
   return {
@@ -46,7 +64,7 @@ export function createParticle(canvasWidth: number, canvasHeight: number): Parti
     baseSize: 1 + Math.random() * 3,
     // Opacity: 0.1-0.6 base, scaled by depth
     opacity: 0.1 + Math.random() * 0.5,
-    color: PARTICLE_COLORS[Math.floor(Math.random() * PARTICLE_COLORS.length)],
+    color: colors[Math.floor(Math.random() * colors.length)],
     // Phase for sinusoidal wobble
     phase: Math.random() * Math.PI * 2,
     phaseSpeed: 0.005 + Math.random() * 0.01,
@@ -62,7 +80,7 @@ export function updateParticle(
   deltaTime: number
 ): void {
   // Normalize deltaTime to 60fps baseline
-  const dt = deltaTime / 16.667;
+  const dt = deltaTime / FRAME_TIME_60FPS;
 
   // Update phase for sinusoidal movement
   particle.phase += particle.phaseSpeed * dt;
@@ -105,25 +123,66 @@ export class ParticleSystem {
   private particles: Particle[] = [];
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
+  private colors: string[];
   private animationId: number | null = null;
   private lastTime: number = 0;
   private fadeInProgress: number = 0;
   private fadeInDuration: number = 2000; // 2 seconds to fade in particles
 
-  constructor(canvas: HTMLCanvasElement, particleCount: number = 600) {
+  // Store event handlers for cleanup
+  private resizeHandler: (() => void) | null = null;
+  private beforeSwapHandler: (() => void) | null = null;
+  private resizeTimeout: number | undefined;
+
+  constructor(canvas: HTMLCanvasElement, options: ParticleSystemOptions = {}) {
     this.canvas = canvas;
     const ctx = canvas.getContext('2d');
     if (!ctx) throw new Error('Could not get canvas 2d context');
     this.ctx = ctx;
 
+    // Use provided colors or read from CSS custom properties
+    this.colors = options.colors ?? getColorsFromCSS();
+    const particleCount = options.particleCount ?? 600;
+
     this.initParticles(particleCount);
+    this.setupEventListeners();
   }
 
   private initParticles(count: number): void {
     this.particles = [];
     for (let i = 0; i < count; i++) {
-      this.particles.push(createParticle(this.canvas.width, this.canvas.height));
+      this.particles.push(createParticle(this.canvas.width, this.canvas.height, this.colors));
     }
+  }
+
+  private setupEventListeners(): void {
+    // Debounced resize handler
+    this.resizeHandler = () => {
+      clearTimeout(this.resizeTimeout);
+      this.resizeTimeout = window.setTimeout(() => {
+        this.resize(window.innerWidth, window.innerHeight);
+      }, 100);
+    };
+
+    // Cleanup handler for Astro page transitions
+    this.beforeSwapHandler = () => {
+      this.destroy();
+    };
+
+    window.addEventListener('resize', this.resizeHandler);
+    document.addEventListener('astro:before-swap', this.beforeSwapHandler);
+  }
+
+  private removeEventListeners(): void {
+    if (this.resizeHandler) {
+      window.removeEventListener('resize', this.resizeHandler);
+      this.resizeHandler = null;
+    }
+    if (this.beforeSwapHandler) {
+      document.removeEventListener('astro:before-swap', this.beforeSwapHandler);
+      this.beforeSwapHandler = null;
+    }
+    clearTimeout(this.resizeTimeout);
   }
 
   resize(width: number, height: number): void {
@@ -201,6 +260,7 @@ export class ParticleSystem {
 
   destroy(): void {
     this.stop();
+    this.removeEventListeners();
     this.particles = [];
   }
 }

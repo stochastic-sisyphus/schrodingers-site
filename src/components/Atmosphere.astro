@@ -14,36 +14,16 @@
   import { ParticleSystem } from '../lib/particles';
 
   // Initialize particle system
-  const canvas = document.getElementById('particle-canvas') as HTMLCanvasElement;
-  if (canvas) {
-    // Set initial size
-    const setCanvasSize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
+  const canvas = document.getElementById('particle-canvas');
+  if (canvas instanceof HTMLCanvasElement) {
+    // Set initial canvas size
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 
-    setCanvasSize();
-
-    // Create particle system with 600 particles
-    const particleSystem = new ParticleSystem(canvas, 600);
-
-    // Handle resize
-    let resizeTimeout: number;
-    window.addEventListener('resize', () => {
-      // Debounce resize
-      clearTimeout(resizeTimeout);
-      resizeTimeout = window.setTimeout(() => {
-        particleSystem.resize(window.innerWidth, window.innerHeight);
-      }, 100);
-    });
-
-    // Start animation
+    // Create and start particle system
+    // ParticleSystem handles resize and cleanup listeners internally
+    const particleSystem = new ParticleSystem(canvas, { particleCount: 600 });
     particleSystem.start();
-
-    // Cleanup on page navigation (for future SPA functionality)
-    document.addEventListener('astro:before-swap', () => {
-      particleSystem.destroy();
-    });
   }
 </script>
 
@@ -53,7 +33,6 @@
     top: 0;
     left: 0;
     width: 100%;
-    height: 100%;
     height: 100dvh;
     overflow: hidden;
     z-index: 0;
