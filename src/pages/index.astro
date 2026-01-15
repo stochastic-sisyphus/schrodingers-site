@@ -1,0 +1,63 @@
+---
+/**
+ * Homepage - Atmospheric Entry Point
+ * Phase 1: Canvas particle atmosphere with identity text
+ */
+import Atmosphere from '../components/Atmosphere.astro';
+import '../styles/global.css';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="stochastic-sisyphus - a computational atmosphere" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Inter:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <title>stochastic-sisyphus</title>
+  </head>
+  <body>
+    <Atmosphere />
+    <main class="content">
+      <h1 class="identity">stochastic-sisyphus</h1>
+    </main>
+  </body>
+</html>
+
+<style>
+  .content {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    min-height: 100dvh;
+    pointer-events: none;
+  }
+
+  .identity {
+    position: fixed;
+    bottom: 15%;
+    left: 8%;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: clamp(14px, 2vw, 18px);
+    font-weight: 300;
+    letter-spacing: 0.05em;
+    color: var(--highlight);
+    opacity: 0;
+    animation: fadeIn 1s ease-out 2s forwards;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 0.6;
+    }
+  }
+</style>

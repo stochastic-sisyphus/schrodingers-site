@@ -1,0 +1,59 @@
+/* stochastic-sisyphus - Global Styles */
+
+/* Palette v5 - Cool steel + grey-teal */
+:root {
+  --deep:      #141a20;   /* darkest - base background */
+  --base:      #2a3844;
+  --mid:       #445868;
+  --light:     #627888;
+  --accent:    #8498a6;
+  --highlight: #a6b6c2;   /* lightest - text, glows */
+}
+
+/* Reset */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  background-color: var(--deep);
+  color: var(--highlight);
+  line-height: 1.6;
+  overflow: hidden;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* Typography */
+.serif {
+  font-family: 'Cormorant Garamond', 'Georgia', serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Cormorant Garamond', 'Georgia', serif;
+  font-weight: 400;
+}
+
+/* Utility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
