@@ -1,0 +1,20 @@
+{
+  "name": "schrodingers-site",
+  "version": "1.0.0",
+  "description": "stochastic-sisyphus homepage",
+  "main": "index.js",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "type": "module",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@astrojs/cloudflare": "^12.6.12",
+    "astro": "^5.16.9"
+  }
+}

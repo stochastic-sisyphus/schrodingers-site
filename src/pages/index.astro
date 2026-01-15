@@ -1,0 +1,86 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Schrödinger's Site - stochastic-sisyphus">
+  <main>
+    <div class="container">
+      <h1>Welcome to <span class="highlight">Schrödinger's Site</span></h1>
+      <p class="tagline">A quantum state of web development</p>
+      <p class="description">
+        This site exists in a superposition of states - simultaneously under construction 
+        and complete, until you observe it.
+      </p>
+      <div class="info">
+        <h2>About stochastic-sisyphus</h2>
+        <p>
+          Exploring the intersection of chaos, persistence, and quantum mechanics 
+          through code and creativity.
+        </p>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  main {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: var(--spacing-lg);
+  }
+
+  .container {
+    max-width: 800px;
+    text-align: center;
+  }
+
+  h1 {
+    font-size: clamp(2rem, 5vw, 4rem);
+    margin-bottom: var(--spacing-md);
+    font-weight: 700;
+  }
+
+  .highlight {
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .tagline {
+    font-size: clamp(1.2rem, 3vw, 1.5rem);
+    color: var(--accent-primary);
+    margin-bottom: var(--spacing-lg);
+    font-weight: 300;
+  }
+
+  .description {
+    font-size: clamp(1rem, 2vw, 1.25rem);
+    margin-bottom: var(--spacing-xl);
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .info {
+    background: rgba(26, 30, 63, 0.5);
+    border: 1px solid rgba(100, 200, 255, 0.2);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-lg);
+    backdrop-filter: blur(10px);
+  }
+
+  .info h2 {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    margin-bottom: var(--spacing-md);
+  }
+
+  .info p {
+    font-size: clamp(0.9rem, 2vw, 1.1rem);
+    margin-bottom: 0;
+  }
+</style>

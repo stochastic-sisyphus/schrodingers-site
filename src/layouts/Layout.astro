@@ -1,0 +1,92 @@
+---
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+import ParticleCanvas from '../components/ParticleCanvas.astro';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content="stochastic-sisyphus homepage" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+  </head>
+  <body>
+    <ParticleCanvas />
+    <slot />
+  </body>
+</html>
+
+<style is:global>
+  :root {
+    /* CSS Custom Properties */
+    --bg-primary: #0a0e27;
+    --bg-secondary: #1a1e3f;
+    --text-primary: #e0e6ff;
+    --text-secondary: #a0a6bf;
+    --accent-primary: #64c8ff;
+    --accent-secondary: #4a9eff;
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 2rem;
+    --spacing-xl: 4rem;
+    --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    --font-mono: 'Courier New', Courier, monospace;
+    --border-radius: 0.5rem;
+    --transition-speed: 0.3s;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    font-family: var(--font-sans);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  code {
+    font-family: var(--font-mono);
+    background-color: var(--bg-secondary);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--border-radius);
+  }
+
+  a {
+    color: var(--accent-primary);
+    text-decoration: none;
+    transition: color var(--transition-speed);
+  }
+
+  a:hover {
+    color: var(--accent-secondary);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-md);
+  }
+
+  p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: var(--spacing-md);
+  }
+</style>
