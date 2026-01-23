@@ -1,0 +1,280 @@
+---
+/**
+ * Research publications overview page
+ */
+
+import ContentLayout from '@/layouts/ContentLayout.astro';
+import { getCollection } from 'astro:content';
+import { fetchAllResearchData } from '@/lib/orcid';
+
+// Fetch from both sources
+const localPapers = await getCollection('research');
+const orcidData = await fetchAllResearchData().catch(() => ({
+  profile: null,
+  papers: [],
+}));
+
+// Combine and sort by year
+const allPapers = [
+  ...localPapers.map(paper => ({
+    id: paper.slug,
+    title: paper.data.title,
+    authors: paper.data.authors,
+    year: paper.data.year,
+    journal: paper.data.journal,
+    doi: paper.data.doi,
+    orcidUrl: paper.data.orcidUrl,
+    abstract: paper.data.abstract,
+    type: paper.data.type,
+    isLocal: true,
+  })),
+  ...orcidData.papers.map(paper => ({
+    ...paper,
+    isLocal: false,
+  })),
+].sort((a, b) => b.year - a.year);
+
+// Group by year
+const papersByYear = allPapers.reduce((acc, paper) => {
+  if (!acc[paper.year]) {
+    acc[paper.year] = [];
+  }
+  acc[paper.year].push(paper);
+  return acc;
+}, {} as Record<number, typeof allPapers>);
+
+const years = Object.keys(papersByYear)
+  .map(Number)
+  .sort((a, b) => b - a);
+---
+
+<ContentLayout title="Research | stochastic-sisyphus">
+  <article class="research-list">
+    <h1 class="page-title">research</h1>
+
+    <div class="orcid-link frosted-glass">
+      <a
+        href="https://orcid.org/0009-0008-6611-535X"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        View ORCID Profile →
+      </a>
+    </div>
+
+    <div class="timeline">
+      {years.map((year) => (
+        <div class="year-group">
+          <h2 class="year-label">{year}</h2>
+
+          <div class="papers-list">
+            {papersByYear[year].map((paper) => (
+              <article class="paper-card frosted-glass">
+                <h3 class="paper-title">
+                  {paper.isLocal ? (
+                    <a href={`/research/${paper.id}`}>{paper.title}</a>
+                  ) : paper.doi ? (
+                    <a
+                      href={`https://doi.org/${paper.doi}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {paper.title}
+                    </a>
+                  ) : (
+                    paper.title
+                  )}
+                </h3>
+
+                {paper.authors.length > 0 && (
+                  <p class="paper-authors">{paper.authors.join(', ')}</p>
+                )}
+
+                {paper.journal && (
+                  <p class="paper-journal">{paper.journal}</p>
+                )}
+
+                {paper.abstract && (
+                  <p class="paper-abstract">{paper.abstract}</p>
+                )}
+
+                <div class="paper-meta">
+                  {paper.doi && (
+                    <a
+                      href={`https://doi.org/${paper.doi}`}
+                      class="doi-link"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      DOI: {paper.doi}
+                    </a>
+                  )}
+
+                  <span class="paper-type">{paper.type}</span>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+
+    {allPapers.length === 0 && (
+      <p class="no-papers">No publications yet.</p>
+    )}
+  </article>
+</ContentLayout>
+
+<style>
+  .research-list {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .page-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(48px, 6vw, 72px);
+    font-weight: 300;
+    color: var(--highlight);
+    margin: 0 0 2rem 0;
+    letter-spacing: 0.02em;
+  }
+
+  .orcid-link {
+    background: rgba(68, 88, 104, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(166, 182, 194, 0.2);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 4rem;
+    text-align: center;
+  }
+
+  .orcid-link a {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 1.0625rem;
+    transition: color 0.2s ease;
+  }
+
+  .orcid-link a:hover {
+    color: var(--highlight);
+  }
+
+  .timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 4rem;
+  }
+
+  .year-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .year-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-weight: 500;
+    color: var(--accent);
+    margin: 0;
+    letter-spacing: 0.02em;
+  }
+
+  .papers-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .paper-card {
+    background: rgba(68, 88, 104, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(166, 182, 194, 0.2);
+    border-radius: 12px;
+    padding: 2rem;
+    transition: all 0.3s ease;
+  }
+
+  .paper-card:hover {
+    background: rgba(68, 88, 104, 0.15);
+    border-color: rgba(166, 182, 194, 0.3);
+  }
+
+  .paper-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: var(--highlight);
+    margin: 0 0 0.75rem 0;
+    line-height: 1.3;
+  }
+
+  .paper-title a {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .paper-title a:hover {
+    color: var(--accent);
+  }
+
+  .paper-authors {
+    font-size: 0.9375rem;
+    color: var(--light);
+    margin: 0 0 0.5rem 0;
+  }
+
+  .paper-journal {
+    font-style: italic;
+    font-size: 0.9375rem;
+    color: var(--accent);
+    margin: 0 0 1rem 0;
+  }
+
+  .paper-abstract {
+    color: var(--light);
+    line-height: 1.6;
+    margin: 0 0 1rem 0;
+  }
+
+  .paper-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.875rem;
+    color: var(--accent);
+  }
+
+  .doi-link {
+    color: var(--accent);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .doi-link:hover {
+    color: var(--highlight);
+  }
+
+  .paper-type {
+    padding: 0.25rem 0.5rem;
+    background: rgba(166, 182, 194, 0.1);
+    border-radius: 4px;
+    font-size: 0.75rem;
+  }
+
+  .no-papers {
+    text-align: center;
+    color: var(--light);
+    font-size: 1.125rem;
+    padding: 4rem 0;
+  }
+
+  @media (max-width: 768px) {
+    .timeline {
+      gap: 3rem;
+    }
+  }
+</style>

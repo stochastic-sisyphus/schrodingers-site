@@ -1,0 +1,197 @@
+---
+/**
+ * Projects filtered by tag/topic
+ */
+
+import ContentLayout from '@/layouts/ContentLayout.astro';
+import { fetchAllRepos } from '@/lib/github';
+
+export async function getStaticPaths() {
+  const repos = await fetchAllRepos();
+
+  // Get all unique topics
+  const allTopics = [...new Set(repos.flatMap(r => r.topics))];
+
+  return allTopics.map((tag) => {
+    const filteredRepos = repos.filter(r => r.topics.includes(tag));
+
+    return {
+      params: { tag },
+      props: { repos: filteredRepos, tag },
+    };
+  });
+}
+
+interface Props {
+  repos: Awaited<ReturnType<typeof fetchAllRepos>>;
+  tag: string;
+}
+
+const { repos, tag } = Astro.props;
+---
+
+<ContentLayout title={`Projects tagged "${tag}" | stochastic-sisyphus`}>
+  <article class="projects-by-tag">
+    <h1 class="page-title">
+      projects <span class="tag-highlight">#{tag}</span>
+    </h1>
+
+    <p class="page-description">
+      {repos.length} {repos.length === 1 ? 'project' : 'projects'} tagged with <strong>{tag}</strong>
+    </p>
+
+    <div class="projects-grid">
+      {repos.map((repo) => (
+        <a href={`/projects/${repo.name}`} class="project-card frosted-glass">
+          <h3 class="project-name">{repo.name}</h3>
+
+          {repo.description && (
+            <p class="project-description">{repo.description}</p>
+          )}
+
+          <div class="project-meta">
+            {repo.language && (
+              <span class="language">{repo.language}</span>
+            )}
+
+            {repo.stargazers_count > 0 && (
+              <span class="stars">★ {repo.stargazers_count}</span>
+            )}
+          </div>
+
+          {repo.topics.length > 0 && (
+            <div class="project-topics">
+              {repo.topics.map((topic) => (
+                <span class={`topic ${topic === tag ? 'active' : ''}`}>
+                  {topic}
+                </span>
+              ))}
+            </div>
+          )}
+        </a>
+      ))}
+    </div>
+
+    <footer class="page-footer">
+      <a href="/projects" class="back-link">← Back to all projects</a>
+    </footer>
+  </article>
+</ContentLayout>
+
+<style>
+  .projects-by-tag {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .page-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(48px, 6vw, 72px);
+    font-weight: 300;
+    color: var(--highlight);
+    margin: 0 0 1rem 0;
+    letter-spacing: 0.02em;
+  }
+
+  .tag-highlight {
+    color: var(--accent);
+  }
+
+  .page-description {
+    color: var(--light);
+    font-size: 1.125rem;
+    margin: 0 0 4rem 0;
+  }
+
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+  }
+
+  .project-card {
+    background: rgba(68, 88, 104, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(166, 182, 194, 0.2);
+    border-radius: 12px;
+    padding: 2rem;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .project-card:hover {
+    background: rgba(68, 88, 104, 0.15);
+    border-color: rgba(166, 182, 194, 0.3);
+    transform: translateY(-2px);
+  }
+
+  .project-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: var(--highlight);
+    margin: 0;
+    word-break: break-word;
+  }
+
+  .project-description {
+    color: var(--light);
+    line-height: 1.6;
+    margin: 0;
+    flex-grow: 1;
+  }
+
+  .project-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.875rem;
+    color: var(--accent);
+  }
+
+  .project-topics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .topic {
+    padding: 0.25rem 0.75rem;
+    background: rgba(166, 182, 194, 0.1);
+    border-radius: 4px;
+    font-size: 0.75rem;
+    color: var(--accent);
+  }
+
+  .topic.active {
+    background: rgba(166, 182, 194, 0.2);
+    color: var(--highlight);
+  }
+
+  .page-footer {
+    margin: 3rem 0;
+  }
+
+  .back-link {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 0.9375rem;
+    transition: color 0.2s ease;
+  }
+
+  .back-link:hover {
+    color: var(--highlight);
+  }
+
+  @media (max-width: 768px) {
+    .projects-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

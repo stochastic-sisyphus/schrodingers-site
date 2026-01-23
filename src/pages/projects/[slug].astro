@@ -1,0 +1,271 @@
+---
+/**
+ * Individual project detail page
+ */
+
+import ContentLayout from '@/layouts/ContentLayout.astro';
+import { fetchAllRepos, fetchRepoReadme } from '@/lib/github';
+
+export async function getStaticPaths() {
+  const repos = await fetchAllRepos();
+
+  return Promise.all(
+    repos.map(async (repo) => {
+      const readme = await fetchRepoReadme(repo.owner.login, repo.name);
+
+      return {
+        params: { slug: repo.name },
+        props: { repo, readme },
+      };
+    })
+  );
+}
+
+interface Props {
+  repo: Awaited<ReturnType<typeof fetchAllRepos>>[0];
+  readme: string | null;
+}
+
+const { repo, readme } = Astro.props;
+
+const updatedDate = new Date(repo.updated_at).toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+---
+
+<ContentLayout title={`${repo.name} | Projects | stochastic-sisyphus`} description={repo.description || undefined}>
+  <article class="project-detail">
+    <header class="project-header frosted-glass">
+      <h1 class="project-name">{repo.name}</h1>
+
+      {repo.description && (
+        <p class="project-description">{repo.description}</p>
+      )}
+
+      <div class="project-meta">
+        {repo.language && (
+          <span class="language">
+            <span class="language-dot"></span>
+            {repo.language}
+          </span>
+        )}
+
+        {repo.stargazers_count > 0 && (
+          <span class="stars">★ {repo.stargazers_count}</span>
+        )}
+
+        {repo.forks_count > 0 && (
+          <span class="forks">⑂ {repo.forks_count}</span>
+        )}
+
+        <time datetime={repo.updated_at}>Updated {updatedDate}</time>
+      </div>
+
+      {repo.topics.length > 0 && (
+        <div class="project-topics">
+          {repo.topics.map((topic) => (
+            <span class="topic">{topic}</span>
+          ))}
+        </div>
+      )}
+
+      <div class="project-links">
+        <a
+          href={repo.html_url}
+          class="project-link"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          View on GitHub →
+        </a>
+
+        {repo.homepage && (
+          <a
+            href={repo.homepage}
+            class="project-link"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Visit Website →
+          </a>
+        )}
+      </div>
+    </header>
+
+    {readme && (
+      <section class="readme-section frosted-glass">
+        <h2>README</h2>
+        <div class="readme-content" set:html={readme} />
+      </section>
+    )}
+
+    <footer class="project-footer">
+      <a href="/projects" class="back-link">← Back to all projects</a>
+    </footer>
+  </article>
+</ContentLayout>
+
+<style>
+  .project-detail {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .project-header {
+    background: rgba(68, 88, 104, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(166, 182, 194, 0.2);
+    border-radius: 12px;
+    padding: 3rem;
+    margin-bottom: 2rem;
+  }
+
+  .project-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(32px, 5vw, 48px);
+    font-weight: 500;
+    color: var(--highlight);
+    margin: 0 0 1rem 0;
+    word-break: break-word;
+  }
+
+  .project-description {
+    font-size: 1.125rem;
+    color: var(--light);
+    line-height: 1.6;
+    margin: 0 0 1.5rem 0;
+  }
+
+  .project-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1.5rem;
+    font-size: 0.9375rem;
+    color: var(--accent);
+    margin-bottom: 1.5rem;
+  }
+
+  .language {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .language-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .project-topics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .topic {
+    padding: 0.25rem 0.75rem;
+    background: rgba(166, 182, 194, 0.1);
+    border-radius: 4px;
+    font-size: 0.75rem;
+    color: var(--accent);
+  }
+
+  .project-links {
+    display: flex;
+    gap: 1.5rem;
+  }
+
+  .project-link {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 1rem;
+    transition: color 0.2s ease;
+  }
+
+  .project-link:hover {
+    color: var(--highlight);
+  }
+
+  .readme-section {
+    background: rgba(68, 88, 104, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(166, 182, 194, 0.2);
+    border-radius: 12px;
+    padding: 3rem;
+    margin-bottom: 2rem;
+  }
+
+  .readme-section h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-weight: 500;
+    color: var(--highlight);
+    margin: 0 0 2rem 0;
+  }
+
+  .readme-content {
+    color: var(--light);
+    line-height: 1.8;
+  }
+
+  .readme-content :global(h1),
+  .readme-content :global(h2),
+  .readme-content :global(h3) {
+    font-family: 'Cormorant Garamond', serif;
+    color: var(--highlight);
+    margin: 2rem 0 1rem;
+  }
+
+  .readme-content :global(code) {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9em;
+    background: rgba(166, 182, 194, 0.1);
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+  }
+
+  .readme-content :global(pre) {
+    background: rgba(20, 26, 32, 0.6);
+    border: 1px solid rgba(166, 182, 194, 0.2);
+    border-radius: 8px;
+    padding: 1.5rem;
+    overflow-x: auto;
+  }
+
+  .readme-content :global(a) {
+    color: var(--accent);
+    transition: color 0.2s ease;
+  }
+
+  .readme-content :global(a:hover) {
+    color: var(--highlight);
+  }
+
+  .project-footer {
+    margin: 2rem 0;
+  }
+
+  .back-link {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 0.9375rem;
+    transition: color 0.2s ease;
+  }
+
+  .back-link:hover {
+    color: var(--highlight);
+  }
+
+  @media (max-width: 768px) {
+    .project-header,
+    .readme-section {
+      padding: 2rem 1.5rem;
+    }
+  }
+</style>

@@ -1,0 +1,205 @@
+---
+/**
+ * Individual research paper detail page
+ */
+
+import ContentLayout from '@/layouts/ContentLayout.astro';
+import { getCollection, type CollectionEntry } from 'astro:content';
+
+export async function getStaticPaths() {
+  const papers = await getCollection('research');
+
+  return papers.map((paper) => ({
+    params: { id: paper.slug },
+    props: { paper },
+  }));
+}
+
+interface Props {
+  paper: CollectionEntry<'research'>;
+}
+
+const { paper } = Astro.props;
+const { Content } = await paper.render();
+---
+
+<ContentLayout
+  title={`${paper.data.title} | Research | stochastic-sisyphus`}
+  description={paper.data.abstract}
+>
+  <article class="paper-detail frosted-glass">
+    <header class="paper-header">
+      <h1 class="paper-title">{paper.data.title}</h1>
+
+      <div class="paper-meta">
+        <span class="paper-year">{paper.data.year}</span>
+
+        {paper.data.journal && (
+          <span class="paper-journal">{paper.data.journal}</span>
+        )}
+
+        <span class="paper-type">{paper.data.type}</span>
+      </div>
+
+      {paper.data.authors.length > 0 && (
+        <p class="paper-authors">{paper.data.authors.join(', ')}</p>
+      )}
+
+      <div class="paper-links">
+        {paper.data.doi && (
+          <a
+            href={`https://doi.org/${paper.data.doi}`}
+            class="paper-link"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            View on DOI →
+          </a>
+        )}
+
+        {paper.data.orcidUrl && (
+          <a
+            href={paper.data.orcidUrl}
+            class="paper-link"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            View on ORCID →
+          </a>
+        )}
+      </div>
+    </header>
+
+    {paper.data.abstract && (
+      <section class="paper-abstract">
+        <h2>Abstract</h2>
+        <p>{paper.data.abstract}</p>
+      </section>
+    )}
+
+    <div class="paper-content">
+      <Content />
+    </div>
+
+    <footer class="paper-footer">
+      <a href="/research" class="back-link">← Back to all research</a>
+    </footer>
+  </article>
+</ContentLayout>
+
+<style>
+  .paper-detail {
+    max-width: 800px;
+    margin: 0 auto;
+    background: rgba(68, 88, 104, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(166, 182, 194, 0.2);
+    border-radius: 12px;
+    padding: 3rem;
+  }
+
+  .paper-header {
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid rgba(166, 182, 194, 0.2);
+  }
+
+  .paper-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(32px, 5vw, 42px);
+    font-weight: 500;
+    color: var(--highlight);
+    margin: 0 0 1rem 0;
+    line-height: 1.2;
+  }
+
+  .paper-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.875rem;
+    color: var(--accent);
+    margin-bottom: 1rem;
+  }
+
+  .paper-type {
+    padding: 0.25rem 0.5rem;
+    background: rgba(166, 182, 194, 0.1);
+    border-radius: 4px;
+    font-size: 0.75rem;
+  }
+
+  .paper-journal {
+    font-style: italic;
+  }
+
+  .paper-authors {
+    font-size: 1rem;
+    color: var(--light);
+    margin: 0 0 1.5rem 0;
+  }
+
+  .paper-links {
+    display: flex;
+    gap: 1.5rem;
+  }
+
+  .paper-link {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 0.9375rem;
+    transition: color 0.2s ease;
+  }
+
+  .paper-link:hover {
+    color: var(--highlight);
+  }
+
+  .paper-abstract {
+    margin-bottom: 3rem;
+  }
+
+  .paper-abstract h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.75rem;
+    font-weight: 500;
+    color: var(--highlight);
+    margin: 0 0 1rem 0;
+  }
+
+  .paper-abstract p {
+    color: var(--light);
+    line-height: 1.8;
+    font-size: 1.0625rem;
+  }
+
+  .paper-content {
+    color: var(--light);
+    line-height: 1.8;
+    font-size: 1.0625rem;
+  }
+
+  .paper-footer {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(166, 182, 194, 0.2);
+  }
+
+  .back-link {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 0.9375rem;
+    transition: color 0.2s ease;
+  }
+
+  .back-link:hover {
+    color: var(--highlight);
+  }
+
+  @media (max-width: 768px) {
+    .paper-detail {
+      padding: 2rem 1.5rem;
+    }
+  }
+</style>

@@ -1,0 +1,42 @@
+---
+/**
+ * Layout for content pages (blog posts, projects, research)
+ * Extends BaseLayout with frosted glass content wrapper
+ */
+
+import BaseLayout from './BaseLayout.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  maxWidth?: string;
+}
+
+const {
+  title,
+  description,
+  maxWidth = '1200px',
+} = Astro.props;
+---
+
+<BaseLayout title={title} description={description}>
+  <main class="content-wrapper" style={`max-width: ${maxWidth}`}>
+    <slot />
+  </main>
+</BaseLayout>
+
+<style>
+  .content-wrapper {
+    position: relative;
+    z-index: 2;
+    margin: 0 auto;
+    padding: 8rem 2rem 4rem;
+    min-height: 100vh;
+  }
+
+  @media (max-width: 768px) {
+    .content-wrapper {
+      padding: 6rem 1.5rem 3rem;
+    }
+  }
+</style>

@@ -1,0 +1,212 @@
+---
+/**
+ * About page
+ */
+
+import ContentLayout from '@/layouts/ContentLayout.astro';
+import { fetchORCIDProfile } from '@/lib/orcid';
+
+const orcidProfile = await fetchORCIDProfile().catch(() => null);
+---
+
+<ContentLayout title="About | stochastic-sisyphus">
+  <article class="about-page frosted-glass">
+    <h1 class="page-title">about</h1>
+
+    <section class="bio-section">
+      <p class="bio-text">
+        <strong>stochastic-sisyphus</strong> explores computational atmospheres
+        where identity and work exist as living data—revealed through color,
+        depth, and elegant interaction.
+      </p>
+
+      <p class="bio-text">
+        A home for explorations at the intersection of code, data systems, and
+        emergent patterns. Not a portfolio, but an explorable system that feels
+        like a polished instrument.
+      </p>
+    </section>
+
+    <section class="links-section">
+      <h2 class="section-title">connect</h2>
+
+      <div class="links-grid">
+        <a
+          href="https://github.com/stochastic-sisyphus"
+          class="link-card"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span class="link-label">GitHub</span>
+          <span class="link-arrow">→</span>
+        </a>
+
+        <a
+          href="https://orcid.org/0009-0008-6611-535X"
+          class="link-card"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span class="link-label">ORCID</span>
+          <span class="link-arrow">→</span>
+        </a>
+
+        <a
+          href="https://existentialjester.substack.com"
+          class="link-card"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span class="link-label">Substack</span>
+          <span class="link-arrow">→</span>
+        </a>
+
+        <a href="/blog/rss.xml" class="link-card">
+          <span class="link-label">RSS Feed</span>
+          <span class="link-arrow">→</span>
+        </a>
+      </div>
+    </section>
+
+    <section class="interests-section">
+      <h2 class="section-title">areas of exploration</h2>
+
+      <ul class="interests-list">
+        <li>Computational systems and emergent behavior</li>
+        <li>Data visualization and living code representations</li>
+        <li>Atmospheric interfaces and spatial computing</li>
+        <li>Metadata architectures and knowledge graphs</li>
+        <li>Natural language processing and semantic search</li>
+        <li>Stochastic processes and probabilistic modeling</li>
+      </ul>
+    </section>
+  </article>
+</ContentLayout>
+
+<style>
+  .about-page {
+    max-width: 800px;
+    margin: 0 auto;
+    background: rgba(68, 88, 104, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(166, 182, 194, 0.2);
+    border-radius: 12px;
+    padding: 3rem;
+  }
+
+  .page-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(48px, 6vw, 72px);
+    font-weight: 300;
+    color: var(--highlight);
+    margin: 0 0 2rem 0;
+    letter-spacing: 0.02em;
+  }
+
+  .bio-section {
+    margin-bottom: 3rem;
+    padding-bottom: 3rem;
+    border-bottom: 1px solid rgba(166, 182, 194, 0.2);
+  }
+
+  .bio-text {
+    color: var(--light);
+    font-size: 1.125rem;
+    line-height: 1.8;
+    margin: 0 0 1.5rem 0;
+  }
+
+  .bio-text:last-child {
+    margin-bottom: 0;
+  }
+
+  .bio-text strong {
+    color: var(--highlight);
+    font-weight: 500;
+  }
+
+  .links-section,
+  .interests-section {
+    margin-bottom: 3rem;
+  }
+
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-weight: 500;
+    color: var(--accent);
+    margin: 0 0 1.5rem 0;
+    letter-spacing: 0.02em;
+  }
+
+  .links-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+
+  .link-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    background: rgba(68, 88, 104, 0.1);
+    border: 1px solid rgba(166, 182, 194, 0.2);
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--accent);
+    transition: all 0.3s ease;
+  }
+
+  .link-card:hover {
+    background: rgba(68, 88, 104, 0.15);
+    border-color: rgba(166, 182, 194, 0.3);
+    transform: translateY(-2px);
+  }
+
+  .link-card:hover .link-arrow {
+    transform: translateX(4px);
+  }
+
+  .link-label {
+    font-size: 1.0625rem;
+    font-weight: 500;
+  }
+
+  .link-arrow {
+    font-size: 1.25rem;
+    transition: transform 0.2s ease;
+  }
+
+  .interests-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .interests-list li {
+    color: var(--light);
+    font-size: 1.0625rem;
+    line-height: 1.8;
+    padding-left: 1.5rem;
+    position: relative;
+    margin-bottom: 0.75rem;
+  }
+
+  .interests-list li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+  }
+
+  @media (max-width: 768px) {
+    .about-page {
+      padding: 2rem 1.5rem;
+    }
+
+    .links-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

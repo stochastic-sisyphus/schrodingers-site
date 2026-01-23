@@ -1,0 +1,54 @@
+---
+/**
+ * Reusable content zone wrapper for homepage sections
+ */
+
+interface Props {
+  title: string;
+  id?: string;
+  class?: string;
+}
+
+const { title, id, class: className } = Astro.props;
+---
+
+<section class={`content-zone ${className || ''}`} id={id}>
+  <h2 class="zone-title">{title}</h2>
+  <div class="zone-content">
+    <slot />
+  </div>
+</section>
+
+<style>
+  .content-zone {
+    margin: 6rem auto;
+    max-width: 1400px;
+    padding: 0 2rem;
+  }
+
+  .zone-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(32px, 4vw, 48px);
+    font-weight: 300;
+    color: var(--highlight);
+    margin: 0 0 3rem 0;
+    letter-spacing: 0.02em;
+    opacity: 0.9;
+  }
+
+  .zone-content {
+    display: grid;
+    gap: 2rem;
+  }
+
+  @media (max-width: 768px) {
+    .content-zone {
+      margin: 4rem auto;
+      padding: 0 1.5rem;
+    }
+
+    .zone-title {
+      margin: 0 0 2rem 0;
+    }
+  }
+</style>
