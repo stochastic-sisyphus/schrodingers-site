@@ -3,9 +3,11 @@
  * Atmosphere Component
  * Full viewport canvas with particle system and gradient background
  */
+import ShaderGradient from './ShaderGradient.astro';
 ---
 
 <div class="atmosphere">
+  <ShaderGradient />
   <div class="gradient-base"></div>
   <canvas id="particle-canvas"></canvas>
 </div>
@@ -44,6 +46,7 @@
     left: 0;
     width: 100%;
     height: 100%;
+    z-index: 1;
     /* Multi-directional gradient creating depth */
     background:
       /* Subtle radial from center for atmosphere */
@@ -68,6 +71,8 @@
       /* Base color */
       var(--deep);
     background-blend-mode: screen, screen, screen, normal;
+    /* Make gradient layer semi-transparent to allow shader visibility */
+    opacity: 0.6;
   }
 
   #particle-canvas {
@@ -76,6 +81,7 @@
     left: 0;
     width: 100%;
     height: 100%;
+    z-index: 2;
     pointer-events: none;
   }
 </style>
