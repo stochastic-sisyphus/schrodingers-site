@@ -1,10 +1,33 @@
 ---
 /**
  * Homepage - Atmospheric Entry Point
- * Phase 1: Canvas particle atmosphere with identity text
+ * Phase 6: Content zones with atmospheric scrolling
  */
+import { getCollection } from 'astro:content';
+import { fetchAllRepos, getFeaturedRepos } from '../lib/github';
 import Atmosphere from '../components/Atmosphere.astro';
+import ProjectCard from '../components/ProjectCard.svelte';
+import BlogCard from '../components/BlogCard.astro';
+import ResearchCard from '../components/ResearchCard.astro';
 import '../styles/global.css';
+
+// Fetch featured content
+const allRepos = await fetchAllRepos();
+const featuredRepos = getFeaturedRepos(allRepos).slice(0, 3);
+
+// Get recent blog posts (limit to 3)
+const allBlogPosts = await getCollection('blog', ({ data }) => {
+  return !data.draft;
+});
+const recentPosts = allBlogPosts
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
+  .slice(0, 3);
+
+// Get key research papers (featured or most recent)
+const allResearch = await getCollection('research');
+const keyResearch = allResearch
+  .filter(({ data }) => data.featured)
+  .slice(0, 3);
 ---
 
 <!doctype html>
@@ -24,17 +47,101 @@ import '../styles/global.css';
   </head>
   <body>
     <Atmosphere />
-    <main class="content">
+
+    <!-- Hero Section -->
+    <section class="hero">
       <h1 class="identity">stochastic-sisyphus</h1>
+      <p class="tagline">computational atmospheres</p>
+    </section>
+
+    <!-- Content Zones -->
+    <main class="content-zones">
+      <!-- Featured Work -->
+      {featuredRepos.length > 0 && (
+        <section class="content-zone" data-zone="projects">
+          <header class="zone-header">
+            <h2 class="zone-title">Featured Work</h2>
+            <p class="zone-subtitle">Selected projects exploring computational systems</p>
+          </header>
+          <div class="content-grid">
+            {featuredRepos.map((repo) => (
+              <div class="grid-item">
+                <ProjectCard repo={repo} featured={true} client:visible />
+              </div>
+            ))}
+          </div>
+          <a href="/projects" class="view-more">View all projects</a>
+        </section>
+      )}
+
+      <!-- Recent Writing -->
+      {recentPosts.length > 0 && (
+        <section class="content-zone" data-zone="blog">
+          <header class="zone-header">
+            <h2 class="zone-title">Recent Writing</h2>
+            <p class="zone-subtitle">Explorations in code, systems, and emergence</p>
+          </header>
+          <div class="content-grid">
+            {recentPosts.map((post) => (
+              <div class="grid-item">
+                <BlogCard
+                  title={post.data.title}
+                  date={post.data.date}
+                  excerpt={post.data.excerpt}
+                  tags={post.data.tags}
+                  slug={post.slug}
+                  substackUrl={post.data.substackUrl}
+                  isExternal={!!post.data.substackUrl}
+                />
+              </div>
+            ))}
+          </div>
+          <a href="/blog" class="view-more">View all posts</a>
+        </section>
+      )}
+
+      <!-- Key Research -->
+      {keyResearch.length > 0 && (
+        <section class="content-zone" data-zone="research">
+          <header class="zone-header">
+            <h2 class="zone-title">Research</h2>
+            <p class="zone-subtitle">Academic contributions and publications</p>
+          </header>
+          <div class="content-grid">
+            {keyResearch.map((paper) => (
+              <div class="grid-item">
+                <ResearchCard
+                  id={paper.slug}
+                  title={paper.data.title}
+                  authors={paper.data.authors}
+                  year={paper.data.year}
+                  journal={paper.data.journal}
+                  doi={paper.data.doi}
+                  orcidUrl={paper.data.orcidUrl}
+                  abstract={paper.data.abstract}
+                  type={paper.data.type}
+                  isLocal={true}
+                />
+              </div>
+            ))}
+          </div>
+          <a href="/research" class="view-more">View all research</a>
+        </section>
+      )}
     </main>
+
+    <!-- Initialize scroll animations -->
+    <script>
+      import { initAllScrollAnimations } from '../lib/scroll-animations';
+      initAllScrollAnimations();
+    </script>
   </body>
 </html>
 
 <style>
-  .content {
+  .hero {
     position: relative;
     z-index: 1;
-    min-height: 100dvh;
     pointer-events: none;
   }
 
@@ -49,6 +156,7 @@ import '../styles/global.css';
     color: var(--highlight);
     opacity: 0;
     animation: fadeIn 1s ease-out 2s forwards;
+    z-index: 10;
   }
 
   @keyframes fadeIn {
@@ -57,6 +165,24 @@ import '../styles/global.css';
     }
     to {
       opacity: 0.6;
+    }
+  }
+
+  /* Enable pointer events on content zones */
+  .content-zones {
+    pointer-events: auto;
+  }
+
+  /* Make links and interactive elements accessible */
+  .content-zones a,
+  .content-zones button {
+    pointer-events: auto;
+  }
+
+  @media (max-width: 768px) {
+    .identity {
+      left: 5%;
+      bottom: 10%;
     }
   }
 </style>

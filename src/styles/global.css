@@ -106,3 +106,218 @@ html {
 :focus:not(:focus-visible) {
   outline: none;
 }
+
+/* Homepage Hero Section */
+.hero {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 2rem;
+}
+
+.tagline {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(18px, 3vw, 28px);
+  font-weight: 300;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+  text-align: center;
+  opacity: 0;
+  animation: fadeInTagline 1.2s ease-out 3s forwards;
+  position: relative;
+  z-index: 1;
+  pointer-events: none;
+}
+
+@keyframes fadeInTagline {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 0.7;
+    transform: translateY(0);
+  }
+}
+
+/* Content Zones */
+.content-zones {
+  position: relative;
+  z-index: 1;
+  padding: 4rem 0;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+.content-zone {
+  margin-bottom: 8rem;
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: opacity, transform;
+}
+
+.content-zone.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.content-zone:last-child {
+  margin-bottom: 4rem;
+}
+
+.zone-header {
+  margin-bottom: 3rem;
+  text-align: left;
+}
+
+.zone-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 400;
+  color: var(--highlight);
+  margin: 0 0 0.5rem 0;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+
+.zone-subtitle {
+  font-size: 1rem;
+  color: var(--accent);
+  font-weight: 400;
+  margin: 0;
+  letter-spacing: 0.03em;
+}
+
+/* Content Grids */
+.content-grid {
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: 1fr;
+}
+
+.grid-item {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: opacity, transform;
+}
+
+.grid-item.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Responsive grid layouts */
+@media (min-width: 768px) {
+  .content-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .content-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+  }
+
+  .content-grid.two-column {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2.5rem;
+  }
+}
+
+@media (min-width: 1440px) {
+  .content-zones {
+    padding-left: 4rem;
+    padding-right: 4rem;
+  }
+
+  .content-grid {
+    gap: 2.5rem;
+  }
+}
+
+/* Frosted glass content containers */
+.frosted-container {
+  background: rgba(68, 88, 104, 0.08);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(166, 182, 194, 0.15);
+  border-radius: 16px;
+  padding: 3rem;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.frosted-container:hover {
+  background: rgba(68, 88, 104, 0.12);
+  border-color: rgba(166, 182, 194, 0.25);
+  box-shadow: 0 8px 32px rgba(20, 26, 32, 0.3);
+}
+
+/* View More Links */
+.view-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 2rem;
+  padding: 0.75rem 1.5rem;
+  background: rgba(68, 88, 104, 0.1);
+  border: 1px solid rgba(166, 182, 194, 0.2);
+  border-radius: 8px;
+  color: var(--highlight);
+  text-decoration: none;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.view-more:hover {
+  background: rgba(68, 88, 104, 0.15);
+  border-color: rgba(166, 182, 194, 0.35);
+  color: var(--accent);
+  transform: translateX(4px);
+}
+
+.view-more::after {
+  content: '→';
+  font-size: 1.2em;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.view-more:hover::after {
+  transform: translateX(4px);
+}
+
+/* Mobile optimizations */
+@media (max-width: 767px) {
+  .content-zones {
+    padding: 2rem 1.5rem;
+  }
+
+  .content-zone {
+    margin-bottom: 5rem;
+  }
+
+  .zone-header {
+    margin-bottom: 2rem;
+  }
+
+  .zone-title {
+    font-size: 2rem;
+  }
+
+  .frosted-container {
+    padding: 2rem;
+  }
+}
