@@ -30,7 +30,8 @@ body {
   background-color: var(--deep);
   color: var(--highlight);
   line-height: 1.6;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   min-height: 100dvh;
 }
 

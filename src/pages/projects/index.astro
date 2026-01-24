@@ -1,61 +1,77 @@
 ---
 /**
- * Projects directory - all GitHub repos
+ * Projects directory - all GitHub repos with filtering
  */
 
 import ContentLayout from '@/layouts/ContentLayout.astro';
 import { fetchAllRepos, getFeaturedRepos } from '@/lib/github';
+import ProjectCard from '@/components/ProjectCard.svelte';
 
 const repos = await fetchAllRepos();
 const featuredRepos = getFeaturedRepos(repos);
+
+// Extract all unique languages and topics for filtering
+const allLanguages = [...new Set(repos.map(r => r.language).filter(Boolean))].sort();
+const allTopics = [...new Set(repos.flatMap(r => r.topics))].sort();
 ---
 
-<ContentLayout title="Projects | stochastic-sisyphus">
-  <article class="projects-list">
-    <h1 class="page-title">projects</h1>
+<ContentLayout
+  title="Projects | stochastic-sisyphus"
+  description="Explorations in code, data, and emergent systems. A collection of computational experiments and tools."
+>
+  <article class="projects-page">
+    <header class="page-header">
+      <h1 class="page-title">projects</h1>
 
-    <p class="page-description">
-      Explorations in code, data, and emergent systems. Each project represents
-      a different approach to computational thinking.
-    </p>
+      <p class="page-description">
+        Explorations in code, data, and emergent systems. Each project represents
+        a different approach to computational thinking.
+      </p>
+
+      <div class="filter-controls" id="filter-controls">
+        <div class="filter-group">
+          <input
+            type="search"
+            id="search-input"
+            placeholder="Search projects..."
+            class="search-input frosted-glass"
+            aria-label="Search projects"
+          />
+        </div>
+
+        <div class="filter-group">
+          <select id="language-filter" class="filter-select frosted-glass" aria-label="Filter by language">
+            <option value="">All Languages</option>
+            {allLanguages.map(lang => (
+              <option value={lang}>{lang}</option>
+            ))}
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <select id="topic-filter" class="filter-select frosted-glass" aria-label="Filter by topic">
+            <option value="">All Topics</option>
+            {allTopics.map(topic => (
+              <option value={topic}>{topic}</option>
+            ))}
+          </select>
+        </div>
+
+        <button id="reset-filters" class="reset-button frosted-glass" aria-label="Reset all filters">
+          Reset Filters
+        </button>
+      </div>
+
+      <div id="results-count" class="results-count" aria-live="polite"></div>
+    </header>
 
     {featuredRepos.length > 0 && (
-      <section class="featured-section">
+      <section class="featured-section" id="featured-section">
         <h2 class="section-title">featured</h2>
 
-        <div class="projects-grid featured">
+        <div class="projects-grid featured-grid">
           {featuredRepos.map((repo) => (
-            <a
-              href={`/projects/${repo.name}`}
-              class="project-card frosted-glass featured-card"
-            >
-              <div class="card-header">
-                <h3 class="project-name">{repo.name}</h3>
-                <span class="featured-badge">featured</span>
-              </div>
-
-              {repo.description && (
-                <p class="project-description">{repo.description}</p>
-              )}
-
-              <div class="project-meta">
-                {repo.language && (
-                  <span class="language">{repo.language}</span>
-                )}
-
-                {repo.stargazers_count > 0 && (
-                  <span class="stars">★ {repo.stargazers_count}</span>
-                )}
-              </div>
-
-              {repo.topics.length > 0 && (
-                <div class="project-topics">
-                  {repo.topics.slice(0, 3).map((topic) => (
-                    <span class="topic">{topic}</span>
-                  ))}
-                </div>
-              )}
-            </a>
+            <ProjectCard repo={repo} featured={true} client:visible />
           ))}
         </div>
       </section>
@@ -64,50 +80,174 @@ const featuredRepos = getFeaturedRepos(repos);
     <section class="all-projects-section">
       <h2 class="section-title">all projects</h2>
 
-      <div class="projects-grid">
+      <div class="projects-grid" id="projects-grid">
         {repos.map((repo) => (
-          <a href={`/projects/${repo.name}`} class="project-card frosted-glass">
-            <h3 class="project-name">{repo.name}</h3>
-
-            {repo.description && (
-              <p class="project-description">{repo.description}</p>
-            )}
-
-            <div class="project-meta">
-              {repo.language && (
-                <span class="language">{repo.language}</span>
-              )}
-
-              {repo.stargazers_count > 0 && (
-                <span class="stars">★ {repo.stargazers_count}</span>
-              )}
-
-              <time datetime={repo.updated_at}>
-                Updated {new Date(repo.updated_at).toLocaleDateString('en-US', {
-                  month: 'short',
-                  year: 'numeric',
-                })}
-              </time>
-            </div>
-
-            {repo.topics.length > 0 && (
-              <div class="project-topics">
-                {repo.topics.slice(0, 3).map((topic) => (
-                  <span class="topic">{topic}</span>
-                ))}
-              </div>
-            )}
-          </a>
+          <ProjectCard repo={repo} client:visible />
         ))}
+      </div>
+
+      <div id="no-results" class="no-results" style="display: none;">
+        <p>No projects match your search criteria.</p>
+        <button class="reset-link" onclick="document.getElementById('reset-filters').click()">
+          Clear filters
+        </button>
       </div>
     </section>
   </article>
 </ContentLayout>
 
+<script>
+  // Client-side filtering logic
+  document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('search-input') as HTMLInputElement;
+    const languageFilter = document.getElementById('language-filter') as HTMLSelectElement;
+    const topicFilter = document.getElementById('topic-filter') as HTMLSelectElement;
+    const resetButton = document.getElementById('reset-filters') as HTMLButtonElement;
+    const projectsGrid = document.getElementById('projects-grid');
+    const featuredSection = document.getElementById('featured-section');
+    const resultsCount = document.getElementById('results-count');
+    const noResults = document.getElementById('no-results');
+
+    let allCards: HTMLElement[] = [];
+    let featuredCards: HTMLElement[] = [];
+
+    // Initialize cards after Svelte components mount
+    const initCards = () => {
+      if (projectsGrid) {
+        allCards = Array.from(projectsGrid.querySelectorAll('.project-card'));
+      }
+      if (featuredSection) {
+        featuredCards = Array.from(
+          featuredSection.querySelectorAll('.projects-grid .project-card')
+        );
+      }
+      updateResultsCount();
+    };
+
+    // Wait for Svelte components to render
+    setTimeout(initCards, 100);
+
+    const filterProjects = () => {
+      const searchTerm = searchInput?.value.toLowerCase().trim() || '';
+      const selectedLanguage = languageFilter?.value || '';
+      const selectedTopic = topicFilter?.value || '';
+
+      let visibleCount = 0;
+      let featuredVisibleCount = 0;
+
+      // Filter all projects
+      allCards.forEach((card) => {
+        const name = card.querySelector('.project-name')?.textContent?.toLowerCase() || '';
+        const description = card.querySelector('.project-description')?.textContent?.toLowerCase() || '';
+        const language = card.querySelector('.language')?.textContent?.trim() || '';
+        const topics = Array.from(card.querySelectorAll('.topic'))
+          .map(t => t.textContent?.toLowerCase() || '');
+
+        const matchesSearch =
+          !searchTerm ||
+          name.includes(searchTerm) ||
+          description.includes(searchTerm);
+
+        const matchesLanguage =
+          !selectedLanguage ||
+          language === selectedLanguage;
+
+        const matchesTopic =
+          !selectedTopic ||
+          topics.includes(selectedTopic.toLowerCase());
+
+        const isVisible = matchesSearch && matchesLanguage && matchesTopic;
+
+        if (card instanceof HTMLElement) {
+          card.style.display = isVisible ? '' : 'none';
+        }
+
+        if (isVisible) visibleCount++;
+      });
+
+      // Filter featured projects
+      featuredCards.forEach((card) => {
+        const name = card.querySelector('.project-name')?.textContent?.toLowerCase() || '';
+        const description = card.querySelector('.project-description')?.textContent?.toLowerCase() || '';
+        const language = card.querySelector('.language')?.textContent?.trim() || '';
+        const topics = Array.from(card.querySelectorAll('.topic'))
+          .map(t => t.textContent?.toLowerCase() || '');
+
+        const matchesSearch =
+          !searchTerm ||
+          name.includes(searchTerm) ||
+          description.includes(searchTerm);
+
+        const matchesLanguage =
+          !selectedLanguage ||
+          language === selectedLanguage;
+
+        const matchesTopic =
+          !selectedTopic ||
+          topics.includes(selectedTopic.toLowerCase());
+
+        const isVisible = matchesSearch && matchesLanguage && matchesTopic;
+
+        if (card instanceof HTMLElement) {
+          card.style.display = isVisible ? '' : 'none';
+        }
+
+        if (isVisible) featuredVisibleCount++;
+      });
+
+      // Show/hide featured section if no featured projects match
+      if (featuredSection) {
+        featuredSection.style.display = featuredVisibleCount > 0 ? '' : 'none';
+      }
+
+      // Show/hide no results message
+      if (noResults) {
+        noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+      }
+
+      updateResultsCount(visibleCount, allCards.length);
+    };
+
+    const updateResultsCount = (visible?: number, total?: number) => {
+      if (!resultsCount) return;
+
+      const visibleCount = visible !== undefined ? visible : allCards.length;
+      const totalCount = total !== undefined ? total : allCards.length;
+
+      if (visibleCount === totalCount) {
+        resultsCount.textContent = `${totalCount} project${totalCount !== 1 ? 's' : ''}`;
+      } else {
+        resultsCount.textContent = `${visibleCount} of ${totalCount} project${totalCount !== 1 ? 's' : ''}`;
+      }
+    };
+
+    const resetFilters = () => {
+      if (searchInput) searchInput.value = '';
+      if (languageFilter) languageFilter.value = '';
+      if (topicFilter) topicFilter.value = '';
+      filterProjects();
+    };
+
+    // Attach event listeners
+    searchInput?.addEventListener('input', filterProjects);
+    languageFilter?.addEventListener('change', filterProjects);
+    topicFilter?.addEventListener('change', filterProjects);
+    resetButton?.addEventListener('click', resetFilters);
+
+    // Initial filter (in case of URL params in the future)
+    filterProjects();
+  });
+</script>
+
 <style>
-  .projects-list {
+  .projects-page {
     max-width: 1400px;
     margin: 0 auto;
+    padding: 2rem 1rem;
+  }
+
+  .page-header {
+    margin-bottom: 4rem;
   }
 
   .page-title {
@@ -123,10 +263,90 @@ const featuredRepos = getFeaturedRepos(repos);
     color: var(--light);
     font-size: 1.125rem;
     line-height: 1.6;
-    margin: 0 0 4rem 0;
+    margin: 0 0 2.5rem 0;
     max-width: 800px;
   }
 
+  /* Filter Controls */
+  .filter-controls {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr auto;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .filter-group {
+    display: flex;
+  }
+
+  .search-input,
+  .filter-select,
+  .reset-button {
+    width: 100%;
+    padding: 0.875rem 1.25rem;
+    background: rgba(68, 88, 104, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(166, 182, 194, 0.2);
+    border-radius: 8px;
+    color: var(--highlight);
+    font-size: 0.9375rem;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none;
+  }
+
+  .search-input::placeholder {
+    color: var(--accent);
+    opacity: 0.7;
+  }
+
+  .search-input:focus,
+  .filter-select:focus {
+    background: rgba(68, 88, 104, 0.15);
+    border-color: rgba(166, 182, 194, 0.4);
+    box-shadow: 0 0 0 3px rgba(166, 182, 194, 0.1);
+  }
+
+  .filter-select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238498a6' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    padding-right: 2.5rem;
+  }
+
+  .filter-select option {
+    background: var(--base);
+    color: var(--highlight);
+  }
+
+  .reset-button {
+    cursor: pointer;
+    white-space: nowrap;
+    background: rgba(68, 88, 104, 0.15);
+    border-color: rgba(166, 182, 194, 0.25);
+    font-weight: 500;
+  }
+
+  .reset-button:hover {
+    background: rgba(68, 88, 104, 0.2);
+    border-color: rgba(166, 182, 194, 0.35);
+    transform: translateY(-1px);
+  }
+
+  .reset-button:active {
+    transform: translateY(0);
+  }
+
+  .results-count {
+    color: var(--accent);
+    font-size: 0.9375rem;
+    margin-top: 0.5rem;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Sections */
   .featured-section,
   .all-projects-section {
     margin-bottom: 4rem;
@@ -141,120 +361,79 @@ const featuredRepos = getFeaturedRepos(repos);
     letter-spacing: 0.02em;
   }
 
+  /* Grid Layout */
   .projects-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     gap: 2rem;
   }
 
-  .projects-grid.featured {
+  .featured-grid {
     grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
   }
 
-  .project-card {
-    background: rgba(68, 88, 104, 0.1);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(166, 182, 194, 0.2);
-    border-radius: 12px;
-    padding: 2rem;
-    text-decoration: none;
-    color: inherit;
-    transition: all 0.3s ease;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+  /* No Results */
+  .no-results {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--light);
   }
 
-  .project-card:hover {
+  .no-results p {
+    font-size: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .reset-link {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 1rem;
+    cursor: pointer;
+    background: rgba(68, 88, 104, 0.1);
+    border: 1px solid rgba(166, 182, 194, 0.2);
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+  }
+
+  .reset-link:hover {
     background: rgba(68, 88, 104, 0.15);
     border-color: rgba(166, 182, 194, 0.3);
-    transform: translateY(-2px);
-  }
-
-  .featured-card {
-    background: rgba(68, 88, 104, 0.15);
-    border-color: rgba(166, 182, 194, 0.25);
-  }
-
-  .card-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 1rem;
-  }
-
-  .featured-badge {
-    padding: 0.25rem 0.75rem;
-    background: rgba(166, 182, 194, 0.2);
-    border-radius: 4px;
-    font-size: 0.75rem;
-    color: var(--accent);
-    white-space: nowrap;
-  }
-
-  .project-name {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 1.25rem;
-    font-weight: 500;
     color: var(--highlight);
-    margin: 0;
-    word-break: break-word;
   }
 
-  .project-description {
-    color: var(--light);
-    line-height: 1.6;
-    margin: 0;
-    flex-grow: 1;
-  }
+  /* Responsive */
+  @media (max-width: 1024px) {
+    .filter-controls {
+      grid-template-columns: 1fr 1fr;
+    }
 
-  .project-meta {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 1rem;
-    font-size: 0.875rem;
-    color: var(--accent);
-  }
+    .search-input {
+      grid-column: 1 / -1;
+    }
 
-  .language {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-  }
-
-  .language::before {
-    content: '';
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--accent);
-  }
-
-  .stars {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-  }
-
-  .project-topics {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-
-  .topic {
-    padding: 0.25rem 0.75rem;
-    background: rgba(166, 182, 194, 0.1);
-    border-radius: 4px;
-    font-size: 0.75rem;
-    color: var(--accent);
+    .reset-button {
+      grid-column: 1 / -1;
+    }
   }
 
   @media (max-width: 768px) {
-    .projects-grid,
-    .projects-grid.featured {
+    .projects-page {
+      padding: 1.5rem 1rem;
+    }
+
+    .filter-controls {
       grid-template-columns: 1fr;
+    }
+
+    .projects-grid,
+    .featured-grid {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    .page-description {
+      font-size: 1rem;
     }
   }
 </style>
