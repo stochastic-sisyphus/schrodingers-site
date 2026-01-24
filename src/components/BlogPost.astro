@@ -1,0 +1,271 @@
+---
+/**
+ * BlogPost component - Full post display with rich typography
+ */
+
+export interface Props {
+  title: string;
+  date: Date;
+  tags: string[];
+  substackUrl?: string;
+}
+
+const { title, date, tags, substackUrl } = Astro.props;
+
+const formattedDate = date.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+---
+
+<article class="blog-post frosted-glass">
+  <header class="post-header">
+    <h1 class="post-title">{title}</h1>
+
+    <div class="post-meta">
+      <time datetime={date.toISOString()}>
+        {formattedDate}
+      </time>
+
+      {substackUrl && (
+        <a
+          href={substackUrl}
+          class="substack-link"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Read on Substack →
+        </a>
+      )}
+    </div>
+
+    {tags.length > 0 && (
+      <div class="post-tags">
+        {tags.map((tag) => (
+          <span class="tag">{tag}</span>
+        ))}
+      </div>
+    )}
+  </header>
+
+  <div class="post-content">
+    <slot />
+  </div>
+
+  <footer class="post-footer">
+    <a href="/blog" class="back-link">← Back to all posts</a>
+  </footer>
+</article>
+
+<style>
+  .blog-post {
+    max-width: 800px;
+    margin: 0 auto;
+    background: rgba(68, 88, 104, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(166, 182, 194, 0.2);
+    border-radius: 12px;
+    padding: 3rem;
+  }
+
+  .post-header {
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid rgba(166, 182, 194, 0.2);
+  }
+
+  .post-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(32px, 5vw, 48px);
+    font-weight: 500;
+    color: var(--highlight);
+    margin: 0 0 1rem 0;
+    line-height: 1.2;
+  }
+
+  .post-meta {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    font-size: 0.875rem;
+    color: var(--accent);
+    margin-bottom: 1rem;
+  }
+
+  time {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .substack-link {
+    color: var(--accent);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .substack-link:hover {
+    color: var(--highlight);
+  }
+
+  .post-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .tag {
+    padding: 0.25rem 0.75rem;
+    background: rgba(166, 182, 194, 0.1);
+    border-radius: 4px;
+    font-size: 0.75rem;
+    color: var(--accent);
+  }
+
+  .post-content {
+    color: var(--light);
+    line-height: 1.8;
+    font-size: 1.0625rem;
+  }
+
+  /* Typography styles for markdown content */
+  .post-content :global(h2) {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-weight: 500;
+    color: var(--highlight);
+    margin: 2.5rem 0 1rem;
+    line-height: 1.3;
+  }
+
+  .post-content :global(h3) {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: var(--highlight);
+    margin: 2rem 0 0.75rem;
+    line-height: 1.3;
+  }
+
+  .post-content :global(h4) {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: var(--accent);
+    margin: 1.5rem 0 0.5rem;
+  }
+
+  .post-content :global(p) {
+    margin: 1.25rem 0;
+  }
+
+  .post-content :global(a) {
+    color: var(--accent);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+    transition: all 0.2s ease;
+  }
+
+  .post-content :global(a:hover) {
+    color: var(--highlight);
+    text-decoration-thickness: 2px;
+  }
+
+  .post-content :global(ul),
+  .post-content :global(ol) {
+    margin: 1.25rem 0;
+    padding-left: 2rem;
+  }
+
+  .post-content :global(li) {
+    margin: 0.5rem 0;
+  }
+
+  .post-content :global(blockquote) {
+    border-left: 3px solid var(--accent);
+    padding-left: 1.5rem;
+    margin: 1.5rem 0;
+    color: var(--accent);
+    font-style: italic;
+  }
+
+  .post-content :global(code) {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9em;
+    background: rgba(166, 182, 194, 0.1);
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    color: var(--highlight);
+  }
+
+  .post-content :global(pre) {
+    background: rgba(20, 26, 32, 0.6);
+    border: 1px solid rgba(166, 182, 194, 0.2);
+    border-radius: 8px;
+    padding: 1.5rem;
+    overflow-x: auto;
+    margin: 1.5rem 0;
+  }
+
+  .post-content :global(pre code) {
+    background: none;
+    padding: 0;
+    font-size: 0.875rem;
+    line-height: 1.6;
+  }
+
+  .post-content :global(img) {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin: 2rem 0;
+  }
+
+  .post-content :global(hr) {
+    border: none;
+    border-top: 1px solid rgba(166, 182, 194, 0.2);
+    margin: 3rem 0;
+  }
+
+  .post-footer {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(166, 182, 194, 0.2);
+  }
+
+  .back-link {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 0.9375rem;
+    transition: color 0.2s ease;
+    display: inline-block;
+  }
+
+  .back-link:hover {
+    color: var(--highlight);
+  }
+
+  @media (max-width: 768px) {
+    .blog-post {
+      padding: 2rem 1.5rem;
+    }
+
+    .post-header {
+      margin-bottom: 2rem;
+    }
+
+    .post-content {
+      font-size: 1rem;
+    }
+
+    .post-content :global(h2) {
+      font-size: 1.75rem;
+      margin: 2rem 0 0.75rem;
+    }
+
+    .post-content :global(h3) {
+      font-size: 1.5rem;
+    }
+  }
+</style>

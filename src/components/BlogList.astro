@@ -1,0 +1,92 @@
+---
+/**
+ * BlogList component - Responsive grid layout for blog posts
+ */
+
+import BlogCard from './BlogCard.astro';
+
+export interface BlogPostPreview {
+  slug: string;
+  title: string;
+  date: Date;
+  excerpt: string;
+  tags: string[];
+  substackUrl?: string;
+  isLocal?: boolean;
+}
+
+export interface Props {
+  posts: BlogPostPreview[];
+  columns?: 1 | 2 | 3;
+}
+
+const { posts, columns = 3 } = Astro.props;
+---
+
+<div class="blog-list" data-columns={columns}>
+  {posts.map((post) => (
+    <BlogCard
+      title={post.title}
+      date={post.date}
+      excerpt={post.excerpt}
+      tags={post.tags}
+      slug={post.slug}
+      substackUrl={post.substackUrl}
+      isExternal={!post.isLocal}
+    />
+  ))}
+</div>
+
+{posts.length === 0 && (
+  <div class="empty-state">
+    <p>No posts yet. Check back soon.</p>
+  </div>
+)}
+
+<style>
+  .blog-list {
+    display: grid;
+    gap: 2rem;
+    width: 100%;
+  }
+
+  .blog-list[data-columns='1'] {
+    grid-template-columns: 1fr;
+  }
+
+  .blog-list[data-columns='2'] {
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  }
+
+  .blog-list[data-columns='3'] {
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+  }
+
+  .empty-state p {
+    color: var(--light);
+    font-size: 1.125rem;
+    margin: 0;
+  }
+
+  @media (max-width: 1024px) {
+    .blog-list[data-columns='3'] {
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    }
+  }
+
+  @media (max-width: 768px) {
+    .blog-list[data-columns='2'],
+    .blog-list[data-columns='3'] {
+      grid-template-columns: 1fr;
+    }
+
+    .blog-list {
+      gap: 1.5rem;
+    }
+  }
+</style>

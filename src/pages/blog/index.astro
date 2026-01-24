@@ -6,6 +6,7 @@
 import ContentLayout from '@/layouts/ContentLayout.astro';
 import { getCollection } from 'astro:content';
 import { fetchAllSubstackPosts } from '@/lib/substack';
+import BlogList from '@/components/BlogList.astro';
 
 // Fetch content from both sources
 const localPosts = await getCollection('blog', ({ data }) => !data.draft);
@@ -35,51 +36,15 @@ const allPosts = [
 ---
 
 <ContentLayout title="Blog | stochastic-sisyphus">
-  <article class="blog-list">
+  <article class="blog-page">
     <h1 class="page-title">writing</h1>
 
-    <div class="posts-grid">
-      {allPosts.map((post) => (
-        <a
-          href={post.isLocal ? `/blog/${post.slug}` : post.substackUrl}
-          class="post-card frosted-glass"
-          target={post.isLocal ? '_self' : '_blank'}
-          rel={post.isLocal ? '' : 'noopener noreferrer'}
-        >
-          <div class="post-meta">
-            <time datetime={post.date.toISOString()}>
-              {post.date.toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-              })}
-            </time>
-            {!post.isLocal && <span class="external-badge">via Substack</span>}
-          </div>
-
-          <h2 class="post-title">{post.title}</h2>
-
-          <p class="post-excerpt">{post.excerpt}</p>
-
-          {post.tags.length > 0 && (
-            <div class="post-tags">
-              {post.tags.map((tag) => (
-                <span class="tag">{tag}</span>
-              ))}
-            </div>
-          )}
-        </a>
-      ))}
-    </div>
-
-    {allPosts.length === 0 && (
-      <p class="no-posts">No posts yet. Check back soon.</p>
-    )}
+    <BlogList posts={allPosts} columns={3} />
   </article>
 </ContentLayout>
 
 <style>
-  .blog-list {
+  .blog-page {
     max-width: 1200px;
     margin: 0 auto;
   }
@@ -91,89 +56,5 @@ const allPosts = [
     color: var(--highlight);
     margin: 0 0 4rem 0;
     letter-spacing: 0.02em;
-  }
-
-  .posts-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 2rem;
-  }
-
-  .post-card {
-    background: rgba(68, 88, 104, 0.1);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(166, 182, 194, 0.2);
-    border-radius: 12px;
-    padding: 2rem;
-    text-decoration: none;
-    color: inherit;
-    transition: all 0.3s ease;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .post-card:hover {
-    background: rgba(68, 88, 104, 0.15);
-    border-color: rgba(166, 182, 194, 0.3);
-    transform: translateY(-2px);
-  }
-
-  .post-meta {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    font-size: 0.875rem;
-    color: var(--accent);
-  }
-
-  .external-badge {
-    padding: 0.25rem 0.5rem;
-    background: rgba(166, 182, 194, 0.1);
-    border-radius: 4px;
-    font-size: 0.75rem;
-  }
-
-  .post-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.75rem;
-    font-weight: 500;
-    color: var(--highlight);
-    margin: 0;
-    line-height: 1.3;
-  }
-
-  .post-excerpt {
-    color: var(--light);
-    line-height: 1.6;
-    margin: 0;
-  }
-
-  .post-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-top: auto;
-  }
-
-  .tag {
-    padding: 0.25rem 0.75rem;
-    background: rgba(166, 182, 194, 0.1);
-    border-radius: 4px;
-    font-size: 0.75rem;
-    color: var(--accent);
-  }
-
-  .no-posts {
-    text-align: center;
-    color: var(--light);
-    font-size: 1.125rem;
-    padding: 4rem 0;
-  }
-
-  @media (max-width: 768px) {
-    .posts-grid {
-      grid-template-columns: 1fr;
-    }
   }
 </style>

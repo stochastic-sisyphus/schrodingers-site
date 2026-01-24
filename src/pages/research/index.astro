@@ -6,6 +6,8 @@
 import ContentLayout from '@/layouts/ContentLayout.astro';
 import { getCollection } from 'astro:content';
 import { fetchAllResearchData } from '@/lib/orcid';
+import ResearchCard from '@/components/ResearchCard.astro';
+import PublicationTimeline from '@/components/visualizations/PublicationTimeline.svelte';
 
 // Fetch from both sources
 const localPapers = await getCollection('research');
@@ -62,6 +64,21 @@ const years = Object.keys(papersByYear)
       </a>
     </div>
 
+    {allPapers.length > 0 && (
+      <div class="visualization-section frosted-glass">
+        <PublicationTimeline
+          client:load
+          publications={allPapers.map(p => ({
+            id: p.id,
+            title: p.title,
+            year: p.year,
+            type: p.type,
+            journal: p.journal
+          }))}
+        />
+      </div>
+    )}
+
     <div class="timeline">
       {years.map((year) => (
         <div class="year-group">
@@ -69,50 +86,18 @@ const years = Object.keys(papersByYear)
 
           <div class="papers-list">
             {papersByYear[year].map((paper) => (
-              <article class="paper-card frosted-glass">
-                <h3 class="paper-title">
-                  {paper.isLocal ? (
-                    <a href={`/research/${paper.id}`}>{paper.title}</a>
-                  ) : paper.doi ? (
-                    <a
-                      href={`https://doi.org/${paper.doi}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {paper.title}
-                    </a>
-                  ) : (
-                    paper.title
-                  )}
-                </h3>
-
-                {paper.authors.length > 0 && (
-                  <p class="paper-authors">{paper.authors.join(', ')}</p>
-                )}
-
-                {paper.journal && (
-                  <p class="paper-journal">{paper.journal}</p>
-                )}
-
-                {paper.abstract && (
-                  <p class="paper-abstract">{paper.abstract}</p>
-                )}
-
-                <div class="paper-meta">
-                  {paper.doi && (
-                    <a
-                      href={`https://doi.org/${paper.doi}`}
-                      class="doi-link"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      DOI: {paper.doi}
-                    </a>
-                  )}
-
-                  <span class="paper-type">{paper.type}</span>
-                </div>
-              </article>
+              <ResearchCard
+                id={paper.id}
+                title={paper.title}
+                authors={paper.authors}
+                year={paper.year}
+                journal={paper.journal}
+                doi={paper.doi}
+                orcidUrl={paper.orcidUrl}
+                abstract={paper.abstract}
+                type={paper.type}
+                isLocal={paper.isLocal}
+              />
             ))}
           </div>
         </div>
@@ -161,6 +146,16 @@ const years = Object.keys(papersByYear)
     color: var(--highlight);
   }
 
+  .visualization-section {
+    background: rgba(68, 88, 104, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(166, 182, 194, 0.2);
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 4rem;
+    min-height: 400px;
+  }
+
   .timeline {
     display: flex;
     flex-direction: column;
@@ -188,83 +183,6 @@ const years = Object.keys(papersByYear)
     gap: 1.5rem;
   }
 
-  .paper-card {
-    background: rgba(68, 88, 104, 0.1);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(166, 182, 194, 0.2);
-    border-radius: 12px;
-    padding: 2rem;
-    transition: all 0.3s ease;
-  }
-
-  .paper-card:hover {
-    background: rgba(68, 88, 104, 0.15);
-    border-color: rgba(166, 182, 194, 0.3);
-  }
-
-  .paper-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.5rem;
-    font-weight: 500;
-    color: var(--highlight);
-    margin: 0 0 0.75rem 0;
-    line-height: 1.3;
-  }
-
-  .paper-title a {
-    color: inherit;
-    text-decoration: none;
-    transition: color 0.2s ease;
-  }
-
-  .paper-title a:hover {
-    color: var(--accent);
-  }
-
-  .paper-authors {
-    font-size: 0.9375rem;
-    color: var(--light);
-    margin: 0 0 0.5rem 0;
-  }
-
-  .paper-journal {
-    font-style: italic;
-    font-size: 0.9375rem;
-    color: var(--accent);
-    margin: 0 0 1rem 0;
-  }
-
-  .paper-abstract {
-    color: var(--light);
-    line-height: 1.6;
-    margin: 0 0 1rem 0;
-  }
-
-  .paper-meta {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    font-size: 0.875rem;
-    color: var(--accent);
-  }
-
-  .doi-link {
-    color: var(--accent);
-    text-decoration: none;
-    transition: color 0.2s ease;
-  }
-
-  .doi-link:hover {
-    color: var(--highlight);
-  }
-
-  .paper-type {
-    padding: 0.25rem 0.5rem;
-    background: rgba(166, 182, 194, 0.1);
-    border-radius: 4px;
-    font-size: 0.75rem;
-  }
-
   .no-papers {
     text-align: center;
     color: var(--light);
@@ -273,6 +191,12 @@ const years = Object.keys(papersByYear)
   }
 
   @media (max-width: 768px) {
+    .visualization-section {
+      padding: 1rem;
+      margin-bottom: 3rem;
+      min-height: 300px;
+    }
+
     .timeline {
       gap: 3rem;
     }

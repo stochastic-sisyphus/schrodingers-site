@@ -1,0 +1,220 @@
+---
+/**
+ * ResearchCard component - Publication card with frosted glass aesthetic
+ */
+
+export interface Props {
+  id: string;
+  title: string;
+  authors: string[];
+  year: number;
+  journal?: string;
+  doi?: string;
+  orcidUrl?: string;
+  abstract?: string;
+  type: string;
+  isLocal?: boolean;
+}
+
+const {
+  id,
+  title,
+  authors,
+  year,
+  journal,
+  doi,
+  orcidUrl,
+  abstract,
+  type,
+  isLocal = false
+} = Astro.props;
+
+const href = isLocal
+  ? `/research/${id}`
+  : doi
+    ? `https://doi.org/${doi}`
+    : orcidUrl || '#';
+
+const isLink = href !== '#';
+const target = isLocal ? '_self' : '_blank';
+const rel = isLocal ? undefined : 'noopener noreferrer';
+
+// Truncate abstract for preview
+const abstractPreview = abstract
+  ? abstract.length > 200
+    ? `${abstract.slice(0, 200)}...`
+    : abstract
+  : null;
+---
+
+<article class="research-card frosted-glass">
+  {isLink ? (
+    <h3 class="card-title">
+      <a href={href} target={target} rel={rel}>{title}</a>
+    </h3>
+  ) : (
+    <h3 class="card-title">{title}</h3>
+  )}
+
+  {authors.length > 0 && (
+    <p class="card-authors">{authors.join(', ')}</p>
+  )}
+
+  <div class="card-meta">
+    <span class="year">{year}</span>
+    {journal && <span class="journal">{journal}</span>}
+    <span class="type">{type}</span>
+  </div>
+
+  {abstractPreview && (
+    <p class="card-abstract">{abstractPreview}</p>
+  )}
+
+  {doi && (
+    <div class="card-links">
+      <a
+        href={`https://doi.org/${doi}`}
+        class="doi-link"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        DOI: {doi}
+      </a>
+    </div>
+  )}
+</article>
+
+<style>
+  .research-card {
+    background: rgba(68, 88, 104, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(166, 182, 194, 0.2);
+    border-radius: 12px;
+    padding: 2rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .research-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(
+      circle at 50% 0%,
+      rgba(166, 182, 194, 0.08) 0%,
+      transparent 70%
+    );
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+
+  .research-card:hover {
+    background: rgba(68, 88, 104, 0.15);
+    border-color: rgba(166, 182, 194, 0.3);
+    transform: translateY(-1px);
+  }
+
+  .research-card:hover::before {
+    opacity: 1;
+  }
+
+  .card-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: var(--highlight);
+    margin: 0 0 0.75rem 0;
+    line-height: 1.3;
+  }
+
+  .card-title a {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .card-title a:hover {
+    color: var(--accent);
+  }
+
+  .card-authors {
+    font-size: 0.9375rem;
+    color: var(--light);
+    margin: 0 0 0.75rem 0;
+    line-height: 1.5;
+  }
+
+  .card-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+  }
+
+  .year {
+    color: var(--accent);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .journal {
+    font-style: italic;
+    color: var(--light);
+  }
+
+  .type {
+    padding: 0.25rem 0.5rem;
+    background: rgba(166, 182, 194, 0.1);
+    border-radius: 4px;
+    font-size: 0.75rem;
+    color: var(--accent);
+    text-transform: capitalize;
+  }
+
+  .card-abstract {
+    color: var(--light);
+    line-height: 1.6;
+    margin: 0 0 1rem 0;
+    font-size: 0.9375rem;
+  }
+
+  .card-links {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .doi-link {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-family: 'JetBrains Mono', monospace;
+    transition: color 0.2s ease;
+  }
+
+  .doi-link:hover {
+    color: var(--highlight);
+  }
+
+  @media (max-width: 768px) {
+    .research-card {
+      padding: 1.5rem;
+    }
+
+    .card-title {
+      font-size: 1.25rem;
+    }
+
+    .card-meta {
+      gap: 0.75rem;
+    }
+  }
+</style>
