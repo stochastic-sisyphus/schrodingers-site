@@ -142,7 +142,7 @@ export async function fetchRepoReadme(owner: string, repo: string): Promise<stri
 /**
  * Fetch recent commit activity
  */
-async function fetchRecentCommits(owner: string, repo: string): Promise<CommitData[]> {
+export async function fetchRecentCommits(owner: string, repo: string): Promise<CommitData[]> {
   try {
     const response = await fetch(
       `${GITHUB_API}/repos/${owner}/${repo}/commits?per_page=100`,

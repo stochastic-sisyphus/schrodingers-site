@@ -56,3 +56,10 @@ h1, h2, h3, h4, h5, h6 {
   white-space: nowrap;
   border: 0;
 }
+
+.frosted-glass {
+  background: rgba(68, 88, 104, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(166, 182, 194, 0.2);
+  border-radius: 12px;
+}
