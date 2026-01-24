@@ -35,7 +35,7 @@ const keyResearch = allResearch
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="stochastic-sisyphus - a computational atmosphere" />
+    <meta name="description" content="Computational atmospheres where identity and work exist as living data. Explorations in code, data systems, and emergent patterns." />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -43,13 +43,24 @@ const keyResearch = allResearch
       href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Inter:wght@400;500&display=swap"
       rel="stylesheet"
     />
-    <title>stochastic-sisyphus</title>
+    <title>stochastic-sisyphus | computational atmospheres</title>
+
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="stochastic-sisyphus | computational atmospheres" />
+    <meta property="og:description" content="Computational atmospheres where identity and work exist as living data. Explorations in code, data systems, and emergent patterns." />
+    <meta property="og:url" content="https://stochastic-sisyphus.pages.dev" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="stochastic-sisyphus | computational atmospheres" />
+    <meta name="twitter:description" content="Computational atmospheres where identity and work exist as living data. Explorations in code, data systems, and emergent patterns." />
   </head>
   <body>
     <Atmosphere />
 
     <!-- Hero Section -->
-    <section class="hero">
+    <section class="hero" aria-label="Site introduction">
       <h1 class="identity">stochastic-sisyphus</h1>
       <p class="tagline">computational atmospheres</p>
     </section>
@@ -70,7 +81,7 @@ const keyResearch = allResearch
               </div>
             ))}
           </div>
-          <a href="/projects" class="view-more">View all projects</a>
+          <a href="/projects" class="view-more" aria-label="Navigate to all projects">View all projects</a>
         </section>
       )}
 
@@ -96,7 +107,7 @@ const keyResearch = allResearch
               </div>
             ))}
           </div>
-          <a href="/blog" class="view-more">View all posts</a>
+          <a href="/blog" class="view-more" aria-label="Navigate to all blog posts">View all posts</a>
         </section>
       )}
 
@@ -125,7 +136,7 @@ const keyResearch = allResearch
               </div>
             ))}
           </div>
-          <a href="/research" class="view-more">View all research</a>
+          <a href="/research" class="view-more" aria-label="Navigate to all research publications">View all research</a>
         </section>
       )}
     </main>

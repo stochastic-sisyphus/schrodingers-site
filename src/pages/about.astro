@@ -9,7 +9,10 @@ import { fetchORCIDProfile } from '@/lib/orcid';
 const orcidProfile = await fetchORCIDProfile().catch(() => null);
 ---
 
-<ContentLayout title="About | stochastic-sisyphus">
+<ContentLayout
+  title="About | stochastic-sisyphus"
+  description="Computational atmospheres exploring the intersection of code, data systems, and emergent patterns. A home for explorations, not a portfolio."
+>
   <article class="about-page frosted-glass">
     <h1 class="page-title">about</h1>
 

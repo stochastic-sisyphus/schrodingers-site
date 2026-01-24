@@ -22,9 +22,13 @@ import ShaderGradient from './ShaderGradient.astro';
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
+    // Optimize particle count for device performance
+    const isMobile = window.innerWidth <= 768;
+    const particleCount = isMobile ? 300 : 600;
+
     // Create and start particle system
     // ParticleSystem handles resize and cleanup listeners internally
-    const particleSystem = new ParticleSystem(canvas, { particleCount: 600 });
+    const particleSystem = new ParticleSystem(canvas, { particleCount });
     particleSystem.start();
   }
 </script>

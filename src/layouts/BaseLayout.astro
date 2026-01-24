@@ -58,14 +58,19 @@ const canonicalURL = Astro.site ? new URL(Astro.url.pathname, Astro.site) : null
     />
   </head>
   <body>
+    <!-- Skip to main content for keyboard navigation -->
+    <a href="#main-content" class="skip-to-content">Skip to main content</a>
+
     <!-- Atmospheric background layers -->
-    <div class="atmosphere-container">
+    <div class="atmosphere-container" aria-hidden="true">
       <ShaderGradient />
       <Atmosphere />
     </div>
 
     <!-- Page content -->
-    <slot />
+    <div id="main-content">
+      <slot />
+    </div>
   </body>
 </html>
 
@@ -77,6 +82,26 @@ const canonicalURL = Astro.site ? new URL(Astro.url.pathname, Astro.site) : null
     color: var(--highlight);
     font-family: 'Inter', sans-serif;
     overflow-x: hidden;
+  }
+
+  /* Skip to content link for accessibility */
+  .skip-to-content {
+    position: absolute;
+    top: -100px;
+    left: 0;
+    background: var(--base);
+    color: var(--highlight);
+    padding: 1rem 2rem;
+    text-decoration: none;
+    z-index: 100;
+    border: 2px solid var(--accent);
+    border-radius: 4px;
+    font-weight: 500;
+  }
+
+  .skip-to-content:focus {
+    top: 1rem;
+    left: 1rem;
   }
 
   .atmosphere-container {
