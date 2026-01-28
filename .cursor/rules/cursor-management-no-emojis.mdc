@@ -1,0 +1,22 @@
+---
+description: No emojis when creating or updating Cursor configurations
+globs: .cursor/**/*
+alwaysApply: false
+---
+
+# Cursor Configuration Standards
+
+When creating or modifying:
+- Skills (SKILL.md)
+- Rules (.mdc)
+- Subagents (.md)
+- Settings (settings.json)
+
+Never include emojis. Use professional, clear language only.
+
+Examples:
+- BAD: "✅ Good practice"
+- GOOD: "Good practice"
+
+- BAD: "🔴 Critical issue"
+- GOOD: "Critical issue"

@@ -5,22 +5,59 @@
 
 import ContentLayout from '@/layouts/ContentLayout.astro';
 import { getCollection, type CollectionEntry } from 'astro:content';
+import { fetchAllResearchData } from '@/lib/orcid';
+import VerificationCascade from '@/components/visualizations/VerificationCascade.svelte';
 
 export async function getStaticPaths() {
-  const papers = await getCollection('research');
-
-  return papers.map((paper) => ({
-    params: { id: paper.slug },
-    props: { paper },
+  // Get both local papers and ORCID papers
+  const localPapers = await getCollection('research').catch(() => []);
+  const orcidData = await fetchAllResearchData().catch(() => ({
+    profile: null,
+    papers: [],
   }));
+
+  // Create paths for local papers
+  const localPaths = localPapers.map((paper) => ({
+    params: { id: paper.slug },
+    props: { 
+      paper,
+      isLocal: true,
+      isVerificationReversal: false
+    },
+  }));
+
+  // Create paths for ORCID papers
+  const orcidPaths = orcidData.papers.map((paper) => ({
+    params: { id: paper.id },
+    props: {
+      paper: {
+        data: {
+          title: paper.title,
+          authors: paper.authors || [],
+          year: paper.year,
+          journal: paper.journal,
+          doi: paper.doi,
+          orcidUrl: paper.orcidUrl,
+          abstract: '',
+          type: paper.type,
+        }
+      },
+      isLocal: false,
+      isVerificationReversal: paper.title?.toLowerCase().includes('verification reversal')
+    },
+  }));
+
+  return [...localPaths, ...orcidPaths];
 }
 
 interface Props {
-  paper: CollectionEntry<'research'>;
+  paper: any;
+  isLocal: boolean;
+  isVerificationReversal: boolean;
 }
 
-const { paper } = Astro.props;
-const { Content } = await paper.render();
+const { paper, isLocal, isVerificationReversal } = Astro.props;
+const Content = isLocal ? (await paper.render()).Content : null;
 ---
 
 <ContentLayout
@@ -77,9 +114,24 @@ const { Content } = await paper.render();
       </section>
     )}
 
-    <div class="paper-content">
-      <Content />
-    </div>
+    {isVerificationReversal && (
+      <section class="paper-visualization">
+        <h2>Interactive Demonstration</h2>
+        <p class="viz-description">
+          This visualization demonstrates <strong>Proposition 1</strong> from the paper: 
+          when verification cost exceeds forwarding cost by more than the expected benefit, 
+          rational agents enter a cascade equilibrium where they forward artifacts regardless 
+          of private beliefs.
+        </p>
+        <VerificationCascade client:load width={760} height={500} />
+      </section>
+    )}
+
+    {isLocal && Content && (
+      <div class="paper-content">
+        <Content />
+      </div>
+    )}
 
     <footer class="paper-footer">
       <a href="/research" class="back-link">← Back to all research</a>
@@ -178,6 +230,31 @@ const { Content } = await paper.render();
     color: var(--light);
     line-height: 1.8;
     font-size: 1.0625rem;
+  }
+
+  .paper-visualization {
+    margin-top: 3rem;
+    padding-top: 3rem;
+    border-top: 1px solid rgba(166, 182, 194, 0.2);
+  }
+
+  .paper-visualization h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.75rem;
+    font-weight: 500;
+    color: var(--highlight);
+    margin: 0 0 1rem 0;
+  }
+
+  .paper-visualization .viz-description {
+    color: var(--light);
+    line-height: 1.7;
+    margin-bottom: 2rem;
+    font-size: 1rem;
+  }
+
+  .paper-visualization .viz-description strong {
+    color: var(--highlight);
   }
 
   .paper-footer {

@@ -1,0 +1,17 @@
+---
+description: Never use emojis in any code, documentation, or communication
+alwaysApply: true
+---
+
+# No Emojis Policy
+
+Never use emojis in:
+- Code comments
+- Documentation
+- Commit messages
+- Error messages
+- User-facing text
+- AI responses
+- Skills, rules, or subagents
+
+This is a strict requirement. Use clear, professional language instead.
