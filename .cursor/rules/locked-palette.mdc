@@ -1,0 +1,66 @@
+---
+description: Enforce the locked v5 steel-teal color palette and no inline styles
+globs: **/*.{svelte,astro,css,ts,tsx,js,jsx}
+alwaysApply: false
+---
+
+# Locked Palette v5 - NEVER DEVIATE
+
+```css
+--deep: #141a20;      /* darkest - base background */
+--base: #2a3844;      /* dark slate */
+--mid: #445868;       /* medium slate */
+--light: #627888;     /* light slate */
+--accent: #8498a6;    /* steel-teal accent */
+--highlight: #a6b6c2; /* lightest - text, glows */
+```
+
+## NO INLINE STYLES
+
+NEVER use inline styles. All styling must be in CSS classes using CSS custom properties.
+
+BAD:
+```typescript
+element.style('fill', '#4ade80');
+element.style('stroke', 'rgba(96, 165, 250, 0.5)');
+```
+
+GOOD:
+```typescript
+element.attr('class', 'line-measured');
+```
+
+```css
+:global(.line-measured) {
+  fill: none;
+  stroke: var(--highlight);
+  stroke-width: 3;
+}
+```
+
+## BANNED COLORS
+
+NEVER use:
+- Neon colors (bright green #4ade80, bright blue #60a5fa, bright red #f87171)
+- Pure saturated colors
+- Colors outside the steel-teal range
+- Vaporwave pink
+- Corporate grey-blue
+- Any hardcoded hex values in JavaScript/TypeScript
+
+## Correct Usage
+
+Use CSS custom properties:
+
+```css
+color: var(--highlight);
+background: var(--accent);
+border-color: var(--light);
+```
+
+For opacity variations, use rgba with palette values:
+
+```css
+fill: rgba(132, 152, 166, 0.2);  /* accent with alpha */
+background: rgba(98, 120, 136, 0.15); /* light with alpha */
+```
