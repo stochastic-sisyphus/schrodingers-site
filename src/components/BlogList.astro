@@ -1,6 +1,7 @@
 ---
 /**
- * BlogList component - Responsive grid layout for blog posts
+ * BlogList component - Vertical flowing layout with staggered atmospheric reveals
+ * Emphasizes reading/scrolling metaphor like computational notebooks
  */
 
 import BlogCard from './BlogCard.astro';
@@ -24,58 +25,118 @@ const { posts, columns = 3 } = Astro.props;
 ---
 
 <div class="blog-list" data-columns={columns}>
-  {posts.map((post) => (
-    <BlogCard
-      title={post.title}
-      date={post.date}
-      excerpt={post.excerpt}
-      tags={post.tags}
-      slug={post.slug}
-      substackUrl={post.substackUrl}
-      isExternal={!post.isLocal}
-    />
+  {posts.map((post, index) => (
+    <div class="blog-item" style={`--stagger-delay: ${index * 0.08}s`}>
+      <BlogCard
+        title={post.title}
+        date={post.date}
+        excerpt={post.excerpt}
+        tags={post.tags}
+        slug={post.slug}
+        substackUrl={post.substackUrl}
+        isExternal={!post.isLocal}
+      />
+    </div>
   ))}
 </div>
 
 {posts.length === 0 && (
   <div class="empty-state">
-    <p>No posts yet. Check back soon.</p>
+    <p class="empty-message">No entries in the computational log yet.</p>
   </div>
 )}
 
 <style>
   .blog-list {
     display: grid;
-    gap: 2rem;
+    gap: 2.5rem;
     width: 100%;
+    position: relative;
   }
 
+  /* Single column - vertical flow emphasis */
   .blog-list[data-columns='1'] {
     grid-template-columns: 1fr;
+    max-width: 800px;
+    margin: 0 auto;
+    gap: 3rem;
   }
 
+  /* Two column - balanced layout */
   .blog-list[data-columns='2'] {
-    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+    gap: 2.5rem 2rem;
   }
 
+  /* Three column - masonry-inspired with asymmetry */
   .blog-list[data-columns='3'] {
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 2.5rem 2rem;
   }
 
+  /* Staggered reveal animation */
+  .blog-item {
+    opacity: 0;
+    transform: translateY(40px) scale(0.96);
+    filter: blur(8px);
+    animation: floatIn 0.8s var(--ease-smooth) forwards;
+    animation-delay: var(--stagger-delay);
+  }
+
+  @keyframes floatIn {
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      filter: blur(0);
+    }
+  }
+
+  /* Intersection observer class (added by JS) */
+  .blog-item.is-visible {
+    animation: floatIn 0.8s var(--ease-smooth) forwards;
+  }
+
+  /* Empty state - computational aesthetic */
   .empty-state {
     text-align: center;
-    padding: 4rem 2rem;
+    padding: 6rem 2rem;
+    position: relative;
   }
 
-  .empty-state p {
-    color: var(--highlight);
-    font-size: 1.125rem;
+  .empty-state::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(
+      circle,
+      rgba(166, 182, 194, 0.05) 0%,
+      transparent 70%
+    );
+    border-radius: 50%;
+    filter: blur(40px);
+    pointer-events: none;
+  }
+
+  .empty-message {
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9375rem;
     margin: 0;
+    letter-spacing: 0.02em;
+    opacity: 0.7;
+    position: relative;
+    z-index: 1;
   }
 
+  /* Responsive breakpoints */
   @media (max-width: 1024px) {
     .blog-list[data-columns='3'] {
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 2rem 1.5rem;
     }
   }
 
@@ -83,10 +144,35 @@ const { posts, columns = 3 } = Astro.props;
     .blog-list[data-columns='2'],
     .blog-list[data-columns='3'] {
       grid-template-columns: 1fr;
+      gap: 2rem;
     }
 
-    .blog-list {
-      gap: 1.5rem;
+    .blog-list[data-columns='1'] {
+      gap: 2rem;
+    }
+
+    .empty-state {
+      padding: 4rem 1.5rem;
+    }
+
+    .empty-state::before {
+      width: 150px;
+      height: 150px;
+    }
+  }
+
+  /* Reduce motion for accessibility */
+  @media (prefers-reduced-motion: reduce) {
+    .blog-item {
+      animation: fadeIn 0.4s ease forwards;
+      transform: none;
+      filter: none;
+    }
+
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+      }
     }
   }
 </style>
