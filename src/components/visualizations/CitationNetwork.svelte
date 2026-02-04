@@ -6,6 +6,7 @@
 
   import { onMount } from 'svelte';
   import * as d3 from 'd3';
+  import { d3Colors, d3TitleStyle, d3LegendStyle, d3Interaction, createColorScale } from '../../lib/d3-styles';
 
   export let papers: Array<{
     id: string;
@@ -93,7 +94,7 @@
     const colorScale = d3
       .scaleLinear<string>()
       .domain(yearExtent)
-      .range(['#445868', '#a6b6c2']);
+      .range([d3Colors.tertiary, d3Colors.primary]);
 
     // Size scale based on citations
     const sizeScale = d3
@@ -114,13 +115,13 @@
     gradient
       .append('stop')
       .attr('offset', '0%')
-      .attr('stop-color', '#627888')
+      .attr('stop-color', d3Colors.secondary)
       .attr('stop-opacity', 0.3);
 
     gradient
       .append('stop')
       .attr('offset', '100%')
-      .attr('stop-color', '#8498a6')
+      .attr('stop-color', d3Colors.accent)
       .attr('stop-opacity', 0.1);
 
     // Force simulation
@@ -168,7 +169,7 @@
       .append('circle')
       .attr('r', (d) => sizeScale(d.citationCount))
       .style('fill', (d) => colorScale(d.year))
-      .style('stroke', '#a6b6c2')
+      .style('stroke', d3Colors.primary)
       .style('stroke-width', 1.5)
       .style('cursor', 'pointer');
 
@@ -180,9 +181,34 @@
         d3.select(this)
           .select('circle')
           .transition()
-          .duration(200)
+          .duration(d3Interaction.transitionDuration)
           .style('stroke-width', 3)
-          .style('filter', 'drop-shadow(0 0 8px rgba(166, 182, 194, 0.6))');
+          .style('filter', `drop-shadow(0 0 8px ${d3Colors.primary}99)`);
+
+        // Dim unrelated nodes
+        const connectedIds = new Set<string>();
+        connectedIds.add(d.id);
+        links.forEach((l: any) => {
+          if (l.source === d.id || (l.source as any).id === d.id) {
+            connectedIds.add(typeof l.target === 'string' ? l.target : (l.target as any).id);
+          }
+          if (l.target === d.id || (l.target as any).id === d.id) {
+            connectedIds.add(typeof l.source === 'string' ? l.source : (l.source as any).id);
+          }
+        });
+
+        node.selectAll('circle')
+          .transition()
+          .duration(d3Interaction.transitionDuration)
+          .style('opacity', (n: any) => connectedIds.has(n.id) ? d3Interaction.activeOpacity : d3Interaction.dimmedOpacity);
+
+        link.transition()
+          .duration(d3Interaction.transitionDuration)
+          .style('opacity', (l: any) => {
+            const srcId = typeof l.source === 'string' ? l.source : l.source.id;
+            const tgtId = typeof l.target === 'string' ? l.target : l.target.id;
+            return srcId === d.id || tgtId === d.id ? 0.6 : 0.1;
+          });
 
         tooltip
           .style('opacity', 1)
@@ -205,9 +231,19 @@
         d3.select(this)
           .select('circle')
           .transition()
-          .duration(200)
+          .duration(d3Interaction.transitionDuration)
           .style('stroke-width', 1.5)
           .style('filter', 'none');
+
+        // Restore all nodes
+        node.selectAll('circle')
+          .transition()
+          .duration(d3Interaction.transitionDuration)
+          .style('opacity', d3Interaction.activeOpacity);
+
+        link.transition()
+          .duration(d3Interaction.transitionDuration)
+          .style('opacity', 0.4);
 
         tooltip.style('opacity', 0);
       });
@@ -247,10 +283,10 @@
       .attr('x', width / 2)
       .attr('y', 20)
       .attr('text-anchor', 'middle')
-      .style('fill', '#a6b6c2')
-      .style('font-family', 'Cormorant Garamond, serif')
-      .style('font-size', '18px')
-      .style('font-weight', '500')
+      .style('fill', d3TitleStyle.fill)
+      .style('font-family', d3TitleStyle.fontFamily)
+      .style('font-size', d3TitleStyle.fontSize)
+      .style('font-weight', d3TitleStyle.fontWeight)
       .text('Citation Network');
 
     // Legend
@@ -260,18 +296,20 @@
       .append('text')
       .attr('x', 0)
       .attr('y', 0)
-      .style('fill', '#8498a6')
-      .style('font-family', 'Inter, sans-serif')
-      .style('font-size', '11px')
+      .style('fill', d3LegendStyle.fill)
+      .style('font-family', d3LegendStyle.fontFamily)
+      .style('font-size', d3LegendStyle.fontSize)
+      .style('font-weight', d3LegendStyle.fontWeight)
       .text('Node size = citations');
 
     legend
       .append('text')
       .attr('x', 0)
       .attr('y', 15)
-      .style('fill', '#8498a6')
-      .style('font-family', 'Inter, sans-serif')
-      .style('font-size', '11px')
+      .style('fill', d3LegendStyle.fill)
+      .style('font-family', d3LegendStyle.fontFamily)
+      .style('font-size', d3LegendStyle.fontSize)
+      .style('font-weight', d3LegendStyle.fontWeight)
       .text('Color = year');
   }
 </script>
@@ -303,7 +341,7 @@
     align-items: center;
     justify-content: center;
     height: 100%;
-    color: var(--light);
+    color: var(--highlight);
   }
 
   .tooltip {
@@ -323,7 +361,7 @@
   .tooltip :global(.tooltip-title) {
     font-family: 'Cormorant Garamond', serif;
     font-size: 1rem;
-    color: var(--highlight);
+    color: var(--text-heading);
     margin-bottom: 0.5rem;
     line-height: 1.3;
   }
@@ -331,7 +369,7 @@
   .tooltip :global(.tooltip-meta) {
     display: flex;
     gap: 1rem;
-    color: var(--accent);
+    color: var(--text-body);
     font-size: 0.75rem;
   }
 

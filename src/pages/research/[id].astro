@@ -116,13 +116,6 @@ const Content = isLocal ? (await paper.render()).Content : null;
 
     {isVerificationReversal && (
       <section class="paper-visualization">
-        <h2>Interactive Demonstration</h2>
-        <p class="viz-description">
-          This visualization demonstrates <strong>Proposition 1</strong> from the paper: 
-          when verification cost exceeds forwarding cost by more than the expected benefit, 
-          rational agents enter a cascade equilibrium where they forward artifacts regardless 
-          of private beliefs.
-        </p>
         <VerificationCascade client:load width={760} height={500} />
       </section>
     )}
@@ -143,9 +136,9 @@ const Content = isLocal ? (await paper.render()).Content : null;
   .paper-detail {
     max-width: 800px;
     margin: 0 auto;
-    background: rgba(68, 88, 104, 0.1);
+    background: rgba(42, 56, 68, 0.85);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(166, 182, 194, 0.2);
+    border: 1px solid rgba(166, 182, 194, 0.5);
     border-radius: 12px;
     padding: 3rem;
   }
@@ -171,7 +164,7 @@ const Content = isLocal ? (await paper.render()).Content : null;
     align-items: center;
     gap: 1rem;
     font-size: 0.875rem;
-    color: var(--accent);
+    color: var(--highlight);
     margin-bottom: 1rem;
   }
 
@@ -188,7 +181,7 @@ const Content = isLocal ? (await paper.render()).Content : null;
 
   .paper-authors {
     font-size: 1rem;
-    color: var(--light);
+    color: var(--highlight);
     margin: 0 0 1.5rem 0;
   }
 
@@ -198,7 +191,7 @@ const Content = isLocal ? (await paper.render()).Content : null;
   }
 
   .paper-link {
-    color: var(--accent);
+    color: var(--highlight);
     text-decoration: none;
     font-size: 0.9375rem;
     transition: color 0.2s ease;
@@ -221,13 +214,13 @@ const Content = isLocal ? (await paper.render()).Content : null;
   }
 
   .paper-abstract p {
-    color: var(--light);
+    color: var(--highlight);
     line-height: 1.8;
     font-size: 1.0625rem;
   }
 
   .paper-content {
-    color: var(--light);
+    color: var(--highlight);
     line-height: 1.8;
     font-size: 1.0625rem;
   }
@@ -247,7 +240,7 @@ const Content = isLocal ? (await paper.render()).Content : null;
   }
 
   .paper-visualization .viz-description {
-    color: var(--light);
+    color: var(--highlight);
     line-height: 1.7;
     margin-bottom: 2rem;
     font-size: 1rem;
@@ -264,7 +257,7 @@ const Content = isLocal ? (await paper.render()).Content : null;
   }
 
   .back-link {
-    color: var(--accent);
+    color: var(--highlight);
     text-decoration: none;
     font-size: 0.9375rem;
     transition: color 0.2s ease;

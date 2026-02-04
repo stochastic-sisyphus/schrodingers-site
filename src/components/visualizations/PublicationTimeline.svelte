@@ -6,6 +6,7 @@
 
   import { onMount } from 'svelte';
   import * as d3 from 'd3';
+  import { d3Colors, d3TitleStyle, d3AxisLabelStyle, d3TextStyle, d3Interaction } from '../../lib/d3-styles';
 
   export let publications: Array<{
     id: string;
@@ -92,17 +93,17 @@
     gradient
       .append('stop')
       .attr('offset', '0%')
-      .attr('stop-color', '#445868');
+      .attr('stop-color', d3Colors.tertiary);
 
     gradient
       .append('stop')
       .attr('offset', '50%')
-      .attr('stop-color', '#627888');
+      .attr('stop-color', d3Colors.secondary);
 
     gradient
       .append('stop')
       .attr('offset', '100%')
-      .attr('stop-color', '#8498a6');
+      .attr('stop-color', d3Colors.accent);
 
     // Axes
     const xAxis = d3
@@ -117,24 +118,24 @@
       .attr('transform', `translate(0,${innerHeight})`)
       .call(xAxis)
       .selectAll('text')
-      .style('fill', '#8498a6')
-      .style('font-family', 'Inter, sans-serif')
-      .style('font-size', '12px');
+      .style('fill', d3TextStyle.fill)
+      .style('font-family', d3TextStyle.fontFamily)
+      .style('font-size', d3TextStyle.fontSize);
 
     g.append('g')
       .attr('class', 'y-axis')
       .call(yAxis)
       .selectAll('text')
-      .style('fill', '#8498a6')
-      .style('font-family', 'Inter, sans-serif')
-      .style('font-size', '12px');
+      .style('fill', d3TextStyle.fill)
+      .style('font-family', d3TextStyle.fontFamily)
+      .style('font-size', d3TextStyle.fontSize);
 
     // Style axis lines
     g.selectAll('.x-axis path, .y-axis path')
-      .style('stroke', 'rgba(166, 182, 194, 0.2)');
+      .style('stroke', `${d3Colors.primary}33`);
 
     g.selectAll('.x-axis line, .y-axis line')
-      .style('stroke', 'rgba(166, 182, 194, 0.1)');
+      .style('stroke', `${d3Colors.primary}1a`);
 
     // Area chart
     const area = d3
@@ -174,23 +175,28 @@
     // Data points
     const tooltip = d3.select(tooltipElement);
 
-    g.selectAll('.point')
+    const points = g.selectAll('.point')
       .data(areaData)
       .join('circle')
       .attr('class', 'point')
       .attr('cx', (d) => xScale(d[0]))
       .attr('cy', (d) => yScale(d[1]))
       .attr('r', 4)
-      .style('fill', '#a6b6c2')
-      .style('stroke', '#627888')
+      .style('fill', d3Colors.primary)
+      .style('stroke', d3Colors.secondary)
       .style('stroke-width', 2)
       .style('cursor', 'pointer')
       .on('mouseenter', function (event, d) {
         d3.select(this)
           .transition()
-          .duration(200)
+          .duration(d3Interaction.transitionDuration)
           .attr('r', 6)
-          .style('fill', '#8498a6');
+          .style('fill', d3Colors.accent);
+
+        // Dim other points
+        points.transition()
+          .duration(d3Interaction.transitionDuration)
+          .style('opacity', function() { return this === event.currentTarget ? d3Interaction.activeOpacity : d3Interaction.dimmedOpacity; });
 
         const yearPubs = publications.filter((p) => p.year === d[0]);
 
@@ -215,9 +221,14 @@
       .on('mouseleave', function () {
         d3.select(this)
           .transition()
-          .duration(200)
+          .duration(d3Interaction.transitionDuration)
           .attr('r', 4)
-          .style('fill', '#a6b6c2');
+          .style('fill', d3Colors.primary);
+
+        // Restore all points
+        points.transition()
+          .duration(d3Interaction.transitionDuration)
+          .style('opacity', d3Interaction.activeOpacity);
 
         tooltip.style('opacity', 0);
       });
@@ -227,19 +238,19 @@
       .attr('x', innerWidth / 2)
       .attr('y', -10)
       .attr('text-anchor', 'middle')
-      .style('fill', '#a6b6c2')
-      .style('font-family', 'Cormorant Garamond, serif')
-      .style('font-size', '18px')
-      .style('font-weight', '500')
+      .style('fill', d3TitleStyle.fill)
+      .style('font-family', d3TitleStyle.fontFamily)
+      .style('font-size', d3TitleStyle.fontSize)
+      .style('font-weight', d3TitleStyle.fontWeight)
       .text('Publication Timeline');
 
     g.append('text')
       .attr('x', innerWidth / 2)
       .attr('y', innerHeight + 45)
       .attr('text-anchor', 'middle')
-      .style('fill', '#8498a6')
-      .style('font-family', 'Inter, sans-serif')
-      .style('font-size', '12px')
+      .style('fill', d3AxisLabelStyle.fill)
+      .style('font-family', d3AxisLabelStyle.fontFamily)
+      .style('font-size', d3AxisLabelStyle.fontSize)
       .text('Year');
 
     g.append('text')
@@ -247,9 +258,9 @@
       .attr('x', -innerHeight / 2)
       .attr('y', -40)
       .attr('text-anchor', 'middle')
-      .style('fill', '#8498a6')
-      .style('font-family', 'Inter, sans-serif')
-      .style('font-size', '12px')
+      .style('fill', d3AxisLabelStyle.fill)
+      .style('font-family', d3AxisLabelStyle.fontFamily)
+      .style('font-size', d3AxisLabelStyle.fontSize)
       .text('Publications');
   }
 </script>
@@ -281,7 +292,7 @@
     align-items: center;
     justify-content: center;
     height: 100%;
-    color: var(--light);
+    color: var(--highlight);
   }
 
   .tooltip {
@@ -301,19 +312,19 @@
   .tooltip :global(.tooltip-year) {
     font-family: 'Cormorant Garamond', serif;
     font-size: 1.25rem;
-    color: var(--highlight);
+    color: var(--text-heading);
     margin-bottom: 0.25rem;
   }
 
   .tooltip :global(.tooltip-count) {
-    color: var(--accent);
+    color: var(--text-body);
     font-size: 0.875rem;
     margin-bottom: 0.5rem;
   }
 
   .tooltip :global(.tooltip-titles) {
     font-size: 0.75rem;
-    color: var(--light);
+    color: var(--text-body);
     line-height: 1.4;
   }
 

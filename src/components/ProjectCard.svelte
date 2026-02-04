@@ -62,9 +62,9 @@
 
 <style>
   .project-card {
-    background: rgba(68, 88, 104, 0.1);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(166, 182, 194, 0.2);
+    background: var(--depth-2);
+    backdrop-filter: var(--blur-medium);
+    border: 1px solid rgba(166, 182, 194, 0.5);
     border-radius: 12px;
     padding: 2rem;
     text-decoration: none;
@@ -75,7 +75,8 @@
     min-height: 250px;
     position: relative;
     overflow: hidden;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--shadow-medium);
+    transition: all var(--duration-short) var(--ease-smooth);
   }
 
   .project-card::before {
@@ -84,20 +85,19 @@
     inset: 0;
     background: linear-gradient(
       135deg,
-      rgba(166, 182, 194, 0.05) 0%,
+      rgba(166, 182, 194, 0.1) 0%,
       transparent 50%
     );
     opacity: 0;
-    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: opacity var(--duration-short) var(--ease-smooth);
     pointer-events: none;
   }
 
   .project-card:hover {
-    background: rgba(68, 88, 104, 0.15);
-    border-color: rgba(166, 182, 194, 0.35);
-    transform: translateY(-4px) scale(1.01);
-    box-shadow: 0 8px 32px rgba(20, 26, 32, 0.4),
-      0 0 0 1px rgba(166, 182, 194, 0.1);
+    background: var(--depth-2);
+    border-color: rgba(166, 182, 194, 0.7);
+    transform: translateY(-6px);
+    filter: drop-shadow(var(--shadow-deep));
   }
 
   .project-card:hover::before {
@@ -105,20 +105,19 @@
   }
 
   .project-card:active {
-    transform: translateY(-2px) scale(1.005);
+    transform: translateY(-2px);
   }
 
   .project-card.featured {
-    background: rgba(68, 88, 104, 0.15);
-    border-color: rgba(166, 182, 194, 0.3);
-    box-shadow: 0 4px 16px rgba(20, 26, 32, 0.2);
+    background: var(--depth-3);
+    border-color: rgba(166, 182, 194, 0.6);
+    box-shadow: var(--shadow-deep);
   }
 
   .project-card.featured:hover {
-    background: rgba(68, 88, 104, 0.2);
-    border-color: rgba(166, 182, 194, 0.45);
-    box-shadow: 0 12px 40px rgba(20, 26, 32, 0.5),
-      0 0 0 1px rgba(166, 182, 194, 0.15);
+    background: var(--depth-3);
+    border-color: rgba(166, 182, 194, 0.8);
+    filter: drop-shadow(var(--shadow-deep));
   }
 
   .card-header {
@@ -129,18 +128,18 @@
   }
 
   .project-name {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Cormorant Garamond', serif;
     font-size: 1.25rem;
     font-weight: 500;
     color: var(--highlight);
     margin: 0;
     word-break: break-word;
     line-height: 1.4;
-    transition: color 0.3s ease;
+    transition: color var(--duration-short) var(--ease-smooth);
   }
 
   .project-card:hover .project-name {
-    color: #c2d0dc;
+    color: var(--text-heading);
   }
 
   .featured-badge {
@@ -148,13 +147,13 @@
     background: rgba(166, 182, 194, 0.2);
     border-radius: 6px;
     font-size: 0.6875rem;
-    color: var(--accent);
+    color: var(--highlight);
     white-space: nowrap;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     font-weight: 600;
     border: 1px solid rgba(166, 182, 194, 0.15);
-    transition: all 0.3s ease;
+    transition: all var(--duration-short) var(--ease-smooth);
   }
 
   .project-card.featured:hover .featured-badge {
@@ -164,7 +163,7 @@
   }
 
   .project-description {
-    color: var(--light);
+    color: var(--highlight);
     line-height: 1.6;
     margin: 0;
     flex-grow: 1;
@@ -176,7 +175,7 @@
     flex-wrap: wrap;
     align-items: center;
     gap: 1rem;
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
     color: var(--accent);
     padding-top: 0.5rem;
     border-top: 1px solid rgba(166, 182, 194, 0.1);
@@ -186,7 +185,7 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Inter', sans-serif;
     font-size: 0.8125rem;
   }
 
@@ -217,12 +216,14 @@
     background: rgba(166, 182, 194, 0.1);
     border-radius: 4px;
     font-size: 0.75rem;
-    color: var(--accent);
-    font-family: 'JetBrains Mono', monospace;
+    color: var(--highlight);
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
     border: 1px solid rgba(166, 182, 194, 0.05);
     text-decoration: none;
     cursor: pointer;
-    transition: all 0.3s ease;
+    opacity: 0.8;
+    transition: all var(--duration-short) var(--ease-smooth);
     position: relative;
     z-index: 2;
   }

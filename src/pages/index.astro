@@ -62,7 +62,11 @@ const keyResearch = allResearch
     <!-- Hero Section -->
     <section class="hero" aria-label="Site introduction">
       <h1 class="identity">stochastic-sisyphus</h1>
-      <p class="tagline">computational atmospheres</p>
+      <nav class="hero-nav">
+        <a href="/projects">projects</a>
+        <a href="/blog">writing</a>
+        <a href="/research">research</a>
+      </nav>
     </section>
 
     <!-- Content Zones -->
@@ -72,7 +76,6 @@ const keyResearch = allResearch
         <section class="content-zone" data-zone="projects">
           <header class="zone-header">
             <h2 class="zone-title">Featured Work</h2>
-            <p class="zone-subtitle">Selected projects exploring computational systems</p>
           </header>
           <div class="content-grid">
             {featuredRepos.map((repo) => (
@@ -90,7 +93,6 @@ const keyResearch = allResearch
         <section class="content-zone" data-zone="blog">
           <header class="zone-header">
             <h2 class="zone-title">Recent Writing</h2>
-            <p class="zone-subtitle">Explorations in code, systems, and emergence</p>
           </header>
           <div class="content-grid">
             {recentPosts.map((post) => (
@@ -153,35 +155,80 @@ const keyResearch = allResearch
   .hero {
     position: relative;
     z-index: 1;
-    pointer-events: none;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
   }
 
   .identity {
-    position: fixed;
-    bottom: 15%;
-    left: 8%;
     font-family: 'Cormorant Garamond', Georgia, serif;
-    font-size: clamp(14px, 2vw, 18px);
+    font-size: clamp(3rem, 8vw, 6rem);
     font-weight: 300;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.02em;
     color: var(--highlight);
     opacity: 0;
-    animation: fadeIn 1s ease-out 2s forwards;
-    z-index: 10;
+    animation: fadeIn 1.5s ease-out 0.5s forwards;
+    margin: 0;
+    text-align: center;
+    text-shadow: 0 2px 12px rgba(20, 26, 32, 0.9);
+  }
+
+  .hero-nav {
+    display: flex;
+    gap: 3rem;
+    opacity: 0;
+    animation: fadeIn 1.5s ease-out 1.2s forwards;
+  }
+
+  .hero-nav a {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: var(--highlight);
+    text-decoration: none;
+    letter-spacing: 0.03em;
+    transition: color 0.3s ease;
+    position: relative;
+  }
+
+  .hero-nav a::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--highlight);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+  }
+
+  .hero-nav a:hover {
+    color: var(--highlight);
+  }
+
+  .hero-nav a:hover::after {
+    transform: scaleX(1);
   }
 
   @keyframes fadeIn {
     from {
       opacity: 0;
+      transform: translateY(20px);
     }
     to {
-      opacity: 0.6;
+      opacity: 1;
+      transform: translateY(0);
     }
   }
 
   /* Enable pointer events on content zones */
   .content-zones {
     pointer-events: auto;
+    padding-top: 4rem;
   }
 
   /* Make links and interactive elements accessible */
@@ -192,8 +239,17 @@ const keyResearch = allResearch
 
   @media (max-width: 768px) {
     .identity {
-      left: 5%;
-      bottom: 10%;
+      font-size: 2.5rem;
+    }
+
+    .hero-nav {
+      gap: 2rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .hero-nav a {
+      font-size: 1rem;
     }
   }
 </style>

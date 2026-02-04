@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import * as d3 from 'd3';
   import type { TreeNode } from '../../lib/visualizations/code-analyzer';
+  import { d3Colors, d3CodeTextStyle, applyTooltipStyles, d3Interaction, createColorScale } from '../../lib/d3-styles';
 
   export let data: TreeNode;
 
@@ -55,7 +56,7 @@
     // Color scale by depth
     const colorScale = d3.scaleOrdinal<number, string>()
       .domain([0, 1, 2, 3, 4])
-      .range(['#a6b6c2', '#8498a6', '#627888', '#445868', '#2a3844']);
+      .range([d3Colors.primary, d3Colors.accent, d3Colors.secondary, d3Colors.tertiary, d3Colors.base]);
 
     // Draw links
     g.selectAll('.link')
@@ -67,7 +68,7 @@
         .y(d => d.x)
       )
       .attr('fill', 'none')
-      .attr('stroke', '#445868')
+      .attr('stroke', d3Colors.tertiary)
       .attr('stroke-opacity', 0.4)
       .attr('stroke-width', 1.5);
 
@@ -86,27 +87,69 @@
         return 4;
       })
       .attr('fill', d => colorScale(d.depth))
-      .attr('stroke', '#a6b6c2')
+      .attr('stroke', d3Colors.primary)
       .attr('stroke-width', 1)
       .attr('stroke-opacity', 0.6)
       .style('cursor', d => d.children ? 'pointer' : 'default')
       .on('mouseenter', function(event, d) {
         d3.select(this)
           .transition()
-          .duration(200)
+          .duration(d3Interaction.transitionDuration)
           .attr('r', d.depth === 0 ? 10 : d.children ? 8 : 6)
           .attr('stroke-width', 2)
           .attr('stroke-opacity', 1);
+
+        // Dim unrelated nodes - highlight ancestors and descendants
+        const related = new Set<any>();
+        let current: any = d;
+        while (current) {
+          related.add(current);
+          current = current.parent;
+        }
+        if (d.descendants) {
+          d.descendants().forEach((desc: any) => related.add(desc));
+        }
+
+        node.selectAll('circle')
+          .transition()
+          .duration(d3Interaction.transitionDuration)
+          .style('opacity', (n: any) => related.has(n) ? d3Interaction.activeOpacity : d3Interaction.dimmedOpacity);
+
+        node.selectAll('text')
+          .transition()
+          .duration(d3Interaction.transitionDuration)
+          .style('opacity', (n: any) => related.has(n) ? 0.85 : d3Interaction.hoverDimmedOpacity);
+
+        g.selectAll('.link')
+          .transition()
+          .duration(d3Interaction.transitionDuration)
+          .attr('stroke-opacity', (l: any) => related.has(l.source) && related.has(l.target) ? 0.6 : 0.1);
 
         showTooltip(event, d);
       })
       .on('mouseleave', function(event, d) {
         d3.select(this)
           .transition()
-          .duration(200)
+          .duration(d3Interaction.transitionDuration)
           .attr('r', d.depth === 0 ? 8 : d.children ? 6 : 4)
           .attr('stroke-width', 1)
           .attr('stroke-opacity', 0.6);
+
+        // Restore all nodes
+        node.selectAll('circle')
+          .transition()
+          .duration(d3Interaction.transitionDuration)
+          .style('opacity', d3Interaction.activeOpacity);
+
+        node.selectAll('text')
+          .transition()
+          .duration(d3Interaction.transitionDuration)
+          .style('opacity', 0.85);
+
+        g.selectAll('.link')
+          .transition()
+          .duration(d3Interaction.transitionDuration)
+          .attr('stroke-opacity', 0.4);
 
         hideTooltip();
       });
@@ -116,9 +159,11 @@
       .attr('dy', 3)
       .attr('x', d => d.children ? -12 : 12)
       .style('text-anchor', d => d.children ? 'end' : 'start')
-      .attr('fill', '#a6b6c2')
-      .attr('font-size', 11)
+      .attr('fill', d3CodeTextStyle.fill)
+      .attr('font-size', d3CodeTextStyle.fontSize)
+      .attr('font-family', d3CodeTextStyle.fontFamily)
       .style('user-select', 'none')
+      .style('opacity', 0.85)
       .text(d => {
         const name = d.data.name;
         // Truncate long names
@@ -129,20 +174,12 @@
   function showTooltip(event: MouseEvent, d: d3.HierarchyPointNode<TreeNode>) {
     const tooltip = d3.select(container)
       .append('div')
-      .attr('class', 'tooltip')
-      .style('position', 'absolute')
+      .attr('class', 'tooltip');
+
+    applyTooltipStyles(tooltip)
       .style('left', `${event.offsetX + 10}px`)
       .style('top', `${event.offsetY + 10}px`)
-      .style('background', 'rgba(42, 56, 68, 0.95)')
-      .style('color', '#a6b6c2')
-      .style('padding', '8px 12px')
-      .style('border-radius', '6px')
-      .style('font-size', '12px')
-      .style('pointer-events', 'none')
-      .style('border', '1px solid rgba(166, 182, 194, 0.3)')
-      .style('backdrop-filter', 'blur(10px)')
-      .style('z-index', '1000')
-      .style('max-width', '300px');
+      .style('font-family', d3CodeTextStyle.fontFamily);
 
     let content = `<div><strong>${d.data.name}</strong></div>`;
 

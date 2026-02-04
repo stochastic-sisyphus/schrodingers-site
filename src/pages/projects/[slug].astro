@@ -251,9 +251,9 @@ const techStack = repo.topics.length > 0
   }
 
   .project-header {
-    background: rgba(68, 88, 104, 0.1);
+    background: rgba(42, 56, 68, 0.9);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(166, 182, 194, 0.2);
+    border: 1px solid rgba(166, 182, 194, 0.4);
     border-radius: 12px;
     padding: 3rem;
     margin-bottom: 2rem;
@@ -270,7 +270,7 @@ const techStack = repo.topics.length > 0
 
   .project-description {
     font-size: 1.125rem;
-    color: var(--light);
+    color: var(--highlight);
     line-height: 1.6;
     margin: 0 0 1.5rem 0;
   }
@@ -281,7 +281,7 @@ const techStack = repo.topics.length > 0
     align-items: center;
     gap: 1.5rem;
     font-size: 0.9375rem;
-    color: var(--accent);
+    color: var(--highlight);
     margin-bottom: 1.5rem;
   }
 
@@ -310,7 +310,7 @@ const techStack = repo.topics.length > 0
     background: rgba(166, 182, 194, 0.1);
     border-radius: 4px;
     font-size: 0.75rem;
-    color: var(--accent);
+    color: var(--highlight);
   }
 
   .project-links {
@@ -319,7 +319,7 @@ const techStack = repo.topics.length > 0
   }
 
   .project-link {
-    color: var(--accent);
+    color: var(--highlight);
     text-decoration: none;
     font-size: 1rem;
     transition: color 0.2s ease;
@@ -330,9 +330,9 @@ const techStack = repo.topics.length > 0
   }
 
   .readme-section {
-    background: rgba(68, 88, 104, 0.1);
+    background: rgba(42, 56, 68, 0.9);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(166, 182, 194, 0.2);
+    border: 1px solid rgba(166, 182, 194, 0.4);
     border-radius: 12px;
     padding: 3rem;
     margin-bottom: 2rem;
@@ -347,41 +347,79 @@ const techStack = repo.topics.length > 0
   }
 
   .readme-content {
-    color: var(--light);
+    color: var(--highlight);
     line-height: 1.8;
   }
 
-  .readme-content :global(h1),
-  .readme-content :global(h2),
-  .readme-content :global(h3) {
+  .readme-content h1,
+  .readme-content h2,
+  .readme-content h3,
+  .readme-content h4,
+  .readme-content h5,
+  .readme-content h6 {
     font-family: 'Cormorant Garamond', serif;
     color: var(--highlight);
     margin: 2rem 0 1rem;
   }
 
-  .readme-content :global(code) {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.9em;
-    background: rgba(166, 182, 194, 0.1);
-    padding: 0.2em 0.4em;
-    border-radius: 3px;
+  .readme-content h1 { font-size: 2rem; }
+  .readme-content h2 { font-size: 1.75rem; }
+  .readme-content h3 { font-size: 1.5rem; }
+
+  .readme-content p {
+    margin-bottom: 1rem;
   }
 
-  .readme-content :global(pre) {
-    background: rgba(20, 26, 32, 0.6);
-    border: 1px solid rgba(166, 182, 194, 0.2);
+  .readme-content ul,
+  .readme-content ol {
+    margin-bottom: 1rem;
+    padding-left: 2rem;
+  }
+
+  .readme-content li {
+    margin-bottom: 0.5rem;
+  }
+
+  .readme-content code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9em;
+    background: rgba(20, 26, 32, 0.8);
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    color: var(--accent);
+  }
+
+  .readme-content pre {
+    background: rgba(20, 26, 32, 0.9);
+    border: 1px solid rgba(166, 182, 194, 0.3);
     border-radius: 8px;
     padding: 1.5rem;
     overflow-x: auto;
+    margin-bottom: 1rem;
   }
 
-  .readme-content :global(a) {
+  .readme-content pre code {
+    background: none;
+    padding: 0;
+    color: var(--highlight);
+  }
+
+  .readme-content a {
     color: var(--accent);
     transition: color 0.2s ease;
+    text-decoration: underline;
   }
 
-  .readme-content :global(a:hover) {
+  .readme-content a:hover {
     color: var(--highlight);
+  }
+
+  .readme-content blockquote {
+    border-left: 3px solid var(--accent);
+    padding-left: 1.5rem;
+    margin: 1.5rem 0;
+    font-style: italic;
+    opacity: 0.9;
   }
 
   .project-footer {
@@ -389,7 +427,7 @@ const techStack = repo.topics.length > 0
   }
 
   .back-link {
-    color: var(--accent);
+    color: var(--highlight);
     text-decoration: none;
     font-size: 0.9375rem;
     transition: color 0.2s ease;
@@ -420,17 +458,18 @@ const techStack = repo.topics.length > 0
   }
 
   .visualization-container {
-    background: rgba(68, 88, 104, 0.1);
+    background: rgba(42, 56, 68, 0.9);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(166, 182, 194, 0.2);
+    border: 1px solid rgba(166, 182, 194, 0.4);
     border-radius: 12px;
     padding: 2rem;
     transition: all 0.3s ease;
+    overflow: visible;
   }
 
   .visualization-container:hover {
-    border-color: rgba(166, 182, 194, 0.4);
-    box-shadow: 0 8px 32px rgba(20, 26, 32, 0.3);
+    border-color: rgba(166, 182, 194, 0.6);
+    box-shadow: 0 8px 32px rgba(20, 26, 32, 0.5);
   }
 
   .visualization-container h3 {
@@ -442,7 +481,7 @@ const techStack = repo.topics.length > 0
 
   .viz-description {
     font-size: 0.9375rem;
-    color: var(--accent);
+    color: var(--highlight);
     margin: 0 0 1.5rem 0;
     line-height: 1.5;
   }
@@ -473,7 +512,7 @@ const techStack = repo.topics.length > 0
 
   .metric-label {
     font-size: 0.875rem;
-    color: var(--accent);
+    color: var(--highlight);
     margin-top: 0.5rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -495,7 +534,7 @@ const techStack = repo.topics.length > 0
 
   .language-name {
     font-size: 0.9375rem;
-    color: var(--light);
+    color: var(--highlight);
     font-family: 'JetBrains Mono', monospace;
   }
 
@@ -515,7 +554,7 @@ const techStack = repo.topics.length > 0
 
   .language-percent {
     font-size: 0.875rem;
-    color: var(--accent);
+    color: var(--highlight);
     text-align: right;
     font-family: 'JetBrains Mono', monospace;
   }
@@ -537,7 +576,7 @@ const techStack = repo.topics.length > 0
 
   .stat-label {
     font-size: 0.875rem;
-    color: var(--accent);
+    color: var(--highlight);
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
@@ -551,7 +590,7 @@ const techStack = repo.topics.length > 0
 
   .stat-detail {
     font-size: 0.875rem;
-    color: var(--light);
+    color: var(--highlight);
   }
 
   @media (max-width: 768px) {

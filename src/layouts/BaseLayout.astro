@@ -8,6 +8,9 @@ import ShaderGradient from '@/components/ShaderGradient.astro';
 import Atmosphere from '@/components/Atmosphere.astro';
 import '@/styles/global.css';
 
+const currentPath = Astro.url.pathname;
+const isHome = currentPath === '/';
+
 interface Props {
   title?: string;
   description?: string;
@@ -61,6 +64,8 @@ const canonicalURL = Astro.site ? new URL(Astro.url.pathname, Astro.site) : null
     <!-- Skip to main content for keyboard navigation -->
     <a href="#main-content" class="skip-to-content">Skip to main content</a>
 
+    <!-- Minimal nav only on non-home pages -->
+
     <!-- Atmospheric background layers -->
     <div class="atmosphere-container" aria-hidden="true">
       <ShaderGradient />
@@ -113,4 +118,11 @@ const canonicalURL = Astro.site ? new URL(Astro.url.pathname, Astro.site) : null
     z-index: 0;
     pointer-events: none;
   }
+
+  #main-content {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+  }
+  
 </style>

@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import * as d3 from 'd3';
   import type { Contributor } from '../../lib/types';
+  import { d3Colors, d3TextStyle, applyTooltipStyles, d3Interaction, createColorScale } from '../../lib/d3-styles';
 
   export let data: Contributor[] | { name: string; value: number }[];
   export let type: 'contributors' | 'technologies' = 'contributors';
@@ -89,7 +90,7 @@
       .selectAll('line')
       .data(edges)
       .join('line')
-      .attr('stroke', '#445868')
+      .attr('stroke', d3Colors.tertiary)
       .attr('stroke-opacity', 0.4)
       .attr('stroke-width', 2);
 
@@ -101,33 +102,74 @@
       .call(drag(simulation) as any);
 
     // Node circles
+    const colorScaleFn = createColorScale(nodes.length);
     node.append('circle')
       .attr('r', d => d.size)
-      .attr('fill', (d, i) => {
-        const colors = ['#8498a6', '#627888', '#445868', '#a6b6c2', '#2a3844'];
-        return colors[i % colors.length];
-      })
-      .attr('stroke', '#a6b6c2')
+      .attr('fill', (d, i) => colorScaleFn(i))
+      .attr('stroke', d3Colors.primary)
       .attr('stroke-width', 1.5)
       .attr('stroke-opacity', 0.6)
       .style('cursor', 'pointer')
       .on('mouseenter', function(event, d) {
         d3.select(this)
           .transition()
-          .duration(200)
+          .duration(d3Interaction.transitionDuration)
           .attr('r', d.size * 1.2)
           .attr('stroke-width', 2.5)
           .attr('stroke-opacity', 1);
+
+        // Dim unrelated nodes
+        const connectedIds = new Set<string>();
+        connectedIds.add(d.id);
+        edges.forEach(edge => {
+          const src = typeof edge.source === 'string' ? edge.source : (edge.source as any).id;
+          const tgt = typeof edge.target === 'string' ? edge.target : (edge.target as any).id;
+          if (src === d.id) connectedIds.add(tgt);
+          if (tgt === d.id) connectedIds.add(src);
+        });
+
+        node.selectAll('circle')
+          .transition()
+          .duration(d3Interaction.transitionDuration)
+          .style('opacity', (n: any) => connectedIds.has(n.id) ? d3Interaction.activeOpacity : d3Interaction.dimmedOpacity);
+
+        node.selectAll('text')
+          .transition()
+          .duration(d3Interaction.transitionDuration)
+          .style('opacity', (n: any) => connectedIds.has(n.id) ? 0.8 : d3Interaction.hoverDimmedOpacity);
+
+        link.transition()
+          .duration(d3Interaction.transitionDuration)
+          .attr('stroke-opacity', (e: any) => {
+            const src = typeof e.source === 'string' ? e.source : e.source.id;
+            const tgt = typeof e.target === 'string' ? e.target : e.target.id;
+            return src === d.id || tgt === d.id ? 0.8 : 0.1;
+          });
 
         showTooltip(event, d);
       })
       .on('mouseleave', function(event, d) {
         d3.select(this)
           .transition()
-          .duration(200)
+          .duration(d3Interaction.transitionDuration)
           .attr('r', d.size)
           .attr('stroke-width', 1.5)
           .attr('stroke-opacity', 0.6);
+
+        // Restore all nodes
+        node.selectAll('circle')
+          .transition()
+          .duration(d3Interaction.transitionDuration)
+          .style('opacity', d3Interaction.activeOpacity);
+
+        node.selectAll('text')
+          .transition()
+          .duration(d3Interaction.transitionDuration)
+          .style('opacity', 0.8);
+
+        link.transition()
+          .duration(d3Interaction.transitionDuration)
+          .attr('stroke-opacity', 0.4);
 
         hideTooltip();
       });
@@ -135,12 +177,14 @@
     // Node labels
     node.append('text')
       .text(d => d.label.length > 15 ? d.label.substring(0, 12) + '...' : d.label)
-      .attr('font-size', 11)
-      .attr('fill', '#a6b6c2')
+      .attr('font-size', d3TextStyle.fontSize)
+      .attr('fill', d3TextStyle.fill)
+      .attr('font-family', d3TextStyle.fontFamily)
       .attr('text-anchor', 'middle')
       .attr('dy', d => d.size + 18)
       .style('pointer-events', 'none')
-      .style('user-select', 'none');
+      .style('user-select', 'none')
+      .style('opacity', 0.8);
 
     // Update positions on simulation tick
     simulation.on('tick', () => {
@@ -181,19 +225,11 @@
   function showTooltip(event: MouseEvent, d: NetworkNode) {
     const tooltip = d3.select(container)
       .append('div')
-      .attr('class', 'tooltip')
-      .style('position', 'absolute')
+      .attr('class', 'tooltip');
+
+    applyTooltipStyles(tooltip)
       .style('left', `${event.offsetX + 10}px`)
-      .style('top', `${event.offsetY + 10}px`)
-      .style('background', 'rgba(42, 56, 68, 0.95)')
-      .style('color', '#a6b6c2')
-      .style('padding', '8px 12px')
-      .style('border-radius', '6px')
-      .style('font-size', '12px')
-      .style('pointer-events', 'none')
-      .style('border', '1px solid rgba(166, 182, 194, 0.3)')
-      .style('backdrop-filter', 'blur(10px)')
-      .style('z-index', '1000');
+      .style('top', `${event.offsetY + 10}px`);
 
     tooltip.html(`
       <div><strong>${d.label}</strong></div>

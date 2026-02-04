@@ -21,6 +21,7 @@ const {
 
 <BaseLayout title={title} description={description}>
   <main class="content-wrapper" style={`max-width: ${maxWidth}`}>
+    <a href="/" class="back-link">←</a>
     <slot />
   </main>
 </BaseLayout>
@@ -30,13 +31,28 @@ const {
     position: relative;
     z-index: 2;
     margin: 0 auto;
-    padding: 8rem 2rem 4rem;
+    padding: 2rem 2rem 4rem;
     min-height: 100vh;
+  }
+
+  .back-link {
+    display: inline-block;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.125rem;
+    color: var(--highlight);
+    text-decoration: none;
+    margin-bottom: 3rem;
+    transition: color 0.2s ease;
+    letter-spacing: 0.02em;
+  }
+
+  .back-link:hover {
+    color: var(--highlight);
   }
 
   @media (max-width: 768px) {
     .content-wrapper {
-      padding: 6rem 1.5rem 3rem;
+      padding: 2rem 1.5rem 3rem;
     }
   }
 </style>

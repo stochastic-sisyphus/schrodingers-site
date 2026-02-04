@@ -8,6 +8,36 @@
   --light:     #627888;
   --accent:    #8498a6;
   --highlight: #a6b6c2;   /* lightest - text, glows */
+
+  --text-body: #d4dde4;
+  --text-heading: #e8f0f5;
+
+  /* Depth layers - increasing visual weight */
+  --depth-surface: rgba(42, 56, 68, 0.6);      /* Lightest, most transparent */
+  --depth-1: rgba(42, 56, 68, 0.75);           /* Light cards - Blog */
+  --depth-2: rgba(42, 56, 68, 0.85);           /* Medium cards - Projects */
+  --depth-3: rgba(42, 56, 68, 0.92);           /* Heavy cards - Research */
+
+  /* Shadow hierarchy */
+  --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.2);
+  --shadow-medium: 0 8px 24px rgba(0, 0, 0, 0.25);
+  --shadow-deep: 0 12px 32px rgba(0, 0, 0, 0.3);
+
+  /* Blur intensity */
+  --blur-light: blur(8px);
+  --blur-medium: blur(10px);
+  --blur-heavy: blur(12px);
+
+  /* Animation timing */
+  --duration-micro: 150ms;
+  --duration-short: 300ms;
+  --duration-medium: 500ms;
+  --duration-long: 800ms;
+
+  /* Easing curves */
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out: cubic-bezier(0.4, 0, 1, 1);
 }
 
 /* Reset */
@@ -26,7 +56,7 @@ html {
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background-color: var(--deep);
   color: var(--highlight);
   line-height: 1.6;
@@ -43,6 +73,7 @@ body {
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Cormorant Garamond', 'Georgia', serif;
   font-weight: 400;
+  color: var(--highlight);
 }
 
 /* Utility */
@@ -81,8 +112,13 @@ pre code {
 
 /* Links */
 a {
-  color: inherit;
+  color: var(--accent);
+  text-decoration: none;
   transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--highlight);
 }
 
 /* Smooth scrolling */
@@ -160,14 +196,17 @@ html {
   margin-bottom: 8rem;
   opacity: 0;
   transform: translateY(40px);
+  filter: blur(8px);
   transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1),
-              transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: opacity, transform;
+              transform 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+              filter 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: opacity, transform, filter;
 }
 
 .content-zone.is-visible {
   opacity: 1;
   transform: translateY(0);
+  filter: blur(0);
 }
 
 .content-zone:last-child {
@@ -175,7 +214,7 @@ html {
 }
 
 .zone-header {
-  margin-bottom: 3rem;
+  margin-bottom: 3.5rem;
   text-align: left;
 }
 
@@ -183,7 +222,7 @@ html {
   font-family: 'Cormorant Garamond', serif;
   font-size: clamp(2rem, 4vw, 3rem);
   font-weight: 400;
-  color: var(--highlight);
+  color: var(--text-heading);
   margin: 0 0 0.5rem 0;
   letter-spacing: 0.02em;
   line-height: 1.2;
@@ -191,10 +230,11 @@ html {
 
 .zone-subtitle {
   font-size: 1rem;
-  color: var(--accent);
+  color: var(--text-body);
   font-weight: 400;
   margin: 0;
   letter-spacing: 0.03em;
+  opacity: 0.9;
 }
 
 /* Content Grids */
@@ -202,38 +242,54 @@ html {
   display: grid;
   gap: 2rem;
   grid-template-columns: 1fr;
+  padding: 0.5rem 0;
 }
 
 .grid-item {
   opacity: 0;
   transform: translateY(30px);
+  filter: blur(8px);
   transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-              transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: opacity, transform;
+              transform 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+              filter 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: opacity, transform, filter;
 }
 
 .grid-item.is-visible {
   opacity: 1;
   transform: translateY(0);
+  filter: blur(0);
 }
 
 /* Responsive grid layouts */
 @media (min-width: 768px) {
   .content-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 2.5rem;
+    gap: 2rem 2.5rem;
   }
 }
 
 @media (min-width: 1024px) {
   .content-grid {
     grid-template-columns: repeat(3, 1fr);
-    gap: 2rem;
+    gap: 2rem 2.5rem;
+  }
+
+  /* Hero treatment for first item - asymmetric layout */
+  .content-grid > :first-child {
+    grid-column: 1 / 3;
+    grid-row: 1 / 3;
   }
 
   .content-grid.two-column {
     grid-template-columns: repeat(2, 1fr);
     gap: 2.5rem;
+  }
+
+  /* No hero treatment on two-column grids */
+  .content-grid.two-column > :first-child {
+    grid-column: auto;
+    grid-row: auto;
   }
 }
 
@@ -244,7 +300,7 @@ html {
   }
 
   .content-grid {
-    gap: 2.5rem;
+    gap: 2.5rem 3rem;
   }
 }
 
@@ -274,7 +330,7 @@ html {
   background: rgba(68, 88, 104, 0.1);
   border: 1px solid rgba(166, 182, 194, 0.2);
   border-radius: 8px;
-  color: var(--highlight);
+  color: var(--text-body);
   text-decoration: none;
   font-size: 0.9375rem;
   font-weight: 500;
@@ -285,7 +341,7 @@ html {
 .view-more:hover {
   background: rgba(68, 88, 104, 0.15);
   border-color: rgba(166, 182, 194, 0.35);
-  color: var(--accent);
+  color: var(--text-heading);
   transform: translateX(4px);
 }
 

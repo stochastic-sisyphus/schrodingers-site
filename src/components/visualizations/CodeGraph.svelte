@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import * as d3 from 'd3';
   import type { GraphData, GraphNode, GraphEdge } from '../../lib/visualizations/code-analyzer';
+  import { d3Colors, d3CodeTextStyle, applyTooltipStyles, d3Interaction } from '../../lib/d3-styles';
 
   export let data: GraphData;
 
@@ -12,7 +13,7 @@
   // Steel-teal palette
   const colorScale = d3.scaleOrdinal<string>()
     .domain(['TypeScript', 'JavaScript', 'Python', 'Rust', 'Go', 'Other'])
-    .range(['#8498a6', '#627888', '#445868', '#2a3844', '#a6b6c2', '#141a20']);
+    .range([d3Colors.accent, d3Colors.secondary, d3Colors.tertiary, d3Colors.base, d3Colors.primary, d3Colors.deep]);
 
   onMount(() => {
     if (!data || data.nodes.length === 0) return;
@@ -66,7 +67,7 @@
       .attr('orient', 'auto')
       .append('path')
       .attr('d', 'M0,-5L10,0L0,5')
-      .attr('fill', '#445868')
+      .attr('fill', d3Colors.tertiary)
       .attr('opacity', 0.3);
 
     // Create edges
@@ -74,7 +75,7 @@
       .selectAll('line')
       .data(data.edges)
       .join('line')
-      .attr('stroke', '#445868')
+      .attr('stroke', d3Colors.tertiary)
       .attr('stroke-opacity', 0.3)
       .attr('stroke-width', d => Math.sqrt(d.weight));
 
@@ -89,20 +90,40 @@
     node.append('circle')
       .attr('r', d => d.size)
       .attr('fill', d => {
-        if (d.type === 'dir') return '#627888';
+        if (d.type === 'dir') return d3Colors.secondary;
         return colorScale(d.language || 'Other');
       })
-      .attr('stroke', '#a6b6c2')
+      .attr('stroke', d3Colors.primary)
       .attr('stroke-width', 1)
       .attr('stroke-opacity', 0.5)
       .style('cursor', 'pointer')
       .on('mouseenter', function(event, d) {
         d3.select(this)
           .transition()
-          .duration(200)
+          .duration(d3Interaction.transitionDuration)
           .attr('r', d.size * 1.3)
           .attr('stroke-width', 2)
           .attr('stroke-opacity', 1);
+
+        // Dim unrelated nodes
+        const connectedIds = new Set<string>();
+        connectedIds.add(d.id);
+        data.edges.forEach(edge => {
+          const src = typeof edge.source === 'string' ? edge.source : (edge.source as any).id;
+          const tgt = typeof edge.target === 'string' ? edge.target : (edge.target as any).id;
+          if (src === d.id) connectedIds.add(tgt);
+          if (tgt === d.id) connectedIds.add(src);
+        });
+
+        node.selectAll('circle')
+          .transition()
+          .duration(d3Interaction.transitionDuration)
+          .style('opacity', (n: any) => connectedIds.has(n.id) ? d3Interaction.activeOpacity : d3Interaction.dimmedOpacity);
+
+        node.selectAll('text')
+          .transition()
+          .duration(d3Interaction.transitionDuration)
+          .style('opacity', (n: any) => connectedIds.has(n.id) ? 0.8 : d3Interaction.hoverDimmedOpacity);
 
         // Show connected edges
         link.transition()
@@ -120,14 +141,25 @@
       .on('mouseleave', function(event, d) {
         d3.select(this)
           .transition()
-          .duration(200)
+          .duration(d3Interaction.transitionDuration)
           .attr('r', d.size)
           .attr('stroke-width', 1)
           .attr('stroke-opacity', 0.5);
 
+        // Restore all nodes
+        node.selectAll('circle')
+          .transition()
+          .duration(d3Interaction.transitionDuration)
+          .style('opacity', d3Interaction.activeOpacity);
+
+        node.selectAll('text')
+          .transition()
+          .duration(d3Interaction.transitionDuration)
+          .style('opacity', 0.8);
+
         // Reset edges
         link.transition()
-          .duration(200)
+          .duration(d3Interaction.transitionDuration)
           .attr('stroke-opacity', 0.3)
           .attr('stroke-width', edge => Math.sqrt(edge.weight));
 
@@ -137,8 +169,9 @@
     // Node labels
     node.append('text')
       .text(d => d.label)
-      .attr('font-size', 10)
-      .attr('fill', '#a6b6c2')
+      .attr('font-size', d3CodeTextStyle.fontSize)
+      .attr('fill', d3CodeTextStyle.fill)
+      .attr('font-family', d3CodeTextStyle.fontFamily)
       .attr('text-anchor', 'middle')
       .attr('dy', d => d.size + 15)
       .style('pointer-events', 'none')
@@ -184,19 +217,12 @@
   function showTooltip(event: MouseEvent, d: GraphNode) {
     const tooltip = d3.select(container)
       .append('div')
-      .attr('class', 'tooltip')
-      .style('position', 'absolute')
+      .attr('class', 'tooltip');
+
+    applyTooltipStyles(tooltip)
       .style('left', `${event.offsetX + 10}px`)
       .style('top', `${event.offsetY + 10}px`)
-      .style('background', 'rgba(42, 56, 68, 0.95)')
-      .style('color', '#a6b6c2')
-      .style('padding', '8px 12px')
-      .style('border-radius', '6px')
-      .style('font-size', '12px')
-      .style('pointer-events', 'none')
-      .style('border', '1px solid rgba(166, 182, 194, 0.3)')
-      .style('backdrop-filter', 'blur(10px)')
-      .style('z-index', '1000');
+      .style('font-family', d3CodeTextStyle.fontFamily);
 
     tooltip.html(`
       <div><strong>${d.label}</strong></div>

@@ -86,12 +86,13 @@ const abstractPreview = abstract
 
 <style>
   .research-card {
-    background: rgba(68, 88, 104, 0.1);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(166, 182, 194, 0.2);
+    background: var(--depth-3);
+    backdrop-filter: var(--blur-medium);
+    border: 1px solid rgba(166, 182, 194, 0.6);
     border-radius: 12px;
     padding: 2rem;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--shadow-deep);
+    transition: all var(--duration-short) var(--ease-smooth);
     position: relative;
     overflow: hidden;
   }
@@ -105,18 +106,19 @@ const abstractPreview = abstract
     bottom: 0;
     background: radial-gradient(
       circle at 50% 0%,
-      rgba(166, 182, 194, 0.08) 0%,
+      rgba(166, 182, 194, 0.1) 0%,
       transparent 70%
     );
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity var(--duration-short) var(--ease-smooth);
     pointer-events: none;
   }
 
   .research-card:hover {
-    background: rgba(68, 88, 104, 0.15);
-    border-color: rgba(166, 182, 194, 0.3);
-    transform: translateY(-1px);
+    background: var(--depth-3);
+    border-color: rgba(166, 182, 194, 0.8);
+    transform: translateY(-4px);
+    filter: drop-shadow(var(--shadow-deep));
   }
 
   .research-card:hover::before {
@@ -135,18 +137,19 @@ const abstractPreview = abstract
   .card-title a {
     color: inherit;
     text-decoration: none;
-    transition: color 0.2s ease;
+    transition: color var(--duration-short) var(--ease-smooth);
   }
 
   .card-title a:hover {
-    color: var(--accent);
+    color: var(--text-heading);
   }
 
   .card-authors {
     font-size: 0.9375rem;
-    color: var(--light);
+    color: var(--highlight);
     margin: 0 0 0.75rem 0;
     line-height: 1.5;
+    opacity: 0.85;
   }
 
   .card-meta {
@@ -162,11 +165,17 @@ const abstractPreview = abstract
     color: var(--accent);
     font-weight: 600;
     font-variant-numeric: tabular-nums;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    opacity: 0.8;
   }
 
   .journal {
     font-style: italic;
-    color: var(--light);
+    color: var(--accent);
+    font-size: 0.8rem;
+    font-family: 'JetBrains Mono', monospace;
+    opacity: 0.8;
   }
 
   .type {
@@ -175,14 +184,19 @@ const abstractPreview = abstract
     border-radius: 4px;
     font-size: 0.75rem;
     color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
     text-transform: capitalize;
+    opacity: 0.8;
   }
 
   .card-abstract {
-    color: var(--light);
+    color: var(--text-body);
+    font-style: italic;
     line-height: 1.6;
     margin: 0 0 1rem 0;
     font-size: 0.9375rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(166, 182, 194, 0.1);
   }
 
   .card-links {
@@ -195,13 +209,15 @@ const abstractPreview = abstract
   .doi-link {
     color: var(--accent);
     text-decoration: none;
-    font-size: 0.875rem;
+    font-size: 0.8rem;
     font-family: 'JetBrains Mono', monospace;
-    transition: color 0.2s ease;
+    opacity: 0.8;
+    transition: all var(--duration-short) var(--ease-smooth);
   }
 
   .doi-link:hover {
     color: var(--highlight);
+    opacity: 1;
   }
 
   @media (max-width: 768px) {

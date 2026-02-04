@@ -71,14 +71,23 @@ function extractTag(xml: string, tagName: string): string {
  * Clean XML content (remove CDATA, decode HTML entities)
  */
 function cleanXMLContent(content: string): string {
-  return content
+  let cleaned = content
     .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
+    .trim();
+
+  // Decode numeric HTML entities (&#246;, &#8217;, etc.)
+  cleaned = cleaned.replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(parseInt(dec, 10)));
+
+  // Decode named HTML entities
+  cleaned = cleaned
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
-    .replace(/&amp;/g, '&')
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
-    .trim();
+    .replace(/&apos;/g, "'")
+    .replace(/&amp;/g, '&'); // Must be last to avoid double-decoding
+
+  return cleaned;
 }
 
 /**

@@ -77,7 +77,10 @@ export function updateParticle(
   particle: Particle,
   canvasWidth: number,
   canvasHeight: number,
-  deltaTime: number
+  deltaTime: number,
+  mouseX?: number,
+  mouseY?: number,
+  mouseDistance?: number
 ): void {
   // Normalize deltaTime to 60fps baseline
   const dt = deltaTime / FRAME_TIME_60FPS;
@@ -92,6 +95,9 @@ export function updateParticle(
   // Apply velocity with wobble
   particle.x += (particle.vx + wobbleOffsetX) * dt;
   particle.y += (particle.vy + wobbleOffsetY) * dt;
+
+  // Mouse repulsion - particles move away from cursor
+  // Mouse interaction disabled - particles drift naturally without fleeing
 
   // Wrap around edges with buffer
   const buffer = 20;
@@ -129,9 +135,15 @@ export class ParticleSystem {
   private fadeInProgress: number = 0;
   private fadeInDuration: number = 2000; // 2 seconds to fade in particles
 
+  // Mouse interaction properties
+  private mouseX: number = 0;
+  private mouseY: number = 0;
+  private mouseDistance: number = 150; // Interaction radius
+
   // Store event handlers for cleanup
   private resizeHandler: (() => void) | null = null;
   private beforeSwapHandler: (() => void) | null = null;
+  private mouseMoveHandler: ((e: MouseEvent) => void) | null = null;
   private resizeTimeout: number | undefined;
 
   constructor(canvas: HTMLCanvasElement, options: ParticleSystemOptions = {}) {
@@ -169,8 +181,15 @@ export class ParticleSystem {
       this.destroy();
     };
 
+    // Track mouse position on document (not canvas - we need pointer-events: none on canvas)
+    this.mouseMoveHandler = (e: MouseEvent) => {
+      this.mouseX = e.clientX;
+      this.mouseY = e.clientY;
+    };
+
     window.addEventListener('resize', this.resizeHandler);
     document.addEventListener('astro:before-swap', this.beforeSwapHandler);
+    document.addEventListener('mousemove', this.mouseMoveHandler);
   }
 
   private removeEventListeners(): void {
@@ -181,6 +200,10 @@ export class ParticleSystem {
     if (this.beforeSwapHandler) {
       document.removeEventListener('astro:before-swap', this.beforeSwapHandler);
       this.beforeSwapHandler = null;
+    }
+    if (this.mouseMoveHandler) {
+      document.removeEventListener('mousemove', this.mouseMoveHandler);
+      this.mouseMoveHandler = null;
     }
     clearTimeout(this.resizeTimeout);
   }
@@ -207,7 +230,15 @@ export class ParticleSystem {
 
   private update(deltaTime: number): void {
     for (const particle of this.particles) {
-      updateParticle(particle, this.canvas.width, this.canvas.height, deltaTime);
+      updateParticle(
+        particle,
+        this.canvas.width,
+        this.canvas.height,
+        deltaTime,
+        this.mouseX,
+        this.mouseY,
+        this.mouseDistance
+      );
     }
   }
 
