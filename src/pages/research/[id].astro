@@ -1,6 +1,7 @@
 ---
 /**
  * Individual research paper detail page
+ * Atmospheric depth - computational research artifact, not static paper view
  */
 
 import ContentLayout from '@/layouts/ContentLayout.astro';
@@ -19,7 +20,7 @@ export async function getStaticPaths() {
   // Create paths for local papers
   const localPaths = localPapers.map((paper) => ({
     params: { id: paper.slug },
-    props: { 
+    props: {
       paper,
       isLocal: true,
       isVerificationReversal: false
@@ -64,19 +65,26 @@ const Content = isLocal ? (await paper.render()).Content : null;
   title={`${paper.data.title} | Research | stochastic-sisyphus`}
   description={paper.data.abstract}
 >
-  <article class="paper-detail frosted-glass">
+  <article class="paper-detail">
+    <!-- Atmospheric glow layers -->
+    <div class="glow-layer glow-top" aria-hidden="true"></div>
+    <div class="glow-layer glow-bottom" aria-hidden="true"></div>
+
+    <!-- Paper header with computational metadata -->
     <header class="paper-header">
-      <h1 class="paper-title">{paper.data.title}</h1>
-
-      <div class="paper-meta">
+      <div class="header-meta">
         <span class="paper-year">{paper.data.year}</span>
-
+        <span class="meta-divider">·</span>
         {paper.data.journal && (
-          <span class="paper-journal">{paper.data.journal}</span>
+          <>
+            <span class="paper-journal">{paper.data.journal}</span>
+            <span class="meta-divider">·</span>
+          </>
         )}
-
         <span class="paper-type">{paper.data.type}</span>
       </div>
+
+      <h1 class="paper-title">{paper.data.title}</h1>
 
       {paper.data.authors.length > 0 && (
         <p class="paper-authors">{paper.data.authors.join(', ')}</p>
@@ -90,7 +98,8 @@ const Content = isLocal ? (await paper.render()).Content : null;
             target="_blank"
             rel="noopener noreferrer"
           >
-            View on DOI →
+            <span class="link-icon">→</span>
+            doi.org
           </a>
         )}
 
@@ -101,175 +110,375 @@ const Content = isLocal ? (await paper.render()).Content : null;
             target="_blank"
             rel="noopener noreferrer"
           >
-            View on ORCID →
+            <span class="link-icon">→</span>
+            orcid
           </a>
         )}
       </div>
     </header>
 
+    <!-- Abstract section -->
     {paper.data.abstract && (
       <section class="paper-abstract">
-        <h2>Abstract</h2>
-        <p>{paper.data.abstract}</p>
+        <h2 class="section-title">Abstract</h2>
+        <div class="abstract-content">
+          <p>{paper.data.abstract}</p>
+        </div>
       </section>
     )}
 
+    <!-- Visualization section -->
     {isVerificationReversal && (
       <section class="paper-visualization">
-        <VerificationCascade client:load width={760} height={500} />
+        <h2 class="section-title">Interactive Visualization</h2>
+        <div class="viz-container">
+          <VerificationCascade client:load width={760} height={500} />
+        </div>
       </section>
     )}
 
+    <!-- Local content (markdown body) -->
     {isLocal && Content && (
-      <div class="paper-content">
+      <section class="paper-content">
         <Content />
-      </div>
+      </section>
     )}
 
+    <!-- Footer navigation -->
     <footer class="paper-footer">
-      <a href="/research" class="back-link">← Back to all research</a>
+      <a href="/research" class="back-link">
+        <span class="back-icon">←</span>
+        Back to all research
+      </a>
     </footer>
+
+    <!-- Luminous edge indicator -->
+    <div class="edge-glow" aria-hidden="true"></div>
   </article>
 </ContentLayout>
 
 <style>
   .paper-detail {
-    max-width: 800px;
+    max-width: 900px;
     margin: 0 auto;
-    background: rgba(42, 56, 68, 0.85);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(166, 182, 194, 0.5);
-    border-radius: 12px;
-    padding: 3rem;
+    background: var(--depth-1);
+    backdrop-filter: var(--blur-heavy);
+    border: 1px solid rgba(166, 182, 194, 0.2);
+    border-radius: 16px;
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.3),
+      0 2px 8px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 rgba(166, 182, 194, 0.1);
   }
 
+  .paper-detail::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      ellipse at 50% 0%,
+      rgba(166, 182, 194, 0.08) 0%,
+      transparent 60%
+    );
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  /* Atmospheric glow layers */
+  .glow-layer {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    opacity: 0.8;
+    filter: blur(60px);
+  }
+
+  .glow-top {
+    top: -80px;
+    left: 15%;
+    width: 300px;
+    height: 180px;
+    background: radial-gradient(
+      circle,
+      rgba(166, 182, 194, 0.2) 0%,
+      rgba(132, 152, 166, 0.1) 50%,
+      transparent 70%
+    );
+  }
+
+  .glow-bottom {
+    bottom: -100px;
+    right: 10%;
+    width: 350px;
+    height: 200px;
+    background: radial-gradient(
+      circle,
+      rgba(166, 182, 194, 0.15) 0%,
+      rgba(132, 152, 166, 0.08) 50%,
+      transparent 70%
+    );
+  }
+
+  /* Luminous edge indicator */
+  .edge-glow {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(166, 182, 194, 0.5) 20%,
+      rgba(166, 182, 194, 0.7) 50%,
+      rgba(166, 182, 194, 0.5) 80%,
+      transparent 100%
+    );
+    opacity: 0.8;
+    box-shadow: 0 0 12px rgba(166, 182, 194, 0.4);
+  }
+
+  /* Paper header */
   .paper-header {
-    margin-bottom: 3rem;
-    padding-bottom: 2rem;
-    border-bottom: 1px solid rgba(166, 182, 194, 0.2);
+    position: relative;
+    z-index: 1;
+    padding: 3rem 3rem 2.5rem;
+    border-bottom: 1px solid rgba(166, 182, 194, 0.08);
   }
 
-  .paper-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(32px, 5vw, 42px);
-    font-weight: 500;
-    color: var(--highlight);
-    margin: 0 0 1rem 0;
-    line-height: 1.2;
-  }
-
-  .paper-meta {
+  .header-meta {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
-    gap: 1rem;
-    font-size: 0.875rem;
-    color: var(--highlight);
-    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8125rem;
+    color: var(--accent);
+    margin-bottom: 1.5rem;
+    opacity: 0.85;
   }
 
-  .paper-type {
-    padding: 0.25rem 0.5rem;
-    background: rgba(166, 182, 194, 0.1);
-    border-radius: 4px;
-    font-size: 0.75rem;
+  .paper-year {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+    font-weight: 600;
+  }
+
+  .meta-divider {
+    opacity: 0.4;
   }
 
   .paper-journal {
     font-style: italic;
+    font-size: 0.75rem;
+  }
+
+  .paper-type {
+    padding: 0.25rem 0.625rem;
+    background: rgba(166, 182, 194, 0.12);
+    border: 1px solid rgba(166, 182, 194, 0.15);
+    border-radius: 6px;
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--highlight);
+  }
+
+  .paper-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 400;
+    color: var(--text-heading);
+    margin: 0 0 1.5rem 0;
+    line-height: 1.2;
+    letter-spacing: 0.01em;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   }
 
   .paper-authors {
     font-size: 1rem;
-    color: var(--highlight);
-    margin: 0 0 1.5rem 0;
+    color: var(--text-body);
+    margin: 0 0 2rem 0;
+    line-height: 1.6;
+    opacity: 0.9;
   }
 
   .paper-links {
     display: flex;
+    align-items: center;
     gap: 1.5rem;
+    flex-wrap: wrap;
   }
 
   .paper-link {
-    color: var(--highlight);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: rgba(166, 182, 194, 0.08);
+    border: 1px solid rgba(166, 182, 194, 0.15);
+    border-radius: 8px;
+    color: var(--text-body);
     text-decoration: none;
-    font-size: 0.9375rem;
-    transition: color 0.2s ease;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8125rem;
+    transition: all var(--duration-short) var(--ease-smooth);
   }
 
   .paper-link:hover {
-    color: var(--highlight);
+    background: rgba(166, 182, 194, 0.12);
+    border-color: rgba(166, 182, 194, 0.25);
+    color: var(--text-heading);
+    transform: translateY(-2px);
   }
 
-  .paper-abstract {
-    margin-bottom: 3rem;
-  }
-
-  .paper-abstract h2 {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.75rem;
-    font-weight: 500;
-    color: var(--highlight);
-    margin: 0 0 1rem 0;
-  }
-
-  .paper-abstract p {
-    color: var(--highlight);
-    line-height: 1.8;
-    font-size: 1.0625rem;
-  }
-
-  .paper-content {
-    color: var(--highlight);
-    line-height: 1.8;
-    font-size: 1.0625rem;
-  }
-
-  .paper-visualization {
-    margin-top: 3rem;
-    padding-top: 3rem;
-    border-top: 1px solid rgba(166, 182, 194, 0.2);
-  }
-
-  .paper-visualization h2 {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.75rem;
-    font-weight: 500;
-    color: var(--highlight);
-    margin: 0 0 1rem 0;
-  }
-
-  .paper-visualization .viz-description {
-    color: var(--highlight);
-    line-height: 1.7;
-    margin-bottom: 2rem;
+  .link-icon {
     font-size: 1rem;
+    opacity: 0.8;
   }
 
-  .paper-visualization .viz-description strong {
-    color: var(--highlight);
+  /* Abstract section */
+  .paper-abstract {
+    position: relative;
+    z-index: 1;
+    padding: 3rem;
+    border-bottom: 1px solid rgba(166, 182, 194, 0.08);
   }
 
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.875rem;
+    font-weight: 400;
+    color: var(--text-heading);
+    margin: 0 0 1.5rem 0;
+    letter-spacing: 0.01em;
+  }
+
+  .abstract-content p {
+    color: var(--text-body);
+    line-height: 1.8;
+    font-size: 1.0625rem;
+    margin: 0;
+  }
+
+  /* Visualization section */
+  .paper-visualization {
+    position: relative;
+    z-index: 1;
+    padding: 3rem;
+    border-bottom: 1px solid rgba(166, 182, 194, 0.08);
+  }
+
+  .viz-container {
+    margin-top: 2rem;
+    padding: 2rem;
+    background: rgba(20, 26, 32, 0.3);
+    border: 1px solid rgba(166, 182, 194, 0.1);
+    border-radius: 12px;
+  }
+
+  /* Paper content (markdown body) */
+  .paper-content {
+    position: relative;
+    z-index: 1;
+    padding: 3rem;
+    color: var(--text-body);
+    line-height: 1.8;
+    font-size: 1.0625rem;
+    border-bottom: 1px solid rgba(166, 182, 194, 0.08);
+  }
+
+  .paper-content :global(h2) {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.875rem;
+    font-weight: 400;
+    color: var(--text-heading);
+    margin: 2rem 0 1rem;
+    letter-spacing: 0.01em;
+  }
+
+  .paper-content :global(h3) {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem;
+    font-weight: 400;
+    color: var(--text-heading);
+    margin: 1.5rem 0 0.75rem;
+  }
+
+  .paper-content :global(p) {
+    margin: 0 0 1rem;
+  }
+
+  .paper-content :global(code) {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9em;
+    background: rgba(166, 182, 194, 0.08);
+    padding: 0.2em 0.4em;
+    border-radius: 4px;
+  }
+
+  /* Footer navigation */
   .paper-footer {
-    margin-top: 3rem;
-    padding-top: 2rem;
-    border-top: 1px solid rgba(166, 182, 194, 0.2);
+    position: relative;
+    z-index: 1;
+    padding: 2.5rem 3rem 3rem;
   }
 
   .back-link {
-    color: var(--highlight);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-body);
     text-decoration: none;
-    font-size: 0.9375rem;
-    transition: color 0.2s ease;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.875rem;
+    transition: all var(--duration-short) var(--ease-smooth);
   }
 
   .back-link:hover {
-    color: var(--highlight);
+    color: var(--text-heading);
+    transform: translateX(-4px);
   }
 
+  .back-icon {
+    font-size: 1rem;
+    opacity: 0.8;
+  }
+
+  /* Responsive adjustments */
   @media (max-width: 768px) {
-    .paper-detail {
-      padding: 2rem 1.5rem;
+    .paper-header,
+    .paper-abstract,
+    .paper-visualization,
+    .paper-content,
+    .paper-footer {
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
+
+    .paper-header {
+      padding-top: 2.5rem;
+      padding-bottom: 2rem;
+    }
+
+    .paper-title {
+      font-size: 1.875rem;
+    }
+
+    .section-title {
+      font-size: 1.5rem;
+    }
+
+    .abstract-content p {
+      font-size: 0.9375rem;
+    }
+
+    .glow-top,
+    .glow-bottom {
+      display: none; /* Simplify on mobile for performance */
     }
   }
 </style>
