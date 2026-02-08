@@ -4,30 +4,35 @@
  */
 
 import ContentLayout from '@/layouts/ContentLayout.astro';
-import { fetchAllRepos } from '@/lib/github';
-import ProjectCard from '@/components/ProjectCard.svelte';
+import { getCollection } from 'astro:content';
+import ProjectCard from '@/components/ProjectCard.astro';
+import SEO from '@/components/SEO.astro';
 
 export async function getStaticPaths() {
-  const repos = await fetchAllRepos();
+  const projects = await getCollection('projects');
 
   // Extract all unique tags
-  const allTopics = [...new Set(repos.flatMap(r => r.topics))];
+  const allTags = [...new Set(projects.flatMap(p => p.data.tags))];
 
   // Generate a page for each tag
-  return allTopics.map((tag) => {
-    const filteredRepos = repos.filter((repo) =>
-      repo.topics.includes(tag)
+  return allTags.map((tag) => {
+    const filteredProjects = projects.filter((project) =>
+      project.data.tags.includes(tag)
     );
 
-    // Sort by stars
-    filteredRepos.sort((a, b) => b.stargazers_count - a.stargazers_count);
+    // Sort by featured status, then by name
+    filteredProjects.sort((a, b) => {
+      if (a.data.featured && !b.data.featured) return -1;
+      if (!a.data.featured && b.data.featured) return 1;
+      return a.data.name.localeCompare(b.data.name);
+    });
 
     return {
       params: { tag },
       props: {
         tag,
-        repos: filteredRepos,
-        totalRepos: repos.length,
+        projects: filteredProjects,
+        totalProjects: projects.length,
       },
     };
   });
@@ -35,17 +40,23 @@ export async function getStaticPaths() {
 
 interface Props {
   tag: string;
-  repos: Awaited<ReturnType<typeof fetchAllRepos>>;
-  totalRepos: number;
+  projects: Awaited<ReturnType<typeof getCollection<'projects'>>>;
+  totalProjects: number;
 }
 
-const { tag, repos, totalRepos } = Astro.props;
+const { tag, projects, totalProjects } = Astro.props;
 
-const title = `${tag} Projects | stochastic-sisyphus`;
-const description = `Projects tagged with ${tag}. ${repos.length} of ${totalRepos} total projects.`;
+const title = `${tag} Projects`;
+const description = `Projects tagged with ${tag}. ${projects.length} of ${totalProjects} total projects.`;
 ---
 
 <ContentLayout title={title} description={description}>
+  <SEO
+    slot="head"
+    title={title}
+    description={description}
+    canonical={Astro.url.href}
+  />
   <article class="tag-page">
     <header class="page-header">
       <nav class="breadcrumb">
@@ -60,7 +71,7 @@ const description = `Projects tagged with ${tag}. ${repos.length} of ${totalRepo
       </h1>
 
       <p class="page-description">
-        {repos.length} project{repos.length !== 1 ? 's' : ''} tagged with <strong>{tag}</strong>
+        {projects.length} project{projects.length !== 1 ? 's' : ''} tagged with <strong>{tag}</strong>
       </p>
 
       <div class="quick-links">
@@ -71,10 +82,10 @@ const description = `Projects tagged with ${tag}. ${repos.length} of ${totalRepo
     </header>
 
     <section class="projects-section">
-      {repos.length > 0 ? (
+      {projects.length > 0 ? (
         <div class="projects-grid">
-          {repos.map((repo) => (
-            <ProjectCard repo={repo} client:visible />
+          {projects.map((project) => (
+            <ProjectCard project={project} />
           ))}
         </div>
       ) : (

@@ -34,23 +34,26 @@ const canonicalURL = Astro.site ? new URL(Astro.url.pathname, Astro.site) : null
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
 
-    <!-- Primary Meta Tags -->
-    <title>{title}</title>
-    <meta name="title" content={title} />
-    <meta name="description" content={description} />
-    {canonicalURL && <link rel="canonical" href={canonicalURL} />}
+    <!-- Allow pages to override with SEO component -->
+    <slot name="head">
+      <!-- Default Primary Meta Tags -->
+      <title>{title}</title>
+      <meta name="title" content={title} />
+      <meta name="description" content={description} />
+      {canonicalURL && <link rel="canonical" href={canonicalURL} />}
 
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website" />
-    {canonicalURL && <meta property="og:url" content={canonicalURL} />}
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
+      <!-- Open Graph / Facebook -->
+      <meta property="og:type" content="website" />
+      {canonicalURL && <meta property="og:url" content={canonicalURL} />}
+      <meta property="og:title" content={title} />
+      <meta property="og:description" content={description} />
 
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image" />
-    {canonicalURL && <meta property="twitter:url" content={canonicalURL} />}
-    <meta property="twitter:title" content={title} />
-    <meta property="twitter:description" content={description} />
+      <!-- Twitter -->
+      <meta property="twitter:card" content="summary_large_image" />
+      {canonicalURL && <meta property="twitter:url" content={canonicalURL} />}
+      <meta property="twitter:title" content={title} />
+      <meta property="twitter:description" content={description} />
+    </slot>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -64,8 +67,6 @@ const canonicalURL = Astro.site ? new URL(Astro.url.pathname, Astro.site) : null
     <!-- Skip to main content for keyboard navigation -->
     <a href="#main-content" class="skip-to-content">Skip to main content</a>
 
-    <!-- Minimal nav only on non-home pages -->
-
     <!-- Atmospheric background layers -->
     <div class="atmosphere-container" aria-hidden="true">
       <ShaderGradient />
@@ -73,9 +74,9 @@ const canonicalURL = Astro.site ? new URL(Astro.url.pathname, Astro.site) : null
     </div>
 
     <!-- Page content -->
-    <div id="main-content">
+    <main id="main-content">
       <slot />
-    </div>
+    </main>
   </body>
 </html>
 

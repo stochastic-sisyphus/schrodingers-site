@@ -8,6 +8,9 @@ import ContentLayout from '@/layouts/ContentLayout.astro';
 import { getCollection } from 'astro:content';
 import { fetchAllSubstackPosts } from '@/lib/substack';
 import BlogList from '@/components/BlogList.astro';
+import Footer from '@/components/Footer.astro';
+import SEO from '@/components/SEO.astro';
+import Navigation from '@/components/Navigation.astro';
 
 // Fetch content from both sources
 const localPosts = await getCollection('blog', ({ data }) => !data.draft).catch(() => []);
@@ -40,6 +43,15 @@ const allPosts = [
   title="Writing | stochastic-sisyphus"
   description="Explorations in code, systems, and emergence. Essays and technical writing on computational thinking and data systems."
 >
+  <SEO
+    slot="head"
+    title="Blog"
+    description="Thoughts on ML, NLP, and semantic search"
+    canonical={Astro.url.href}
+  />
+
+  <Navigation />
+
   <article class="blog-page">
     <!-- Header with atmospheric context -->
     <header class="page-header">
@@ -59,6 +71,8 @@ const allPosts = [
       <BlogList posts={allPosts} columns={3} />
     </div>
   </article>
+
+  <Footer slot="footer" />
 </ContentLayout>
 
 <style>

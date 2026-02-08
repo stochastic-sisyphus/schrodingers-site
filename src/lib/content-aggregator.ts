@@ -45,10 +45,11 @@ export function getFeaturedProjects(repos: GitHubRepo[]): FeaturedProject[] {
   const featured = getFeaturedRepos(repos);
 
   const featuredOrder = [
-    'prophetic-emergentomics',
     'code-cartographer',
     'synsearch',
-    'Masters-Capstone-Bosch-Metadata-LLM',
+    'prophetic-emergentomics',
+    'text-feature-span-extractor',
+    'self',
   ];
 
   return featured.map(repo => ({

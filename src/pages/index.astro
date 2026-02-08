@@ -9,11 +9,21 @@ import Atmosphere from '../components/Atmosphere.astro';
 import ProjectCard from '../components/ProjectCard.svelte';
 import BlogCard from '../components/BlogCard.astro';
 import ResearchCard from '../components/ResearchCard.astro';
+import Footer from '../components/Footer.astro';
+import SEO from '../components/SEO.astro';
 import '../styles/global.css';
 
-// Fetch featured content
+// Fetch featured content (with fallback to content collections)
 const allRepos = await fetchAllRepos();
-const featuredRepos = getFeaturedRepos(allRepos).slice(0, 3);
+const featuredRepos = allRepos.length > 0
+  ? getFeaturedRepos(allRepos).slice(0, 3)
+  : [];
+
+// Fallback: Use content collections if GitHub API fails
+const projectsFromContent = await getCollection('projects');
+const featuredProjects = featuredRepos.length > 0
+  ? featuredRepos
+  : projectsFromContent.filter(p => p.data.featured).slice(0, 3);
 
 // Get recent blog posts (limit to 3)
 const allBlogPosts = await getCollection('blog', ({ data }) => {
@@ -35,7 +45,6 @@ const keyResearch = allResearch
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Computational atmospheres where identity and work exist as living data. Explorations in code, data systems, and emergent patterns." />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -43,57 +52,55 @@ const keyResearch = allResearch
       href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Inter:wght@400;500&display=swap"
       rel="stylesheet"
     />
-    <title>stochastic-sisyphus | computational atmospheres</title>
-
-    <!-- Open Graph / Social Media -->
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="stochastic-sisyphus | computational atmospheres" />
-    <meta property="og:description" content="Computational atmospheres where identity and work exist as living data. Explorations in code, data systems, and emergent patterns." />
-    <meta property="og:url" content="https://stochastic-sisyphus.pages.dev" />
-
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="stochastic-sisyphus | computational atmospheres" />
-    <meta name="twitter:description" content="Computational atmospheres where identity and work exist as living data. Explorations in code, data systems, and emergent patterns." />
+    <SEO
+      title="stochastic-sisyphus | Vanessa Beck"
+      description="ML engineer working at the intersection of transformers, semantic search, and NLP. Building tools for code understanding and semantic search."
+      canonical={Astro.url.href}
+    />
   </head>
   <body>
+    <!-- Skip to main content for keyboard navigation -->
+    <a href="#main-content" class="skip-to-content">Skip to main content</a>
+
     <Atmosphere />
 
     <!-- Hero Section - Atmospheric Entry -->
-    <section class="hero" aria-label="Site introduction">
+    <header class="hero" aria-label="Site introduction">
       <div class="hero-glow" aria-hidden="true"></div>
       <div class="hero-content">
         <h1 class="identity">stochastic-sisyphus</h1>
-        <p class="tagline">computational atmospheres</p>
+        <p class="tagline">reinventing the wheel.toml</p>
         <div class="identity-meta">
-          <span class="meta-item">living data systems</span>
+          <span class="meta-item">machine learning</span>
           <span class="meta-divider">·</span>
-          <span class="meta-item">emergent patterns</span>
+          <span class="meta-item">semantic search</span>
+          <span class="meta-divider">·</span>
+          <span class="meta-item">NLP</span>
         </div>
       </div>
-      <nav class="hero-nav">
-        <a href="/projects" class="nav-link">
+      <nav class="hero-nav" aria-label="Main navigation">
+        <a href="/projects" class="nav-link" aria-label="View projects">
           <span class="nav-label">projects</span>
-          <span class="nav-count">{featuredRepos.length}</span>
+          <span class="nav-count" aria-label="{featuredProjects.length} featured projects">{featuredProjects.length}</span>
         </a>
-        <a href="/blog" class="nav-link">
+        <a href="/blog" class="nav-link" aria-label="View blog posts">
           <span class="nav-label">writing</span>
-          <span class="nav-count">{recentPosts.length}+</span>
+          <span class="nav-count" aria-label="{recentPosts.length} or more blog posts">{recentPosts.length}+</span>
         </a>
-        <a href="/research" class="nav-link">
+        <a href="/research" class="nav-link" aria-label="View research publications">
           <span class="nav-label">research</span>
-          <span class="nav-count">{keyResearch.length}+</span>
+          <span class="nav-count" aria-label="{keyResearch.length} or more research papers">{keyResearch.length}+</span>
         </a>
-        <a href="/about" class="nav-link">
+        <a href="/about" class="nav-link" aria-label="View about page">
           <span class="nav-label">about</span>
         </a>
       </nav>
-    </section>
+    </header>
 
     <!-- Content Zones - Atmospheric Exploration -->
-    <main class="content-zones">
+    <main id="main-content" class="content-zones">
       <!-- Featured Work -->
-      {featuredRepos.length > 0 && (
+      {featuredProjects.length > 0 && (
         <section class="content-zone" data-zone="projects">
           <div class="zone-glow" aria-hidden="true"></div>
           <header class="zone-header">
@@ -101,11 +108,24 @@ const keyResearch = allResearch
             <span class="zone-badge">curated</span>
           </header>
           <div class="content-grid">
-            {featuredRepos.map((repo, index) => (
-              <div class="grid-item" style={`animation-delay: ${index * 0.12}s`}>
-                <ProjectCard repo={repo} featured={true} client:visible />
-              </div>
-            ))}
+            {featuredProjects.map((item, index) => {
+              // Handle both GitHub API repos and content collection projects
+              const repo = 'data' in item ? {
+                name: item.data.name,
+                description: item.data.description,
+                html_url: item.data.githubUrl,
+                homepage: item.data.homepage || null,
+                stargazers_count: item.data.stars || 0,
+                language: item.data.language || null,
+                topics: item.data.tags || [],
+              } : item;
+
+              return (
+                <div class="grid-item" style={`animation-delay: ${index * 0.12}s`}>
+                  <ProjectCard repo={repo} featured={true} client:visible />
+                </div>
+              );
+            })}
           </div>
           <a href="/projects" class="view-more" aria-label="Navigate to all projects">
             <span>Explore all projects</span>
@@ -183,6 +203,8 @@ const keyResearch = allResearch
       import { initAllScrollAnimations } from '../lib/scroll-animations';
       initAllScrollAnimations();
     </script>
+
+    <Footer />
   </body>
 </html>
 
@@ -709,5 +731,25 @@ const keyResearch = allResearch
     .view-more {
       transition: none;
     }
+  }
+
+  /* Skip to content link for accessibility */
+  .skip-to-content {
+    position: absolute;
+    top: -100px;
+    left: 0;
+    background: var(--base);
+    color: var(--highlight);
+    padding: 1rem 2rem;
+    text-decoration: none;
+    z-index: 100;
+    border: 2px solid var(--accent);
+    border-radius: 4px;
+    font-weight: 500;
+  }
+
+  .skip-to-content:focus {
+    top: 1rem;
+    left: 1rem;
   }
 </style>

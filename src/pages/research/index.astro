@@ -5,9 +5,12 @@
  */
 
 import ContentLayout from '@/layouts/ContentLayout.astro';
+import SEO from '@/components/SEO.astro';
+import Navigation from '@/components/Navigation.astro';
 import { getCollection } from 'astro:content';
 import { fetchAllResearchData } from '@/lib/orcid';
 import ResearchCard from '@/components/ResearchCard.astro';
+import Footer from '@/components/Footer.astro';
 
 // Fetch from both sources
 const localPapers = await getCollection('research');
@@ -54,6 +57,15 @@ const years = Object.keys(papersByYear)
   title="Research | stochastic-sisyphus"
   description="Academic publications and research contributions in computational science, data analysis, and systems thinking."
 >
+  <SEO
+    slot="head"
+    title="Research"
+    description="Publications and research papers"
+    canonical={Astro.url.href}
+  />
+
+  <Navigation />
+
   <article class="research-page">
     <!-- Header with atmospheric depth -->
     <header class="page-header">
@@ -113,6 +125,8 @@ const years = Object.keys(papersByYear)
       </div>
     )}
   </article>
+
+  <Footer slot="footer" />
 </ContentLayout>
 
 <script>

@@ -1,24 +1,45 @@
 ---
 /**
- * Projects directory - all GitHub repos with filtering
+ * Projects directory - from content collection
  */
 
+import { getCollection } from 'astro:content';
 import ContentLayout from '@/layouts/ContentLayout.astro';
-import { fetchAllRepos, getFeaturedRepos } from '@/lib/github';
-import ProjectCard from '@/components/ProjectCard.svelte';
+import ProjectCard from '@/components/ProjectCard.astro';
+import Footer from '@/components/Footer.astro';
+import SEO from '@/components/SEO.astro';
+import Navigation from '@/components/Navigation.astro';
 
-const repos = await fetchAllRepos();
-const featuredRepos = getFeaturedRepos(repos);
+// Get all projects from content collection
+const allProjects = await getCollection('projects');
+
+// Sort projects by featured status first, then alphabetically
+const projects = allProjects.sort((a, b) => {
+  if (a.data.featured && !b.data.featured) return -1;
+  if (!a.data.featured && b.data.featured) return 1;
+  return a.data.name.localeCompare(b.data.name);
+});
+
+const featuredProjects = projects.filter(p => p.data.featured);
 
 // Extract all unique languages and topics for filtering
-const allLanguages = [...new Set(repos.map(r => r.language).filter(Boolean))].sort();
-const allTopics = [...new Set(repos.flatMap(r => r.topics))].sort();
+const allLanguages = [...new Set(projects.map(p => p.data.language).filter(Boolean))].sort();
+const allTopics = [...new Set(projects.flatMap(p => p.data.tags))].sort();
 ---
 
 <ContentLayout
   title="Projects | stochastic-sisyphus"
   description="Explorations in code, data, and emergent systems. A collection of computational experiments and tools across machine learning, data science, and systems engineering."
 >
+  <SEO
+    slot="head"
+    title="Projects"
+    description="Code projects and research tools"
+    canonical={Astro.url.href}
+  />
+
+  <Navigation />
+
   <article class="projects-page">
     <!-- Header with atmospheric depth -->
     <header class="page-header">
@@ -28,8 +49,8 @@ const allTopics = [...new Set(repos.flatMap(r => r.topics))].sort();
         Computational experiments & emergent systems
       </p>
       <div class="header-meta">
-        <span class="repo-count" id="repo-count">{repos.length} repositories</span>
-        <span class="data-source">github api</span>
+        <span class="repo-count" id="repo-count">{projects.length} projects</span>
+        <span class="data-source">content collection</span>
       </div>
 
       <!-- Atmospheric filter controls -->
@@ -63,7 +84,7 @@ const allTopics = [...new Set(repos.flatMap(r => r.topics))].sort();
     </header>
 
     <!-- Featured projects with staggered reveal -->
-    {featuredRepos.length > 0 && (
+    {featuredProjects.length > 0 && (
       <section class="featured-section float-in" id="featured-section">
         <div class="section-header">
           <h2 class="section-title">featured work</h2>
@@ -71,9 +92,9 @@ const allTopics = [...new Set(repos.flatMap(r => r.topics))].sort();
         </div>
 
         <div class="projects-grid featured-grid" id="featured-grid">
-          {featuredRepos.map((repo, index) => (
+          {featuredProjects.map((project, index) => (
             <div class="grid-item" style={`animation-delay: ${index * 0.1}s`}>
-              <ProjectCard repo={repo} featured={true} client:visible />
+              <ProjectCard project={project} />
             </div>
           ))}
         </div>
@@ -83,24 +104,26 @@ const allTopics = [...new Set(repos.flatMap(r => r.topics))].sort();
     <!-- All projects with staggered reveal -->
     <section class="all-projects-section float-in">
       <div class="section-header">
-        <h2 class="section-title">all repositories</h2>
+        <h2 class="section-title">all projects</h2>
         <span class="section-badge" id="active-count">active</span>
       </div>
 
       <div class="projects-grid" id="projects-grid">
-        {repos.map((repo, index) => (
+        {projects.map((project, index) => (
           <div class="grid-item" style={`animation-delay: ${(index % 12) * 0.08}s`}>
-            <ProjectCard repo={repo} client:visible />
+            <ProjectCard project={project} />
           </div>
         ))}
       </div>
 
       <div id="no-results" class="no-results" style="display: none;">
-        <p>No repositories match your filters</p>
+        <p>No projects match your filters</p>
         <button id="clear-filters-link" class="reset-link">Clear filters and show all</button>
       </div>
     </section>
   </article>
+
+  <Footer slot="footer" />
 </ContentLayout>
 
 <script>
@@ -157,7 +180,7 @@ const allTopics = [...new Set(repos.flatMap(r => r.topics))].sort();
 
       // Update count and no-results message
       if (repoCount) {
-        repoCount.textContent = `${visibleCount} ${visibleCount === 1 ? 'repository' : 'repositories'}`;
+        repoCount.textContent = `${visibleCount} ${visibleCount === 1 ? 'project' : 'projects'}`;
       }
 
       if (noResults) {

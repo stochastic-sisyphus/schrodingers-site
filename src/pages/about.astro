@@ -1,55 +1,135 @@
 ---
 /**
- * About page - Atmospheric identity exploration
+ * About page - Identity as living data
  */
 
 import ContentLayout from '@/layouts/ContentLayout.astro';
-import { fetchORCIDProfile } from '@/lib/orcid';
+import Footer from '@/components/Footer.astro';
+import SEO from '@/components/SEO.astro';
+import Navigation from '@/components/Navigation.astro';
 
-const orcidProfile = await fetchORCIDProfile().catch(() => null);
+// Import profile data
+const profileData = await import('@/lib/profile.json');
+const profile = profileData.default;
 ---
 
 <ContentLayout
   title="About | stochastic-sisyphus"
-  description="Computational atmospheres exploring the intersection of code, data systems, and emergent patterns. A home for explorations, not a portfolio."
+  description={profile.bio}
 >
+  <SEO
+    slot="head"
+    title="About"
+    description="Vanessa Beck - ML engineer specializing in transformers, semantic search, and NLP"
+    canonical={Astro.url.href}
+  />
+
+  <Navigation slot="head" />
+
   <article class="about-page">
-    <!-- Header with atmospheric depth -->
+    <!-- Header -->
     <header class="page-header">
       <div class="header-glow" aria-hidden="true"></div>
       <h1 class="page-title">about</h1>
-      <p class="page-subtitle">
-        Identity as living data
-      </p>
+      <p class="page-subtitle">Identity as living data</p>
     </header>
 
-    <!-- Bio section with enhanced depth -->
-    <section class="bio-section float-in">
-      <div class="bio-content">
-        <p class="bio-text">
-          <strong>stochastic-sisyphus</strong> explores computational atmospheres
-          where identity and work exist as living data—revealed through color,
-          depth, and elegant interaction.
-        </p>
+    <!-- Identity Section -->
+    <section class="identity-section float-in">
+      <div class="identity-card glass-card">
+        <div class="identity-header">
+          <h2 class="identity-name">{profile.name}</h2>
+          <span class="identity-pronouns">{profile.pronouns}</span>
+        </div>
+        <p class="identity-handle">@{profile.handle}</p>
+        <p class="identity-title">{profile.title}</p>
+      </div>
+    </section>
 
-        <p class="bio-text">
-          A home for explorations at the intersection of code, data systems, and
-          emergent patterns. Not a portfolio, but an explorable system that feels
-          like a polished instrument.
+    <!-- Bio Section -->
+    <section class="bio-section float-in">
+      <div class="section-header">
+        <h2 class="section-title">the work</h2>
+        <span class="section-badge">current focus</span>
+      </div>
+      <div class="bio-content glass-card">
+        <p class="bio-text">{profile.bio}</p>
+        <p class="bio-text bio-focus">{profile.currentFocus}</p>
+      </div>
+    </section>
+
+    <!-- The Cycle Narrative -->
+    <section class="narrative-section float-in">
+      <div class="section-header">
+        <h2 class="section-title">the cycle</h2>
+        <span class="section-badge">perpetual uphill</span>
+      </div>
+      <div class="narrative-content glass-card">
+        <p class="narrative-text">
+          This is a snapshot of ongoing work—some projects work, some don't. Not every idea is worth a second push.
+        </p>
+        <p class="narrative-text">
+          Every model optimized is another model that needs optimization. Every feature shipped reveals three more that should exist. The boulder keeps rolling uphill.
+        </p>
+        <p class="narrative-text narrative-tagline">
+          Perpetually uphill.
         </p>
       </div>
     </section>
 
-    <!-- Connect section with atmospheric link cards -->
-    <section class="links-section float-in">
+    <!-- Passion Statement -->
+    <section class="passion-section float-in">
+      <div class="section-header">
+        <h2 class="section-title">passion statement</h2>
+        <span class="section-badge">what matters</span>
+      </div>
+      <div class="passion-content glass-card">
+        <p class="passion-text">
+          The fact that I named my cat <strong class="passion-emphasis">{profile.cat.name}</strong> is a better passion statement than any string of words I can come up with.
+        </p>
+        <div class="passion-meta">
+          <span class="cat-name">{profile.cat.name}</span>
+          <span class="cat-role">{profile.cat.role}</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Skills Section -->
+    <section class="skills-section float-in">
+      <div class="section-header">
+        <h2 class="section-title">technical stack</h2>
+        <span class="section-badge">tools of trade</span>
+      </div>
+      <div class="skills-grid">
+        {profile.skills.map((skill: string) => (
+          <div class="skill-tag">
+            <span class="skill-label">{skill}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- Education Section -->
+    <section class="education-section float-in">
+      <div class="section-header">
+        <h2 class="section-title">education</h2>
+        <span class="section-badge">credentials</span>
+      </div>
+      <div class="education-content glass-card">
+        <h3 class="education-degree">{profile.title}</h3>
+        <p class="education-focus">Focus areas: {profile.focus.join(', ')}</p>
+      </div>
+    </section>
+
+    <!-- Connect Section -->
+    <section class="connect-section float-in">
       <div class="section-header">
         <h2 class="section-title">connect</h2>
         <span class="section-badge">network nodes</span>
       </div>
-
       <div class="links-grid">
         <a
-          href="https://github.com/stochastic-sisyphus"
+          href={profile.socialLinks.github}
           class="link-card"
           target="_blank"
           rel="noopener noreferrer"
@@ -63,7 +143,7 @@ const orcidProfile = await fetchORCIDProfile().catch(() => null);
         </a>
 
         <a
-          href="https://orcid.org/0009-0008-6611-535X"
+          href={profile.socialLinks.orcid}
           class="link-card"
           target="_blank"
           rel="noopener noreferrer"
@@ -77,7 +157,35 @@ const orcidProfile = await fetchORCIDProfile().catch(() => null);
         </a>
 
         <a
-          href="https://existentialjester.substack.com"
+          href={profile.socialLinks.huggingface}
+          class="link-card"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <div class="link-glow" aria-hidden="true"></div>
+          <div class="link-content">
+            <span class="link-label">HuggingFace</span>
+            <span class="link-meta">model hub</span>
+          </div>
+          <span class="link-arrow">→</span>
+        </a>
+
+        <a
+          href={profile.socialLinks.linkedin}
+          class="link-card"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <div class="link-glow" aria-hidden="true"></div>
+          <div class="link-content">
+            <span class="link-label">LinkedIn</span>
+            <span class="link-meta">professional network</span>
+          </div>
+          <span class="link-arrow">→</span>
+        </a>
+
+        <a
+          href={profile.socialLinks.substack}
           class="link-card"
           target="_blank"
           rel="noopener noreferrer"
@@ -100,42 +208,9 @@ const orcidProfile = await fetchORCIDProfile().catch(() => null);
         </a>
       </div>
     </section>
-
-    <!-- Interests section with computational styling -->
-    <section class="interests-section float-in">
-      <div class="section-header">
-        <h2 class="section-title">areas of exploration</h2>
-        <span class="section-badge">research domains</span>
-      </div>
-
-      <div class="interests-grid">
-        <div class="interest-card">
-          <span class="interest-icon">∇</span>
-          <span class="interest-label">Computational systems and emergent behavior</span>
-        </div>
-        <div class="interest-card">
-          <span class="interest-icon">◆</span>
-          <span class="interest-label">Data visualization and living code representations</span>
-        </div>
-        <div class="interest-card">
-          <span class="interest-icon">○</span>
-          <span class="interest-label">Atmospheric interfaces and spatial computing</span>
-        </div>
-        <div class="interest-card">
-          <span class="interest-icon">△</span>
-          <span class="interest-label">Metadata architectures and knowledge graphs</span>
-        </div>
-        <div class="interest-card">
-          <span class="interest-icon">□</span>
-          <span class="interest-label">Natural language processing and semantic search</span>
-        </div>
-        <div class="interest-card">
-          <span class="interest-icon">◇</span>
-          <span class="interest-label">Stochastic processes and probabilistic modeling</span>
-        </div>
-      </div>
-    </section>
   </article>
+
+  <Footer slot="footer" />
 </ContentLayout>
 
 <script>
@@ -154,7 +229,7 @@ const orcidProfile = await fetchORCIDProfile().catch(() => null);
     position: relative;
   }
 
-  /* Header - atmospheric depth with glow (matching other pages) */
+  /* Header - atmospheric depth */
   .page-header {
     position: relative;
     margin-bottom: 5rem;
@@ -217,49 +292,14 @@ const orcidProfile = await fetchORCIDProfile().catch(() => null);
     z-index: 1;
   }
 
-  /* Bio Section - enhanced atmospheric */
-  .bio-section {
-    margin-bottom: 6rem;
-    position: relative;
-    z-index: 1;
-  }
-
-  .bio-content {
-    max-width: 900px;
-    padding: 3rem;
-    background: var(--depth-1);
-    backdrop-filter: var(--blur-medium);
-    border: 1px solid rgba(166, 182, 194, 0.15);
-    border-radius: 16px;
-    box-shadow: var(--shadow-soft);
-    transition: all var(--duration-medium) var(--ease-smooth);
-  }
-
-  .bio-content:hover {
-    background: rgba(42, 56, 68, 0.8);
-    border-color: rgba(166, 182, 194, 0.25);
-    box-shadow: var(--shadow-medium);
-  }
-
-  .bio-text {
-    color: var(--text-body);
-    font-size: 1.125rem;
-    line-height: 1.8;
-    margin: 0 0 1.5rem 0;
-  }
-
-  .bio-text:last-child {
-    margin-bottom: 0;
-  }
-
-  .bio-text strong {
-    color: var(--text-heading);
-    font-weight: 500;
-  }
-
-  /* Sections - atmospheric spacing */
-  .links-section,
-  .interests-section {
+  /* Sections */
+  .identity-section,
+  .bio-section,
+  .narrative-section,
+  .passion-section,
+  .skills-section,
+  .education-section,
+  .connect-section {
     margin-bottom: 6rem;
     position: relative;
     z-index: 1;
@@ -295,7 +335,207 @@ const orcidProfile = await fetchORCIDProfile().catch(() => null);
     font-weight: 500;
   }
 
-  /* Link Cards - atmospheric glow on hover */
+  /* Glass Card Base Style */
+  .glass-card {
+    padding: 3rem;
+    background: var(--depth-2);
+    backdrop-filter: var(--blur-medium);
+    border: 1px solid rgba(166, 182, 194, 0.15);
+    border-radius: 16px;
+    box-shadow: var(--shadow-soft), var(--shadow-medium);
+    transition: all var(--duration-medium) var(--ease-smooth);
+  }
+
+  .glass-card:hover {
+    background: rgba(42, 56, 68, 0.9);
+    border-color: rgba(166, 182, 194, 0.25);
+    box-shadow: var(--shadow-medium), var(--shadow-deep);
+  }
+
+  /* Identity Card */
+  .identity-card {
+    padding: 3rem;
+  }
+
+  .identity-header {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .identity-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 400;
+    color: var(--text-heading);
+    margin: 0;
+    letter-spacing: 0.01em;
+  }
+
+  .identity-pronouns {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.875rem;
+    color: var(--accent);
+    opacity: 0.8;
+    letter-spacing: 0.02em;
+  }
+
+  .identity-handle {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9375rem;
+    color: var(--accent);
+    margin: 0 0 1rem 0;
+    opacity: 0.7;
+    letter-spacing: 0.02em;
+  }
+
+  .identity-title {
+    font-size: 1.125rem;
+    color: var(--text-body);
+    margin: 0;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+  }
+
+  /* Bio Content */
+  .bio-content {
+    padding: 3rem;
+  }
+
+  .bio-text {
+    color: var(--text-body);
+    font-size: 1.125rem;
+    line-height: 1.8;
+    margin: 0 0 1.5rem 0;
+  }
+
+  .bio-text:last-child {
+    margin-bottom: 0;
+  }
+
+  .bio-focus {
+    font-weight: 500;
+    color: var(--text-heading);
+  }
+
+  /* Narrative Content */
+  .narrative-content {
+    padding: 3rem;
+  }
+
+  .narrative-text {
+    color: var(--text-body);
+    font-size: 1.125rem;
+    line-height: 1.8;
+    margin: 0 0 1.5rem 0;
+  }
+
+  .narrative-text:last-child {
+    margin-bottom: 0;
+  }
+
+  .narrative-tagline {
+    font-style: italic;
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  /* Passion Content */
+  .passion-content {
+    padding: 3rem;
+  }
+
+  .passion-text {
+    color: var(--text-body);
+    font-size: 1.25rem;
+    line-height: 1.8;
+    margin: 0 0 2rem 0;
+  }
+
+  .passion-emphasis {
+    color: var(--text-heading);
+    font-weight: 600;
+  }
+
+  .passion-meta {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(166, 182, 194, 0.1);
+  }
+
+  .cat-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.25rem;
+    color: var(--text-heading);
+    font-weight: 500;
+  }
+
+  .cat-role {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--accent);
+    opacity: 0.8;
+    letter-spacing: 0.05em;
+  }
+
+  /* Skills Grid */
+  .skills-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .skill-tag {
+    padding: 0.75rem 1.5rem;
+    background: var(--depth-2);
+    backdrop-filter: var(--blur-medium);
+    border: 1px solid rgba(166, 182, 194, 0.2);
+    border-radius: 8px;
+    transition: all var(--duration-short) var(--ease-smooth);
+  }
+
+  .skill-tag:hover {
+    background: rgba(42, 56, 68, 0.9);
+    border-color: rgba(166, 182, 194, 0.35);
+    box-shadow:
+      var(--shadow-soft),
+      0 0 20px rgba(166, 182, 194, 0.15);
+    transform: translateY(-2px);
+  }
+
+  .skill-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.875rem;
+    color: var(--text-body);
+    letter-spacing: 0.02em;
+    font-weight: 500;
+  }
+
+  /* Education Content */
+  .education-content {
+    padding: 3rem;
+  }
+
+  .education-degree {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: var(--text-heading);
+    margin: 0 0 1rem 0;
+    letter-spacing: 0.01em;
+  }
+
+  .education-focus {
+    font-size: 1.125rem;
+    color: var(--text-body);
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  /* Link Cards */
   .links-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -314,7 +554,7 @@ const orcidProfile = await fetchORCIDProfile().catch(() => null);
     border-radius: 12px;
     text-decoration: none;
     overflow: hidden;
-    box-shadow: var(--shadow-soft);
+    box-shadow: var(--shadow-soft), var(--shadow-medium);
     transition: all var(--duration-medium) var(--ease-smooth);
   }
 
@@ -343,6 +583,7 @@ const orcidProfile = await fetchORCIDProfile().catch(() => null);
     border-color: rgba(166, 182, 194, 0.35);
     box-shadow:
       var(--shadow-medium),
+      var(--shadow-deep),
       0 0 20px rgba(166, 182, 194, 0.15);
     transform: translateY(-4px);
   }
@@ -381,60 +622,15 @@ const orcidProfile = await fetchORCIDProfile().catch(() => null);
     transform: translateX(6px);
   }
 
-  /* Interests Grid - computational styling */
-  .interests-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1.5rem;
-  }
-
-  .interest-card {
-    display: flex;
-    align-items: center;
-    gap: 1.25rem;
-    padding: 1.75rem;
-    background: var(--depth-1);
-    backdrop-filter: var(--blur-medium);
-    border: 1px solid rgba(166, 182, 194, 0.15);
-    border-radius: 12px;
-    box-shadow: var(--shadow-soft);
-    transition: all var(--duration-medium) var(--ease-smooth);
-  }
-
-  .interest-card:hover {
-    background: rgba(42, 56, 68, 0.8);
-    border-color: rgba(166, 182, 194, 0.25);
-    box-shadow: var(--shadow-medium);
-    transform: translateY(-2px);
-  }
-
-  .interest-icon {
-    font-size: 1.5rem;
-    color: var(--highlight);
-    line-height: 1;
-    opacity: 0.7;
-    transition: all var(--duration-short) var(--ease-smooth);
-  }
-
-  .interest-card:hover .interest-icon {
-    opacity: 1;
-    transform: scale(1.1);
-  }
-
-  .interest-label {
-    color: var(--text-body);
-    font-size: 1rem;
-    line-height: 1.6;
-  }
-
   /* Scroll-based reveal */
   .float-in {
     opacity: 0;
     transform: translateY(40px);
-    filter: blur(8px);
-    transition: opacity 0.8s var(--ease-smooth),
-                transform 0.8s var(--ease-smooth),
-                filter 0.8s var(--ease-smooth);
+    filter: var(--blur-light);
+    transition:
+      opacity var(--duration-long) var(--ease-smooth),
+      transform var(--duration-long) var(--ease-smooth),
+      filter var(--duration-long) var(--ease-smooth);
   }
 
   .float-in.is-visible {
@@ -455,9 +651,13 @@ const orcidProfile = await fetchORCIDProfile().catch(() => null);
       height: 150px;
     }
 
+    .identity-section,
     .bio-section,
-    .links-section,
-    .interests-section {
+    .narrative-section,
+    .passion-section,
+    .skills-section,
+    .education-section,
+    .connect-section {
       margin-bottom: 4rem;
     }
   }
@@ -482,30 +682,53 @@ const orcidProfile = await fetchORCIDProfile().catch(() => null);
       font-size: 0.875rem;
     }
 
-    .bio-content {
+    .glass-card {
       padding: 2rem;
     }
 
-    .bio-text {
+    .identity-card,
+    .bio-content,
+    .narrative-content,
+    .passion-content,
+    .education-content {
+      padding: 2rem;
+    }
+
+    .identity-name {
+      font-size: 1.75rem;
+    }
+
+    .bio-text,
+    .narrative-text {
       font-size: 1rem;
+    }
+
+    .passion-text {
+      font-size: 1.0625rem;
     }
 
     .links-grid {
       grid-template-columns: 1fr;
     }
 
-    .interests-grid {
-      grid-template-columns: 1fr;
-    }
-
+    .identity-section,
     .bio-section,
-    .links-section,
-    .interests-section {
+    .narrative-section,
+    .passion-section,
+    .skills-section,
+    .education-section,
+    .connect-section {
       margin-bottom: 3rem;
     }
 
     .section-header {
       margin-bottom: 2rem;
+    }
+
+    .identity-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
     }
   }
 
@@ -524,8 +747,8 @@ const orcidProfile = await fetchORCIDProfile().catch(() => null);
     }
 
     .link-card,
-    .interest-card,
-    .bio-content {
+    .skill-tag,
+    .glass-card {
       transition: none;
     }
   }

@@ -1,65 +1,56 @@
-<script lang="ts">
-  import type { GitHubRepo } from '@/lib/types';
+---
+/**
+ * ProjectCard component for displaying project from content collection
+ */
+import type { CollectionEntry } from 'astro:content';
 
-  export let repo: GitHubRepo;
-  export let featured: boolean = false;
+interface Props {
+  project: CollectionEntry<'projects'>;
+}
 
-  const updatedDate = new Date(repo.updated_at).toLocaleDateString('en-US', {
-    month: 'short',
-    year: 'numeric',
-  });
-</script>
+const { project } = Astro.props;
+const { name, description, tags, githubUrl, featured, stars, language } = project.data;
 
-<a
-  href={`/projects/${repo.name}`}
-  class="project-card frosted-glass"
-  class:featured
-  aria-label={`View project: ${repo.name}`}
->
+// Extract GitHub username and repo name from URL
+const githubMatch = githubUrl.match(/github\.com\/([^/]+)\/([^/]+)/);
+const repoName = githubMatch ? githubMatch[2] : name;
+---
+
+<article class="project-card" class:list={{ featured }}>
   <div class="card-header">
-    <h3 class="project-name">{repo.name}</h3>
-    {#if featured}
-      <span class="featured-badge">featured</span>
-    {/if}
+    <h3 class="project-name">{name}</h3>
+    {featured && <span class="featured-badge">featured</span>}
   </div>
 
-  {#if repo.description}
-    <p class="project-description">{repo.description}</p>
-  {/if}
+  <p class="project-description">{description}</p>
 
   <div class="project-meta">
-    {#if repo.language}
+    {language && (
       <span class="language">
         <span class="language-dot" aria-hidden="true"></span>
-        {repo.language}
+        {language}
       </span>
-    {/if}
+    )}
 
-    {#if repo.stargazers_count > 0}
-      <span class="stars">★ {repo.stargazers_count}</span>
-    {/if}
-
-    {#if repo.forks_count > 0}
-      <span class="forks">⑂ {repo.forks_count}</span>
-    {/if}
-
-    <time datetime={repo.updated_at}>Updated {updatedDate}</time>
+    {stars && stars > 0 && (
+      <span class="stars">★ {stars}</span>
+    )}
   </div>
 
-  {#if repo.topics && repo.topics.length > 0}
+  {tags && tags.length > 0 && (
     <div class="project-topics">
-      {#each repo.topics.slice(0, 5) as topic}
-        <a
-          href={`/projects/tag/${topic}`}
-          class="topic"
-          on:click={(e) => e.stopPropagation()}
-        >
-          {topic}
-        </a>
-      {/each}
+      {tags.slice(0, 5).map((tag) => (
+        <span class="topic">{tag}</span>
+      ))}
     </div>
-  {/if}
-</a>
+  )}
+
+  <div class="card-actions">
+    <a href={githubUrl} class="github-link" target="_blank" rel="noopener noreferrer">
+      View on GitHub →
+    </a>
+  </div>
+</article>
 
 <style>
   .project-card {
@@ -68,8 +59,6 @@
     border: 1px solid rgba(166, 182, 194, 0.25);
     border-radius: 12px;
     padding: 2rem;
-    text-decoration: none;
-    color: inherit;
     display: flex;
     flex-direction: column;
     gap: 1rem;
@@ -142,10 +131,6 @@
       transform: scale(1.1) rotate(180deg);
       opacity: 0.8;
     }
-  }
-
-  .project-card:active {
-    transform: translateY(-4px);
   }
 
   /* Featured cards - enhanced depth */
@@ -280,8 +265,7 @@
     box-shadow: 0 0 6px rgba(166, 182, 194, 0.5);
   }
 
-  .stars,
-  .forks {
+  .stars {
     display: flex;
     align-items: center;
     gap: 0.35rem;
@@ -306,25 +290,46 @@
     color: var(--accent);
     font-weight: 500;
     border: 1px solid rgba(166, 182, 194, 0.15);
-    text-decoration: none;
-    cursor: pointer;
     opacity: 0.85;
     transition: all var(--duration-short) var(--ease-smooth);
     letter-spacing: 0.01em;
-  }
-
-  .topic:hover {
-    background: rgba(42, 56, 68, 0.9);
-    border-color: rgba(166, 182, 194, 0.3);
-    color: var(--highlight);
-    transform: translateY(-2px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   }
 
   .project-card:hover .topic {
     background: rgba(42, 56, 68, 0.85);
     border-color: rgba(166, 182, 194, 0.2);
     opacity: 1;
+  }
+
+  .card-actions {
+    position: relative;
+    z-index: 2;
+    margin-top: auto;
+    padding-top: 0.75rem;
+  }
+
+  .github-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
+    background: rgba(166, 182, 194, 0.1);
+    border: 1px solid rgba(166, 182, 194, 0.2);
+    border-radius: 6px;
+    color: var(--accent);
+    text-decoration: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    transition: all var(--duration-short) var(--ease-smooth);
+  }
+
+  .github-link:hover {
+    background: rgba(166, 182, 194, 0.18);
+    border-color: rgba(166, 182, 194, 0.35);
+    color: var(--highlight);
+    transform: translateX(4px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   }
 
   /* Reduce motion for accessibility */

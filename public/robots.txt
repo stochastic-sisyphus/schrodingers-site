@@ -1,4 +1,4 @@
-# robots.txt for stochastic-sisyphus
-
 User-agent: *
 Allow: /
+
+Sitemap: https://schrodingers-site.pages.dev/sitemap-index.xml

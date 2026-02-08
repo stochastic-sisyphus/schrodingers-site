@@ -1,0 +1,19 @@
+{
+  "name": "Vanessa Beck",
+  "handle": "stochastic-sisyphus",
+  "pronouns": "she/her",
+  "tagline": "reinventing the wheel.toml",
+  "title": "M.S. Analytics - Machine Learning Specialization",
+  "bio": "ML engineer working at the intersection of transformers, semantic search, and NLP. Building tools that map code structure and extract meaning from text.",
+  "skills": ["Python", "PyTorch", "TensorFlow", "Scikit-Learn", "NLP", "Semantic Search", "Transformers"],
+  "focus": ["Machine Learning", "NLP", "Data Science"],
+  "currentFocus": "Building intelligent tools for code understanding and semantic search",
+  "cat": { "name": "Marvin Minsky", "role": "Chief Chaos Officer" },
+  "socialLinks": {
+    "github": "https://github.com/stochastic-sisyphus",
+    "orcid": "https://orcid.org/0009-0008-6611-535X",
+    "huggingface": "https://huggingface.co/stochastic-sisyphus",
+    "linkedin": "https://linkedin.com/in/vanessa-beck",
+    "substack": "https://stochasticsisyphus.substack.com/"
+  }
+}

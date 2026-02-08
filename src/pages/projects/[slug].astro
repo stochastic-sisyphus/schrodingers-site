@@ -3,8 +3,9 @@
  * Individual project detail page
  */
 
+import { getCollection } from 'astro:content';
 import ContentLayout from '@/layouts/ContentLayout.astro';
-import { fetchAllRepos, fetchRepoReadme, fetchRepoStructure, fetchRecentCommits } from '@/lib/github';
+import { fetchRepoReadme, fetchRepoStructure, fetchRecentCommits } from '@/lib/github';
 import { analyzeRepoStructure } from '@/lib/visualizations/code-analyzer';
 import { analyzeCommitActivity } from '@/lib/visualizations/activity-analyzer';
 import CodeGraph from '@/components/visualizations/CodeGraph.svelte';
@@ -13,13 +14,20 @@ import ContributorNetwork from '@/components/visualizations/ContributorNetwork.s
 import ActivityTimeline from '@/components/visualizations/ActivityTimeline.svelte';
 
 export async function getStaticPaths() {
-  const repos = await fetchAllRepos();
+  // Use content collections as the source of truth
+  const projects = await getCollection('projects');
 
   return Promise.all(
-    repos.map(async (repo) => {
-      const readme = await fetchRepoReadme(repo.owner.login, repo.name);
-      const fileStructure = await fetchRepoStructure(repo.owner.login, repo.name);
-      const commits = await fetchRecentCommits(repo.owner.login, repo.name);
+    projects.map(async (project) => {
+      // Extract repo owner and name from GitHub URL
+      const githubUrlMatch = project.data.githubUrl.match(/github\.com\/([^\/]+)\/([^\/]+)/);
+      const owner = githubUrlMatch?.[1] || 'unknown';
+      const repoName = githubUrlMatch?.[2] || project.slug;
+
+      // Try to fetch additional data from GitHub (will gracefully fail if rate limited)
+      const readme = await fetchRepoReadme(owner, repoName);
+      const fileStructure = await fetchRepoStructure(owner, repoName);
+      const commits = await fetchRecentCommits(owner, repoName);
 
       // Analyze structure for visualizations
       const structureAnalysis = fileStructure.length > 0
@@ -31,8 +39,21 @@ export async function getStaticPaths() {
         ? analyzeCommitActivity(commits)
         : null;
 
+      // Create a repo-like object from project data
+      const repo = {
+        name: project.data.name,
+        description: project.data.description,
+        html_url: project.data.githubUrl,
+        homepage: project.data.homepage || null,
+        stargazers_count: project.data.stars || 0,
+        forks_count: 0,
+        language: project.data.language || null,
+        topics: project.data.tags || [],
+        updated_at: new Date().toISOString(), // Fallback date
+      };
+
       return {
-        params: { slug: repo.name },
+        params: { slug: project.slug },
         props: {
           repo,
           readme,
