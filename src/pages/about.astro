@@ -24,9 +24,12 @@ const profile = profileData.default;
     canonical={Astro.url.href}
   />
 
+  <!-- Skip to main content for keyboard navigation -->
+  <a href="#main-content" class="skip-to-content">Skip to main content</a>
+
   <Navigation slot="head" />
 
-  <article class="about-page">
+  <article id="main-content" class="about-page" role="main">
     <!-- Header -->
     <header class="page-header">
       <div class="header-glow" aria-hidden="true"></div>
@@ -133,6 +136,7 @@ const profile = profileData.default;
           class="link-card"
           target="_blank"
           rel="noopener noreferrer"
+          aria-label="Visit GitHub profile - code repositories"
         >
           <div class="link-glow" aria-hidden="true"></div>
           <div class="link-content">
@@ -147,6 +151,7 @@ const profile = profileData.default;
           class="link-card"
           target="_blank"
           rel="noopener noreferrer"
+          aria-label="Visit ORCID profile - research publications"
         >
           <div class="link-glow" aria-hidden="true"></div>
           <div class="link-content">
@@ -161,6 +166,7 @@ const profile = profileData.default;
           class="link-card"
           target="_blank"
           rel="noopener noreferrer"
+          aria-label="Visit HuggingFace profile - machine learning models"
         >
           <div class="link-glow" aria-hidden="true"></div>
           <div class="link-content">
@@ -175,6 +181,7 @@ const profile = profileData.default;
           class="link-card"
           target="_blank"
           rel="noopener noreferrer"
+          aria-label="Visit LinkedIn profile - professional network"
         >
           <div class="link-glow" aria-hidden="true"></div>
           <div class="link-content">
@@ -189,6 +196,7 @@ const profile = profileData.default;
           class="link-card"
           target="_blank"
           rel="noopener noreferrer"
+          aria-label="Visit Substack blog - writing stream"
         >
           <div class="link-glow" aria-hidden="true"></div>
           <div class="link-content">
@@ -198,7 +206,7 @@ const profile = profileData.default;
           <span class="link-arrow">→</span>
         </a>
 
-        <a href="/blog/rss.xml" class="link-card">
+        <a href="/blog/rss.xml" class="link-card" aria-label="Subscribe to RSS feed - syndication">
           <div class="link-glow" aria-hidden="true"></div>
           <div class="link-content">
             <span class="link-label">RSS Feed</span>
@@ -622,6 +630,11 @@ const profile = profileData.default;
     transform: translateX(6px);
   }
 
+  .link-card:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 4px;
+  }
+
   /* Scroll-based reveal */
   .float-in {
     opacity: 0;
@@ -751,5 +764,25 @@ const profile = profileData.default;
     .glass-card {
       transition: none;
     }
+  }
+
+  /* Skip to content link for accessibility */
+  .skip-to-content {
+    position: absolute;
+    top: -100px;
+    left: 0;
+    background: var(--base);
+    color: var(--highlight);
+    padding: 1rem 2rem;
+    text-decoration: none;
+    z-index: 100;
+    border: 2px solid var(--accent);
+    border-radius: 4px;
+    font-weight: 500;
+  }
+
+  .skip-to-content:focus {
+    top: 1rem;
+    left: 1rem;
   }
 </style>

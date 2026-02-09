@@ -50,9 +50,12 @@ const allPosts = [
     canonical={Astro.url.href}
   />
 
+  <!-- Skip to main content for keyboard navigation -->
+  <a href="#main-content" class="skip-to-content">Skip to main content</a>
+
   <Navigation />
 
-  <article class="blog-page">
+  <article id="main-content" class="blog-page" role="main">
     <!-- Header with atmospheric context -->
     <header class="page-header">
       <div class="header-glow" aria-hidden="true"></div>
@@ -257,5 +260,25 @@ const allPosts = [
       animation: none;
       opacity: 0.8;
     }
+  }
+
+  /* Skip to content link for accessibility */
+  .skip-to-content {
+    position: absolute;
+    top: -100px;
+    left: 0;
+    background: var(--base);
+    color: var(--highlight);
+    padding: 1rem 2rem;
+    text-decoration: none;
+    z-index: 100;
+    border: 2px solid var(--accent);
+    border-radius: 4px;
+    font-weight: 500;
+  }
+
+  .skip-to-content:focus {
+    top: 1rem;
+    left: 1rem;
   }
 </style>

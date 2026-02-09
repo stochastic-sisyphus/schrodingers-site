@@ -4,6 +4,7 @@
  */
 
 import { getCollection } from 'astro:content';
+import type { GitHubRepo } from '@/lib/types';
 import ContentLayout from '@/layouts/ContentLayout.astro';
 import { fetchRepoReadme, fetchRepoStructure, fetchRecentCommits } from '@/lib/github';
 import { analyzeRepoStructure } from '@/lib/visualizations/code-analyzer';
@@ -68,7 +69,7 @@ export async function getStaticPaths() {
 }
 
 interface Props {
-  repo: Awaited<ReturnType<typeof fetchAllRepos>>[0];
+  repo: GitHubRepo;
   readme: string | null;
   structureAnalysis: ReturnType<typeof analyzeRepoStructure> | null;
   activityAnalysis: ReturnType<typeof analyzeCommitActivity> | null;

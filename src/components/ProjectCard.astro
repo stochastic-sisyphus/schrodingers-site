@@ -332,6 +332,13 @@ const repoName = githubMatch ? githubMatch[2] : name;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   }
 
+  .github-link:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    background: rgba(166, 182, 194, 0.18);
+    border-color: rgba(166, 182, 194, 0.35);
+  }
+
   /* Reduce motion for accessibility */
   @media (prefers-reduced-motion: reduce) {
     .project-card::after {

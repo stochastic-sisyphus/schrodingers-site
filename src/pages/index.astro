@@ -391,6 +391,13 @@ const keyResearch = allResearch
     color: var(--text-heading);
   }
 
+  .nav-link:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 4px;
+    background: rgba(42, 56, 68, 0.9);
+    border-color: rgba(166, 182, 194, 0.35);
+  }
+
   .nav-count {
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.75rem;
@@ -609,6 +616,11 @@ const keyResearch = allResearch
 
   .view-more:hover::after {
     transform: translateX(6px);
+  }
+
+  .view-more:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 4px;
   }
 
   /* Make links and interactive elements accessible */
