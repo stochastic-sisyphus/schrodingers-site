@@ -1,8 +1,4 @@
 ---
-/**
- * Homepage - Atmospheric Entry Point
- * Phase 6: Content zones with atmospheric scrolling
- */
 import { getCollection } from 'astro:content';
 import { fetchAllRepos, getFeaturedRepos } from '../lib/github';
 import Atmosphere from '../components/Atmosphere.astro';
@@ -13,31 +9,20 @@ import Footer from '../components/Footer.astro';
 import SEO from '../components/SEO.astro';
 import '../styles/global.css';
 
-// Fetch featured content (with fallback to content collections)
 const allRepos = await fetchAllRepos();
-const featuredRepos = allRepos.length > 0
-  ? getFeaturedRepos(allRepos).slice(0, 3)
-  : [];
-
-// Fallback: Use content collections if GitHub API fails
+const featuredRepos = allRepos.length > 0 ? getFeaturedRepos(allRepos).slice(0, 3) : [];
 const projectsFromContent = await getCollection('projects');
 const featuredProjects = featuredRepos.length > 0
   ? featuredRepos
   : projectsFromContent.filter(p => p.data.featured).slice(0, 3);
 
-// Get recent blog posts (limit to 3)
-const allBlogPosts = await getCollection('blog', ({ data }) => {
-  return !data.draft;
-});
+const allBlogPosts = await getCollection('blog', ({ data }) => !data.draft);
 const recentPosts = allBlogPosts
   .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
   .slice(0, 3);
 
-// Get key research papers (featured or most recent)
 const allResearch = await getCollection('research');
-const keyResearch = allResearch
-  .filter(({ data }) => data.featured)
-  .slice(0, 3);
+const keyResearch = allResearch.filter(({ data }) => data.featured).slice(0, 3);
 ---
 
 <!doctype html>
@@ -48,720 +33,214 @@ const keyResearch = allResearch
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Inter:wght@400;500&display=swap"
-      rel="stylesheet"
-    />
-    <SEO
-      title="stochastic-sisyphus | Vanessa Beck"
-      description="ML engineer working at the intersection of transformers, semantic search, and NLP. Building tools for code understanding and semantic search."
-      canonical={Astro.url.href}
-    />
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600&display=swap" rel="stylesheet" />
+    <SEO title="Vanessa Beck" description="Machine learning research. Transformers, semantic search, NLP." canonical={Astro.url.href} />
   </head>
   <body>
-    <!-- Skip to main content for keyboard navigation -->
-    <a href="#main-content" class="skip-to-content">Skip to main content</a>
-
     <Atmosphere />
 
-    <!-- Hero Section - Atmospheric Entry -->
-    <header class="hero" aria-label="Site introduction">
-      <div class="hero-glow" aria-hidden="true"></div>
-      <div class="hero-content">
-        <h1 class="identity">stochastic-sisyphus</h1>
-        <p class="tagline">reinventing the wheel.toml</p>
-        <div class="identity-meta">
-          <span class="meta-item">machine learning</span>
-          <span class="meta-divider">·</span>
-          <span class="meta-item">semantic search</span>
-          <span class="meta-divider">·</span>
-          <span class="meta-item">NLP</span>
-        </div>
-      </div>
-      <nav class="hero-nav" aria-label="Main navigation">
-        <a href="/projects" class="nav-link" aria-label="View projects">
-          <span class="nav-label">projects</span>
-          <span class="nav-count" aria-label="{featuredProjects.length} featured projects">{featuredProjects.length}</span>
-        </a>
-        <a href="/blog" class="nav-link" aria-label="View blog posts">
-          <span class="nav-label">writing</span>
-          <span class="nav-count" aria-label="{recentPosts.length} or more blog posts">{recentPosts.length}+</span>
-        </a>
-        <a href="/research" class="nav-link" aria-label="View research publications">
-          <span class="nav-label">research</span>
-          <span class="nav-count" aria-label="{keyResearch.length} or more research papers">{keyResearch.length}+</span>
-        </a>
-        <a href="/about" class="nav-link" aria-label="View about page">
-          <span class="nav-label">about</span>
-        </a>
-      </nav>
-    </header>
+    <div class="page">
+      <header class="header">
+        <h1>Vanessa Beck</h1>
+        <p class="handle">@stochastic-sisyphus</p>
+        <p class="bio">Machine learning · Semantic search · NLP</p>
+        <nav>
+          <a href="/research">Research</a>
+          <a href="/projects">Projects</a>
+          <a href="/blog">Writing</a>
+          <a href="/about">About</a>
+        </nav>
+      </header>
 
-    <!-- Content Zones - Atmospheric Exploration -->
-    <main id="main-content" class="content-zones">
-      <!-- Featured Work -->
-      {featuredProjects.length > 0 && (
-        <section class="content-zone" data-zone="projects">
-          <div class="zone-glow" aria-hidden="true"></div>
-          <header class="zone-header">
-            <h2 class="zone-title">Featured Work</h2>
-            <span class="zone-badge">curated</span>
-          </header>
-          <div class="content-grid">
-            {featuredProjects.map((item, index) => {
-              // Handle both GitHub API repos and content collection projects
-              const repo = 'data' in item ? {
-                name: item.data.name,
-                description: item.data.description,
-                html_url: item.data.githubUrl,
-                homepage: item.data.homepage || null,
-                stargazers_count: item.data.stars || 0,
-                language: item.data.language || null,
-                topics: item.data.tags || [],
-              } : item;
-
-              return (
-                <div class="grid-item" style={`animation-delay: ${index * 0.12}s`}>
-                  <ProjectCard repo={repo} featured={true} client:visible />
-                </div>
-              );
-            })}
-          </div>
-          <a href="/projects" class="view-more" aria-label="Navigate to all projects">
-            <span>Explore all projects</span>
-          </a>
-        </section>
-      )}
-
-      <!-- Recent Writing -->
-      {recentPosts.length > 0 && (
-        <section class="content-zone" data-zone="blog">
-          <div class="zone-glow" aria-hidden="true"></div>
-          <header class="zone-header">
-            <h2 class="zone-title">Recent Writing</h2>
-            <span class="zone-badge">live feed</span>
-          </header>
-          <div class="content-grid">
-            {recentPosts.map((post, index) => (
-              <div class="grid-item" style={`animation-delay: ${index * 0.12}s`}>
-                <BlogCard
-                  title={post.data.title}
-                  date={post.data.date}
-                  excerpt={post.data.excerpt}
-                  tags={post.data.tags}
-                  slug={post.slug}
-                  substackUrl={post.data.substackUrl}
-                  isExternal={!!post.data.substackUrl}
-                />
-              </div>
+      <main>
+        {keyResearch.length > 0 && (
+          <section>
+            <h2>Research</h2>
+            {keyResearch.map((paper) => (
+              <ResearchCard
+                id={paper.slug}
+                title={paper.data.title}
+                authors={paper.data.authors}
+                year={paper.data.year}
+                journal={paper.data.journal}
+                doi={paper.data.doi}
+                orcidUrl={paper.data.orcidUrl}
+                abstract={paper.data.abstract}
+                type={paper.data.type}
+                isLocal={true}
+              />
             ))}
-          </div>
-          <a href="/blog" class="view-more" aria-label="Navigate to all blog posts">
-            <span>Read all posts</span>
-          </a>
-        </section>
-      )}
+          </section>
+        )}
 
-      <!-- Key Research -->
-      {keyResearch.length > 0 && (
-        <section class="content-zone" data-zone="research">
-          <div class="zone-glow" aria-hidden="true"></div>
-          <header class="zone-header">
-            <div class="zone-header-content">
-              <h2 class="zone-title">Research</h2>
-              <p class="zone-subtitle">Academic contributions and publications</p>
+        {featuredProjects.length > 0 && (
+          <section>
+            <h2>Featured Work</h2>
+            <div class="grid">
+              {featuredProjects.map((item) => {
+                const repo = 'data' in item ? {
+                  name: item.data.name,
+                  description: item.data.description,
+                  html_url: item.data.githubUrl,
+                  homepage: item.data.homepage || null,
+                  stargazers_count: item.data.stars || 0,
+                  language: item.data.language || null,
+                  topics: item.data.tags || [],
+                } : item;
+                return <ProjectCard repo={repo} featured={true} client:visible />;
+              })}
             </div>
-            <span class="zone-badge">peer-reviewed</span>
-          </header>
-          <div class="content-grid">
-            {keyResearch.map((paper, index) => (
-              <div class="grid-item" style={`animation-delay: ${index * 0.12}s`}>
-                <ResearchCard
-                  id={paper.slug}
-                  title={paper.data.title}
-                  authors={paper.data.authors}
-                  year={paper.data.year}
-                  journal={paper.data.journal}
-                  doi={paper.data.doi}
-                  orcidUrl={paper.data.orcidUrl}
-                  abstract={paper.data.abstract}
-                  type={paper.data.type}
-                  isLocal={true}
-                />
-              </div>
-            ))}
-          </div>
-          <a href="/research" class="view-more" aria-label="Navigate to all research publications">
-            <span>View all research</span>
-          </a>
-        </section>
-      )}
-    </main>
+            <a href="/projects" class="more">View all →</a>
+          </section>
+        )}
 
-    <!-- Initialize scroll animations -->
-    <script>
-      import { initAllScrollAnimations } from '../lib/scroll-animations';
-      initAllScrollAnimations();
-    </script>
+        {recentPosts.length > 0 && (
+          <section>
+            <h2>Writing</h2>
+            {recentPosts.map((post) => (
+              <BlogCard
+                title={post.data.title}
+                date={post.data.date}
+                excerpt={post.data.excerpt}
+                tags={post.data.tags}
+                slug={post.slug}
+                substackUrl={post.data.substackUrl}
+                isExternal={!!post.data.substackUrl}
+              />
+            ))}
+            <a href="/blog" class="more">Read all →</a>
+          </section>
+        )}
+      </main>
+    </div>
 
     <Footer />
   </body>
 </html>
 
 <style>
-  /* Hero Section - Atmospheric Entry Point */
-  .hero {
+  body {
+    font-family: 'EB Garamond', Georgia, serif;
+  }
+
+  .page {
     position: relative;
     z-index: 1;
-    min-height: 100vh;
-    min-height: 100dvh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 4rem;
-    padding: 2rem;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 2rem;
   }
 
-  /* Hero atmospheric glow */
-  .hero-glow {
-    position: absolute;
-    top: 30%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 600px;
-    height: 600px;
-    background: radial-gradient(
-      circle,
-      rgba(166, 182, 194, 0.18) 0%,
-      rgba(132, 152, 166, 0.1) 30%,
-      transparent 70%
-    );
-    filter: blur(80px);
-    pointer-events: none;
-    opacity: 0;
-    animation: heroGlowPulse 10s ease-in-out 0.5s infinite;
-  }
-
-  @keyframes heroGlowPulse {
-    0%, 100% {
-      opacity: 0.5;
-      transform: translate(-50%, -50%) scale(1);
-    }
-    50% {
-      opacity: 0.8;
-      transform: translate(-50%, -50%) scale(1.15);
-    }
-  }
-
-  .hero-content {
+  .header {
+    padding: 6rem 0 4rem;
     text-align: center;
-    position: relative;
-    z-index: 1;
   }
 
-  .identity {
-    font-family: 'Cormorant Garamond', Georgia, serif;
-    font-size: clamp(3rem, 8vw, 6.5rem);
-    font-weight: 300;
-    letter-spacing: 0.02em;
+  h1 {
+    font-size: clamp(2.5rem, 5vw, 3.25rem);
+    font-weight: 500;
+    letter-spacing: -0.02em;
     color: var(--text-heading);
-    opacity: 0;
-    animation: fadeInUp 1.5s var(--ease-smooth) 0.3s forwards;
-    margin: 0;
-    text-shadow:
-      0 2px 12px rgba(0, 0, 0, 0.5),
-      0 4px 24px rgba(166, 182, 194, 0.2);
+    margin: 0 0 0.75rem;
   }
 
-  .tagline {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(1.25rem, 3vw, 1.875rem);
-    font-weight: 300;
-    letter-spacing: 0.05em;
+  .handle {
+    font-size: 1.125rem;
     color: var(--accent);
-    opacity: 0;
-    animation: fadeInUp 1.5s var(--ease-smooth) 0.8s forwards;
-    margin: 1rem 0 0 0;
+    margin: 0 0 1rem;
+    font-weight: 400;
   }
 
-  .identity-meta {
+  .bio {
+    font-size: 1.0625rem;
+    color: var(--light);
+    margin: 0 0 2.5rem;
+  }
+
+  nav {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
-    margin-top: 1.5rem;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.8125rem;
-    color: var(--accent);
-    letter-spacing: 0.02em;
-    opacity: 0;
-    animation: fadeInUp 1.5s var(--ease-smooth) 1.2s forwards;
-  }
-
-  .meta-item {
-    opacity: 0.8;
-  }
-
-  .meta-divider {
-    opacity: 0.4;
-  }
-
-  @keyframes fadeInUp {
-    from {
-      opacity: 0;
-      transform: translateY(30px);
-      filter: blur(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-      filter: blur(0);
-    }
-  }
-
-  /* Hero Navigation - Enhanced with badges */
-  .hero-nav {
-    display: flex;
-    gap: 2rem;
-    opacity: 0;
-    animation: fadeInUp 1.5s var(--ease-smooth) 1.6s forwards;
-    position: relative;
-    z-index: 1;
-    flex-wrap: wrap;
+    gap: 2.5rem;
     justify-content: center;
   }
 
-  .nav-link {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 1rem 1.75rem;
-    background: var(--depth-2);
-    backdrop-filter: var(--blur-medium);
-    border: 1px solid rgba(166, 182, 194, 0.2);
-    border-radius: 10px;
+  nav a {
+    font-size: 1.0625rem;
+    color: var(--text-body);
     text-decoration: none;
-    box-shadow: var(--shadow-soft);
-    transition: all var(--duration-medium) var(--ease-smooth);
     position: relative;
-    overflow: hidden;
+    transition: color 0.25s;
   }
 
-  .nav-link::before {
+  nav a::after {
     content: '';
     position: absolute;
-    top: 0;
+    bottom: -3px;
     left: 0;
     right: 0;
-    bottom: 0;
-    background: radial-gradient(
-      circle at center,
-      rgba(166, 182, 194, 0.15) 0%,
-      transparent 70%
-    );
-    opacity: 0;
-    transition: opacity var(--duration-medium) var(--ease-smooth);
+    height: 1px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transition: transform 0.25s;
   }
 
-  .nav-link:hover::before {
-    opacity: 1;
-  }
-
-  .nav-link:hover {
-    background: rgba(42, 56, 68, 0.9);
-    border-color: rgba(166, 182, 194, 0.35);
-    box-shadow:
-      var(--shadow-medium),
-      0 0 20px rgba(166, 182, 194, 0.15);
-    transform: translateY(-4px);
-  }
-
-  .nav-label {
-    font-family: 'Inter', sans-serif;
-    font-size: 1.0625rem;
-    font-weight: 500;
-    color: var(--text-body);
-    letter-spacing: 0.02em;
-    position: relative;
-    z-index: 1;
-  }
-
-  .nav-link:hover .nav-label {
+  nav a:hover {
     color: var(--text-heading);
   }
 
-  .nav-link:focus-visible {
-    outline: 3px solid var(--accent);
-    outline-offset: 4px;
-    background: rgba(42, 56, 68, 0.9);
-    border-color: rgba(166, 182, 194, 0.35);
+  nav a:hover::after {
+    transform: scaleX(1);
   }
 
-  .nav-count {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.75rem;
-    color: var(--accent);
-    padding: 0.25rem 0.5rem;
-    background: rgba(166, 182, 194, 0.1);
-    border-radius: 4px;
-    position: relative;
-    z-index: 1;
+  main {
+    padding-bottom: 4rem;
   }
 
-  /* Content Zones - Enhanced atmospheric depth */
-  .content-zones {
-    pointer-events: auto;
-    position: relative;
-    z-index: 1;
-    padding: 6rem 2rem 4rem;
-    width: 100%;
-    max-width: 1400px;
-    margin: 0 auto;
+  section {
+    margin-bottom: 5rem;
   }
 
-  .content-zone {
-    margin-bottom: 8rem;
-    opacity: 0;
-    transform: translateY(50px);
-    filter: blur(10px);
-    transition: opacity 1s var(--ease-smooth),
-                transform 1s var(--ease-smooth),
-                filter 1s var(--ease-smooth);
-    will-change: opacity, transform, filter;
-    position: relative;
-  }
-
-  .content-zone.is-visible {
-    opacity: 1;
-    transform: translateY(0);
-    filter: blur(0);
-  }
-
-  .content-zone:last-child {
-    margin-bottom: 4rem;
-  }
-
-  /* Zone atmospheric glows */
-  .zone-glow {
-    position: absolute;
-    top: -80px;
-    left: 10%;
-    width: 400px;
-    height: 200px;
-    background: radial-gradient(
-      ellipse,
-      rgba(166, 182, 194, 0.12) 0%,
-      rgba(132, 152, 166, 0.06) 40%,
-      transparent 70%
-    );
-    filter: blur(60px);
-    pointer-events: none;
-    opacity: 0.7;
-  }
-
-  /* Zone headers - enhanced with badges */
-  .zone-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 1.5rem;
-    margin-bottom: 3.5rem;
-    flex-wrap: wrap;
-  }
-
-  .zone-header-content {
-    flex: 1;
-  }
-
-  .zone-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(2rem, 4vw, 3rem);
-    font-weight: 400;
-    color: var(--text-heading);
-    margin: 0 0 0.5rem 0;
-    letter-spacing: 0.02em;
-    line-height: 1.2;
-  }
-
-  .zone-subtitle {
-    font-size: 1rem;
-    color: var(--text-body);
-    font-weight: 400;
-    margin: 0;
-    letter-spacing: 0.03em;
-    opacity: 0.85;
-  }
-
-  .zone-badge {
-    padding: 0.4rem 1rem;
-    background: rgba(166, 182, 194, 0.1);
-    border: 1px solid rgba(166, 182, 194, 0.2);
-    border-radius: 6px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.6875rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--accent);
+  h2 {
+    font-size: 1.875rem;
     font-weight: 500;
-    white-space: nowrap;
+    letter-spacing: -0.01em;
+    color: var(--text-heading);
+    margin: 0 0 2rem;
   }
 
-  /* Content Grid - staggered reveal */
-  .content-grid {
+  .grid {
     display: grid;
     gap: 2rem;
     grid-template-columns: 1fr;
-    padding: 0.5rem 0;
   }
 
   @media (min-width: 768px) {
-    .content-grid {
+    .grid {
       grid-template-columns: repeat(2, 1fr);
-      gap: 2rem 2.5rem;
     }
   }
 
-  @media (min-width: 1024px) {
-    .content-grid {
-      grid-template-columns: repeat(3, 1fr);
-      gap: 2rem 2.5rem;
-    }
-  }
-
-  .grid-item {
-    opacity: 0;
-    transform: translateY(30px);
-    filter: blur(8px);
-    animation: floatIn 0.9s var(--ease-smooth) forwards;
-  }
-
-  @keyframes floatIn {
-    from {
-      opacity: 0;
-      transform: translateY(30px);
-      filter: blur(8px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-      filter: blur(0);
-    }
-  }
-
-  /* View More Links - Enhanced */
-  .view-more {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-top: 3rem;
-    padding: 1rem 2rem;
-    background: var(--depth-2);
-    backdrop-filter: var(--blur-medium);
-    border: 1px solid rgba(166, 182, 194, 0.25);
-    border-radius: 10px;
+  .more {
+    display: inline-block;
+    margin-top: 1.5rem;
+    font-size: 1.0625rem;
     color: var(--text-body);
     text-decoration: none;
-    font-size: 1rem;
-    font-weight: 500;
-    letter-spacing: 0.02em;
-    box-shadow: var(--shadow-soft);
-    transition: all var(--duration-medium) var(--ease-smooth);
-    position: relative;
-    overflow: hidden;
+    border-bottom: 1px solid var(--accent);
+    padding-bottom: 1px;
+    transition: color 0.25s;
   }
 
-  .view-more::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: radial-gradient(
-      circle at center,
-      rgba(166, 182, 194, 0.15) 0%,
-      transparent 70%
-    );
-    opacity: 0;
-    transition: opacity var(--duration-medium) var(--ease-smooth);
-  }
-
-  .view-more:hover::before {
-    opacity: 1;
-  }
-
-  .view-more:hover {
-    background: rgba(42, 56, 68, 0.9);
-    border-color: rgba(166, 182, 194, 0.4);
+  .more:hover {
     color: var(--text-heading);
-    box-shadow:
-      var(--shadow-medium),
-      0 0 20px rgba(166, 182, 194, 0.15);
-    transform: translateX(6px);
-  }
-
-  .view-more span {
-    position: relative;
-    z-index: 1;
-  }
-
-  .view-more::after {
-    content: '→';
-    font-size: 1.2em;
-    transition: transform var(--duration-short) var(--ease-smooth);
-    position: relative;
-    z-index: 1;
-  }
-
-  .view-more:hover::after {
-    transform: translateX(6px);
-  }
-
-  .view-more:focus-visible {
-    outline: 3px solid var(--accent);
-    outline-offset: 4px;
-  }
-
-  /* Make links and interactive elements accessible */
-  .content-zones a,
-  .content-zones button {
-    pointer-events: auto;
-  }
-
-  /* Responsive adjustments */
-  @media (max-width: 1024px) {
-    .content-zones {
-      padding: 4rem 2rem 3rem;
-    }
-
-    .content-zone {
-      margin-bottom: 6rem;
-    }
-
-    .hero-glow {
-      width: 450px;
-      height: 450px;
-    }
   }
 
   @media (max-width: 768px) {
-    .hero {
-      gap: 3rem;
+    .header {
+      padding: 4rem 0 3rem;
     }
 
-    .identity {
-      font-size: 2.5rem;
+    nav {
+      gap: 2rem;
     }
-
-    .tagline {
-      font-size: 1.125rem;
-    }
-
-    .identity-meta {
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-
-    .meta-divider {
-      display: none;
-    }
-
-    .hero-nav {
-      gap: 1rem;
-      width: 100%;
-      max-width: 400px;
-    }
-
-    .nav-link {
-      flex: 1;
-      min-width: 140px;
-      padding: 0.875rem 1.25rem;
-      justify-content: center;
-    }
-
-    .nav-label {
-      font-size: 0.9375rem;
-    }
-
-    .content-zones {
-      padding: 3rem 1.5rem 2rem;
-    }
-
-    .content-zone {
-      margin-bottom: 4rem;
-    }
-
-    .zone-header {
-      margin-bottom: 2.5rem;
-    }
-
-    .zone-glow {
-      width: 250px;
-      height: 125px;
-      top: -50px;
-    }
-
-    .hero-glow {
-      width: 300px;
-      height: 300px;
-    }
-  }
-
-  /* Reduce motion for accessibility */
-  @media (prefers-reduced-motion: reduce) {
-    .hero-glow {
-      animation: none;
-      opacity: 0.5;
-    }
-
-    .identity,
-    .tagline,
-    .identity-meta,
-    .hero-nav {
-      animation: none;
-      opacity: 1;
-      transform: none;
-      filter: none;
-    }
-
-    .content-zone {
-      transition: none;
-      opacity: 1;
-      transform: none;
-      filter: none;
-    }
-
-    .grid-item {
-      animation: none;
-      opacity: 1;
-      transform: none;
-      filter: none;
-    }
-
-    .nav-link,
-    .view-more {
-      transition: none;
-    }
-  }
-
-  /* Skip to content link for accessibility */
-  .skip-to-content {
-    position: absolute;
-    top: -100px;
-    left: 0;
-    background: var(--base);
-    color: var(--highlight);
-    padding: 1rem 2rem;
-    text-decoration: none;
-    z-index: 100;
-    border: 2px solid var(--accent);
-    border-radius: 4px;
-    font-weight: 500;
-  }
-
-  .skip-to-content:focus {
-    top: 1rem;
-    left: 1rem;
   }
 </style>
