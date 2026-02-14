@@ -1,10 +1,9 @@
 "use client"
 
 import { motion, useInView } from "framer-motion"
-import { useRef } from "react"
+import { useRef, useState } from "react"
 import type { BlogPost } from "@/lib/types"
 
-// Placeholder thoughts (fallback if Substack feed fails)
 const placeholderThoughts = [
   {
     date: "2025",
@@ -40,70 +39,102 @@ const placeholderThoughts = [
   },
 ]
 
-interface ThoughtCardProps {
-  thought: {
-    date: string
-    title: string
-    excerpt: string
-    readTime: string
-    link: string
-  }
-  index: number
+interface ThoughtData {
+  date: string
+  title: string
+  excerpt: string
+  readTime: string
+  link: string
 }
 
-function ThoughtCard({ thought, index }: ThoughtCardProps) {
+function ThoughtCard({ thought, index, isFeatured }: { thought: ThoughtData; index: number; isFeatured: boolean }) {
   const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: "-80px" })
+  const isInView = useInView(ref, { once: true, margin: "-60px" })
+  const [touched, setTouched] = useState(false)
+
+  const isExternal = thought.link.startsWith("http")
 
   return (
     <motion.article
       ref={ref}
       initial={{ opacity: 0, y: 30 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.7, delay: index * 0.1 }}
-      className="group cursor-pointer"
+      transition={{ duration: 0.7, delay: index * 0.08 }}
+      className={`group ${isFeatured ? "md:col-span-2" : ""}`}
     >
       <a
         href={thought.link}
-        target={thought.link.startsWith("http") ? "_blank" : undefined}
-        rel={thought.link.startsWith("http") ? "noopener noreferrer" : undefined}
-        className="block"
+        target={isExternal ? "_blank" : undefined}
+        rel={isExternal ? "noopener noreferrer" : undefined}
+        className="block h-full"
+        onTouchStart={() => setTouched(true)}
+        onTouchEnd={() => setTimeout(() => setTouched(false), 300)}
       >
-        <div className="border border-foreground/5 rounded-sm p-6 md:p-8 hover:border-foreground/15 transition-all duration-500 hover:bg-foreground/[0.02]">
-          <div className="flex items-center justify-between mb-5">
-            <span className="text-foreground/30 text-[10px] tracking-wide uppercase font-light">
-              {thought.date}
-            </span>
-            <span className="text-foreground/20 text-[10px] tracking-wide font-light">
-              {thought.readTime}
-            </span>
-          </div>
+        <div
+          className={`relative h-full rounded-lg overflow-hidden border border-foreground/5 transition-all duration-500 hover:border-foreground/15 ${
+            touched ? "border-foreground/15 bg-card/60" : "bg-card/30"
+          } hover:bg-card/60`}
+        >
+          {/* Accent stripe */}
+          <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
 
-          <h3 className="text-lg md:text-xl font-light text-foreground mb-4 tracking-tight group-hover:text-primary transition-colors duration-500">
-            <span className="instrument italic">{thought.title}</span>
-          </h3>
+          <div className={`p-5 md:p-6 ${isFeatured ? "md:p-8" : ""} flex flex-col h-full`}>
+            {/* Header row */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <span className="text-foreground/30 text-[10px] tracking-wide uppercase font-light">
+                  {thought.date}
+                </span>
+                <div className="w-3 h-px bg-foreground/10" />
+                <span className="text-foreground/20 text-[10px] tracking-wide font-light">
+                  {thought.readTime}
+                </span>
+              </div>
+              {isFeatured && (
+                <span className="text-[9px] tracking-wide uppercase text-primary/40 border border-primary/15 rounded-full px-2.5 py-0.5 font-light">
+                  Latest
+                </span>
+              )}
+            </div>
 
-          <p className="text-sm font-light text-foreground/35 leading-relaxed">
-            {thought.excerpt}
-          </p>
-
-          <div className="mt-6 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-            <span className="text-primary/60 text-[10px] tracking-wide uppercase font-light">
-              Read more
-            </span>
-            <svg
-              className="w-3 h-3 text-primary/60"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+            {/* Title */}
+            <h3
+              className={`font-light text-foreground tracking-tight mb-4 group-hover:text-primary transition-colors duration-500 leading-snug ${
+                isFeatured ? "text-xl md:text-2xl" : "text-lg md:text-xl"
+              }`}
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M17 8l4 4m0 0l-4 4m4-4H3"
-              />
-            </svg>
+              <span className="instrument italic">{thought.title}</span>
+            </h3>
+
+            {/* Excerpt */}
+            <p
+              className={`text-sm font-light text-foreground/35 leading-relaxed flex-1 ${
+                isFeatured ? "line-clamp-4" : "line-clamp-3"
+              }`}
+            >
+              {thought.excerpt}
+            </p>
+
+            {/* Read indicator */}
+            <div className="mt-5 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+              <div className="w-4 h-px bg-primary/40" />
+              <span className="text-primary/50 text-[10px] tracking-wide uppercase font-light">
+                Read
+              </span>
+              <svg
+                className="w-3 h-3 text-primary/50"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M17 8l4 4m0 0l-4 4m4-4H3"
+                />
+              </svg>
+            </div>
           </div>
         </div>
       </a>
@@ -119,16 +150,16 @@ export default function ThoughtsSection({ posts = [] }: ThoughtsSectionProps) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: "-50px" })
 
-  // Transform BlogPost[] to display format
-  const thoughts = posts.length > 0
-    ? posts.map((post) => ({
-        date: post.date.getFullYear().toString(),
-        title: post.title,
-        excerpt: post.excerpt,
-        readTime: estimateReadTime(post.content || post.excerpt),
-        link: post.substackUrl || `#`,
-      }))
-    : placeholderThoughts
+  const thoughts: ThoughtData[] =
+    posts.length > 0
+      ? posts.map((post) => ({
+          date: post.date.getFullYear().toString(),
+          title: post.title,
+          excerpt: post.excerpt,
+          readTime: estimateReadTime(post.content || post.excerpt),
+          link: post.substackUrl || "#",
+        }))
+      : placeholderThoughts
 
   return (
     <section id="thoughts" className="relative z-10 bg-background px-6 md:px-10 py-20 md:py-32">
@@ -147,15 +178,23 @@ export default function ThoughtsSection({ posts = [] }: ThoughtsSectionProps) {
               Thoughts
             </span>
           </div>
-          <h2 className="text-3xl md:text-4xl font-light text-foreground tracking-tight">
+          <h2 className="text-3xl md:text-4xl font-light text-foreground tracking-tight mb-4">
             scattered <span className="instrument italic">embers</span>
           </h2>
+          <p className="text-sm font-light text-foreground/35 leading-relaxed max-w-lg">
+            Long-form writing on ML, uncertainty, and the spaces between things that work and things that almost do.
+          </p>
         </motion.div>
 
-        {/* Thoughts Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+        {/* Bento-style grid: first card spans 2 cols on desktop */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
           {thoughts.map((thought, index) => (
-            <ThoughtCard key={thought.title} thought={thought} index={index} />
+            <ThoughtCard
+              key={thought.title}
+              thought={thought}
+              index={index}
+              isFeatured={index === 0}
+            />
           ))}
         </div>
       </div>
@@ -163,12 +202,8 @@ export default function ThoughtsSection({ posts = [] }: ThoughtsSectionProps) {
   )
 }
 
-/**
- * Estimate read time from content length
- */
 function estimateReadTime(content: string): string {
-  const wordsPerMinute = 200
   const words = content.split(/\s+/).length
-  const minutes = Math.max(1, Math.ceil(words / wordsPerMinute))
+  const minutes = Math.max(1, Math.ceil(words / 200))
   return `${minutes} min`
 }

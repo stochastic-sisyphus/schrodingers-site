@@ -40,7 +40,7 @@ export default function HeroContent() {
           className="text-sm md:text-base font-light mb-8 leading-relaxed max-w-md"
         >
           <p className="text-foreground">Applied ML Engineer</p>
-          <p className="text-[#8a8478]">That's all</p>
+          <p className="text-muted-foreground">That{"'"}s all</p>
         </motion.div>
 
         {/* Scroll indicator */}
