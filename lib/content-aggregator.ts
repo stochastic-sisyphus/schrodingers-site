@@ -46,9 +46,9 @@ export function getFeaturedProjects(repos: GitHubRepo[]): FeaturedProject[] {
 
   const featuredOrder = [
     'code-cartographer',
+    'text-feature-span-extractor',
     'synsearch',
     'prophetic-emergentomics',
-    'text-feature-span-extractor',
     'self',
   ];
 

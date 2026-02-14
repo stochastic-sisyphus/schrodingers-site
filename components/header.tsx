@@ -17,7 +17,7 @@ export default function Header() {
 
       {/* Desktop Navigation */}
       <nav className="hidden md:flex items-center gap-1">
-        {["Projects", "Research", "Writing", "Connect"].map((item) => (
+        {["Projects", "Research", "Thoughts", "Connect"].map((item) => (
           <a
             key={item}
             href={`#${item.toLowerCase()}`}
@@ -56,7 +56,7 @@ export default function Header() {
       {menuOpen && (
         <div className="fixed inset-0 top-16 z-50 bg-background/95 backdrop-blur-sm md:hidden">
           <nav className="flex flex-col items-center justify-center gap-8 h-full">
-            {["Projects", "Research", "Writing", "Connect"].map((item) => (
+            {["Projects", "Research", "Thoughts", "Connect"].map((item) => (
               <a
                 key={item}
                 href={`#${item.toLowerCase()}`}

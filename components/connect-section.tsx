@@ -40,9 +40,7 @@ export default function ConnectSection() {
                 <span className="instrument italic text-primary">elsewhere</span>
               </h2>
               <p className="text-sm font-light text-foreground/40 leading-relaxed max-w-md">
-                Interested in ML research, open-source collaboration, or just
-                want to talk about embeddings and existential dread -- all the
-                usual places.
+                embeddings and existential dread, scattered across the few digital footprints i reluctantly left
               </p>
             </div>
 

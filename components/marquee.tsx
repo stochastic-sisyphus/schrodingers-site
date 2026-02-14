@@ -3,16 +3,12 @@
 import { motion } from "framer-motion"
 
 const words = [
-  "Transformers",
-  "Embeddings",
-  "Retrieval",
-  "Stochastic",
-  "Semantic",
-  "Pipelines",
-  "Uncertainty",
-  "Emergence",
-  "Inference",
-  "Sisyphus",
+  "stochastic",
+  "sisyphus",
+  "stuck",
+  "in",
+  "schrödinger's",
+  "site",
 ]
 
 export default function Marquee() {

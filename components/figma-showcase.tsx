@@ -224,7 +224,7 @@ export default function FigmaShowcase({ repos }: FigmaShowcaseProps) {
             </span>
           </div>
           <h2 className="text-3xl md:text-4xl font-light text-foreground tracking-tight mb-4">
-            Open <span className="instrument italic">work</span>
+            the machine's learning <span className="instrument italic">(with my supervision)</span>
           </h2>
           <p className="text-sm font-light text-foreground/35 leading-relaxed max-w-lg">
             Tools, experiments, and systems in various stages of becoming.

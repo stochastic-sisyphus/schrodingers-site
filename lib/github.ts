@@ -32,6 +32,10 @@ function shouldIncludeRepo(repo: GitHubRepo): boolean {
   // Exclude forks
   if (repo.fork) return false;
 
+  // Exclude specific repos by name
+  const excludedRepos = ['past-portfolio-old-very-old-geriatric-even'];
+  if (excludedRepos.includes(repo.name)) return false;
+
   // Exclude archived or disabled repos
   if (repo.archived || repo.disabled) return false;
 

@@ -131,7 +131,7 @@ export default function ThoughtsSection({ posts = [] }: ThoughtsSectionProps) {
     : placeholderThoughts
 
   return (
-    <section id="writing" className="relative z-10 bg-background px-6 md:px-10 py-20 md:py-32">
+    <section id="thoughts" className="relative z-10 bg-background px-6 md:px-10 py-20 md:py-32">
       <div className="max-w-5xl mx-auto">
         {/* Section Header */}
         <motion.div
@@ -144,11 +144,11 @@ export default function ThoughtsSection({ posts = [] }: ThoughtsSectionProps) {
           <div className="flex items-center gap-4 mb-6">
             <div className="w-8 h-px bg-primary/40" />
             <span className="text-primary/60 text-[10px] tracking-[0.3em] uppercase font-light">
-              Writing
+              Thoughts
             </span>
           </div>
           <h2 className="text-3xl md:text-4xl font-light text-foreground tracking-tight">
-            Notes {"&"} <span className="instrument italic">reflections</span>
+            scattered <span className="instrument italic">embers</span>
           </h2>
         </motion.div>
 

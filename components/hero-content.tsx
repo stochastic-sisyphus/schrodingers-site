@@ -33,16 +33,15 @@ export default function HeroContent() {
         </motion.h1>
 
         {/* Description */}
-        <motion.p
+        <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.7 }}
-          className="text-sm md:text-base font-light text-foreground/50 mb-8 leading-relaxed max-w-md"
+          className="text-sm md:text-base font-light mb-8 leading-relaxed max-w-md"
         >
-          ML engineer building at the intersection of transformers, semantic search,
-          and systems that learn. This is a space for research, open projects,
-          and ideas still in progress.
-        </motion.p>
+          <p className="text-foreground">Applied ML Engineer</p>
+          <p className="text-[#8a8478]">That's all</p>
+        </motion.div>
 
         {/* Scroll indicator */}
         <motion.div

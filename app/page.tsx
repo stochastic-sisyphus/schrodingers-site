@@ -1,3 +1,6 @@
+"use client"
+
+import { useEffect, useState } from "react"
 import Header from "@/components/header"
 import HeroContent from "@/components/hero-content"
 import PulsingCircle from "@/components/pulsing-circle"
@@ -11,22 +14,75 @@ import { fetchAllSubstackPosts, getRecentPosts } from "@/lib/substack"
 import { fetchAllRepos } from "@/lib/github"
 import { fetchAllResearchData, getKeyPapers } from "@/lib/orcid"
 
-export default async function Home() {
-  // Fetch GitHub repos, Substack posts, and ORCID research data (server-side)
-  const repos = await fetchAllRepos()
+export default function Home() {
+  const [repos, setRepos] = useState([])
+  const [substackPosts, setSubstackPosts] = useState([])
+  const [researchEntries, setResearchEntries] = useState([])
 
-  let substackPosts = []
-  try {
-    const allPosts = await fetchAllSubstackPosts()
-    substackPosts = getRecentPosts(allPosts, 4) // Get 4 most recent posts
-  } catch (error) {
-    console.error("Failed to fetch Substack posts:", error)
-    // Continue rendering with empty array - component will show placeholder
-  }
+  useEffect(() => {
+    async function loadData() {
+      // Fetch GitHub repos
+      const fetchedRepos = await fetchAllRepos()
+      setRepos(fetchedRepos)
 
-  // Fetch research papers from ORCID
-  const { papers } = await fetchAllResearchData()
-  const featuredPapers = getKeyPapers(papers, 4) // Get top 4 most recent papers
+      // Fetch Substack posts
+      try {
+        const allPosts = await fetchAllSubstackPosts()
+        setSubstackPosts(getRecentPosts(allPosts, 4))
+      } catch (error) {
+        console.error("Failed to fetch Substack posts:", error)
+      }
+
+      // Fetch research papers from ORCID
+      const { papers } = await fetchAllResearchData()
+      const featuredPapers = getKeyPapers(papers, 4)
+
+      // Find prophetic-emergentomics repo
+      const propheticRepo = fetchedRepos.find(r => r.name === 'prophetic-emergentomics')
+
+      // Build research entries
+      const entries = [...featuredPapers]
+      if (propheticRepo) {
+        entries.push({
+          id: `repo-${propheticRepo.id}`,
+          title: propheticRepo.name,
+          description: propheticRepo.description || '',
+          authors: [],
+          year: new Date(propheticRepo.created_at).getFullYear(),
+          type: 'repository',
+          githubUrl: propheticRepo.html_url,
+        })
+      }
+
+      // Add verification-reversal visualization
+      entries.push({
+        id: 'verification-reversal-viz',
+        title: 'Verification Reversal (Interactive)',
+        authors: ['Vanessa Beck'],
+        year: 2026,
+        journal: 'Interactive Visualization',
+        type: 'visualization',
+        description: 'Interactive p5.js visualization of information cascade dynamics',
+        githubUrl: '/verification-reversal.html',
+      })
+
+      // Add self graph
+      entries.push({
+        id: 'self',
+        title: 'self (Interactive Graph)',
+        authors: ['Vanessa Beck'],
+        year: 2026,
+        journal: 'Interactive Visualization',
+        type: 'visualization',
+        description: 'Self-directed graph visualization',
+        githubUrl: 'https://github.com/stochastic-sisyphus/self',
+      })
+
+      setResearchEntries(entries)
+    }
+
+    loadData()
+  }, [])
 
   return (
     <div className="bg-background">
@@ -34,7 +90,7 @@ export default async function Home() {
       <ShaderBackground>
         <Header />
         <HeroContent />
-        <PulsingCircle />
+        {/* <PulsingCircle /> */}
       </ShaderBackground>
 
       {/* Scrolling marquee divider */}
@@ -43,8 +99,8 @@ export default async function Home() {
       {/* Project showcase with real GitHub data */}
       <FigmaShowcase repos={repos} />
 
-      {/* Research publications from ORCID */}
-      <ResearchSection papers={featuredPapers} />
+      {/* Research publications from ORCID + related repos */}
+      <ResearchSection papers={researchEntries} />
 
       {/* Thoughts / Writing */}
       <ThoughtsSection posts={substackPosts} />

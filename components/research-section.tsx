@@ -19,20 +19,34 @@ function ProjectCard({ paper, index, number }: ProjectCardProps) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: "-100px" })
 
-  // Build DOI or ORCID URL link
-  const href = paper.doi
+  // Check if this is the Verification Reversal paper (has dedicated page)
+  const isVerificationReversal = paper.doi === "10.5281/zenodo.18159898"
+
+  // Build link: internal page for Verification Reversal, GitHub for repos, external DOI/ORCID for others
+  const href = isVerificationReversal
+    ? "/research/verification-reversal"
+    : paper.githubUrl
+    ? paper.githubUrl
+    : paper.doi
     ? `https://doi.org/${paper.doi}`
     : paper.orcidUrl || undefined
 
   const Wrapper = href ? "a" : "div"
   const wrapperProps = href
-    ? { href, target: "_blank" as const, rel: "noopener noreferrer" }
+    ? isVerificationReversal
+      ? { href }
+      : { href, target: "_blank" as const, rel: "noopener noreferrer" }
     : {}
 
-  // Extract tags from journal name or type
+  // Extract tags from journal name, type, or repository status
   const tags: string[] = []
-  if (paper.journal) tags.push(paper.journal)
-  if (paper.type && paper.type !== 'publication') tags.push(paper.type)
+  if (paper.type === 'repository') {
+    tags.push('code')
+    tags.push('repository')
+  } else {
+    if (paper.journal) tags.push(paper.journal)
+    if (paper.type && paper.type !== 'publication') tags.push(paper.type)
+  }
 
   return (
     <motion.article
@@ -57,6 +71,11 @@ function ProjectCard({ paper, index, number }: ProjectCardProps) {
                 Published
               </span>
             )}
+            {paper.type === 'repository' && (
+              <span className="text-primary/70 text-[10px] tracking-wide uppercase font-light">
+                GitHub
+              </span>
+            )}
           </div>
         </div>
 
@@ -70,9 +89,9 @@ function ProjectCard({ paper, index, number }: ProjectCardProps) {
               {paper.authors.join(', ')}
             </p>
           )}
-          {paper.journal && (
+          {(paper.journal || paper.description) && (
             <p className="text-sm font-light text-foreground/40 leading-relaxed mb-4 max-w-lg">
-              {paper.journal}
+              {paper.journal || paper.description}
             </p>
           )}
           {tags.length > 0 && (
@@ -134,7 +153,7 @@ export default function ResearchSection({ papers }: ResearchSectionProps) {
             </span>
           </div>
           <h2 className="text-3xl md:text-4xl font-light text-foreground tracking-tight">
-            Selected <span className="instrument italic">publications</span>
+            some thoughts i <span className="instrument italic">fixated on</span>
           </h2>
         </motion.div>
 

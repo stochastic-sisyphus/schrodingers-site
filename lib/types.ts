@@ -145,6 +145,8 @@ export interface ResearchPaper {
   orcidUrl?: string;
   abstract?: string;
   type: string;
+  githubUrl?: string;  // For repository entries
+  description?: string; // For repository entries
 }
 
 export interface FeaturedProject {
