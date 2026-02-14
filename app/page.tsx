@@ -40,8 +40,25 @@ export default function Home() {
       // Find prophetic-emergentomics repo
       const propheticRepo = fetchedRepos.find(r => r.name === 'prophetic-emergentomics')
 
-      // Build research entries
-      const entries = [...featuredPapers]
+      // Build research entries - verification-reversal featured first
+      const entries = []
+
+      // Add verification-reversal visualization FIRST (top featured)
+      entries.push({
+        id: 'verification-reversal-viz',
+        title: 'Verification Reversal (Interactive)',
+        authors: ['Vanessa Beck'],
+        year: 2026,
+        journal: 'Interactive Visualization',
+        type: 'visualization',
+        description: 'Interactive p5.js visualization of information cascade dynamics',
+        githubUrl: '/verification-reversal.html',
+      })
+
+      // Add ORCID papers
+      entries.push(...featuredPapers)
+
+      // Add prophetic-emergentomics repo
       if (propheticRepo) {
         entries.push({
           id: `repo-${propheticRepo.id}`,
@@ -53,18 +70,6 @@ export default function Home() {
           githubUrl: propheticRepo.html_url,
         })
       }
-
-      // Add verification-reversal visualization
-      entries.push({
-        id: 'verification-reversal-viz',
-        title: 'Verification Reversal (Interactive)',
-        authors: ['Vanessa Beck'],
-        year: 2026,
-        journal: 'Interactive Visualization',
-        type: 'visualization',
-        description: 'Interactive p5.js visualization of information cascade dynamics',
-        githubUrl: '/verification-reversal.html',
-      })
 
       // Add self graph
       entries.push({
