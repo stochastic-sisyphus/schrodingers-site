@@ -29,7 +29,7 @@ export default function HeroContent() {
           <br />
           <span className="instrument italic text-primary">uphill</span>, stochastic
           <br />
-          by nature
+          sisyphus
         </motion.h1>
 
         {/* Description */}
