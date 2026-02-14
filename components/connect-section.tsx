@@ -40,7 +40,7 @@ export default function ConnectSection() {
                 <span className="instrument italic text-primary">elsewhere</span>
               </h2>
               <p className="text-sm font-light text-foreground/40 leading-relaxed max-w-md">
-                embeddings and existential dread, scattered across the few digital footprints i reluctantly left
+                find me in the few places i reluctantly left digital footprints (mostly embeddings and existential dread)
               </p>
             </div>
 
