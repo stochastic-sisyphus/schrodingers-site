@@ -13,6 +13,7 @@ import ConnectSection from "@/components/connect-section"
 import { fetchAllSubstackPosts, getRecentPosts } from "@/lib/substack"
 import { fetchAllRepos } from "@/lib/github"
 import { fetchAllResearchData, getKeyPapers } from "@/lib/orcid"
+import { getFeaturedProjects } from "@/lib/content-aggregator"
 
 export default function Home() {
   const [repos, setRepos] = useState([])
@@ -23,7 +24,10 @@ export default function Home() {
     async function loadData() {
       // Fetch GitHub repos
       const fetchedRepos = await fetchAllRepos()
-      setRepos(fetchedRepos)
+      // Sort repos by featured order (code-cartographer first, text-feature-span-extractor second)
+      const featuredProjects = getFeaturedProjects(fetchedRepos)
+      const orderedRepos = featuredProjects.map(fp => fp.repo)
+      setRepos(orderedRepos)
 
       // Fetch Substack posts
       try {
