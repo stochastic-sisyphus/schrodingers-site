@@ -1,0 +1,137 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: #050505;
+  --foreground: #f0ece4;
+  --card: #0a0a0a;
+  --card-foreground: #f0ece4;
+  --popover: #0a0a0a;
+  --popover-foreground: #f0ece4;
+  --primary: #c8b89a;
+  --primary-foreground: #050505;
+  --secondary: #141414;
+  --secondary-foreground: #f0ece4;
+  --muted: #1a1a1a;
+  --muted-foreground: #8a8478;
+  --accent: #c8b89a;
+  --accent-foreground: #050505;
+  --destructive: #b54a32;
+  --destructive-foreground: #f0ece4;
+  --border: #1e1e1e;
+  --input: #141414;
+  --ring: #c8b89a;
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --radius: 0.25rem;
+  --sidebar: #050505;
+  --sidebar-foreground: #f0ece4;
+  --sidebar-primary: #c8b89a;
+  --sidebar-primary-foreground: #050505;
+  --sidebar-accent: #141414;
+  --sidebar-accent-foreground: #f0ece4;
+  --sidebar-border: #1e1e1e;
+  --sidebar-ring: #c8b89a;
+  --font-instrument-serif: "Instrument Serif", serif;
+  --font-figtree: "Figtree", sans-serif;
+}
+
+.dark {
+  --background: #050505;
+  --foreground: #f0ece4;
+  --card: #0a0a0a;
+  --card-foreground: #f0ece4;
+  --popover: #0a0a0a;
+  --popover-foreground: #f0ece4;
+  --primary: #c8b89a;
+  --primary-foreground: #050505;
+  --secondary: #141414;
+  --secondary-foreground: #f0ece4;
+  --muted: #1a1a1a;
+  --muted-foreground: #8a8478;
+  --accent: #c8b89a;
+  --accent-foreground: #050505;
+  --destructive: #b54a32;
+  --destructive-foreground: #f0ece4;
+  --border: #1e1e1e;
+  --input: #141414;
+  --ring: #c8b89a;
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: #050505;
+  --sidebar-foreground: #f0ece4;
+  --sidebar-primary: #c8b89a;
+  --sidebar-primary-foreground: #050505;
+  --sidebar-accent: #141414;
+  --sidebar-accent-foreground: #f0ece4;
+  --sidebar-border: #1e1e1e;
+  --sidebar-ring: #c8b89a;
+  --font-instrument-serif: "Instrument Serif", serif;
+  --font-figtree: "Figtree", sans-serif;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --font-instrument-serif: var(--font-instrument-serif);
+  /* Added Figtree font to theme configuration */
+  --font-sans: var(--font-figtree);
+  --font-figtree: var(--font-figtree);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    /* Set Figtree as the default font family for the entire website */
+    font-family: var(--font-figtree);
+  }
+}
+
+.instrument {
+  font-family: var(--font-instrument-serif);
+}
