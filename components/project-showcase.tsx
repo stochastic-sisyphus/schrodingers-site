@@ -32,7 +32,7 @@ function transformReposToProjects(repos: GitHubRepo[]): Project[] {
           : [],
     repoUrl: repo.html_url,
     homepageUrl: repo.homepage && repo.homepage.trim() !== "" ? repo.homepage : null,
-    year: new Date(repo.created_at).getFullYear().toString(),
+    year: new Date(repo.created_at).getUTCFullYear().toString(),
     lastActive: formatRelativeDate(repo.pushed_at || repo.updated_at),
     language: repo.language,
     owner: repo.owner.login,
@@ -50,17 +50,13 @@ function formatTitle(name: string): string {
     .join(" ")
 }
 
+const MONTHS_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
 function formatRelativeDate(dateStr: string): string {
-  const date = new Date(dateStr)
-  const now = new Date()
-  const diffMs = now.getTime() - date.getTime()
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
-  if (diffDays < 1) return "today"
-  if (diffDays === 1) return "yesterday"
-  if (diffDays < 7) return `${diffDays}d ago`
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`
-  if (diffDays < 365) return `${Math.floor(diffDays / 30)}mo ago`
-  return `${Math.floor(diffDays / 365)}y ago`
+  // Use a stable UTC-based format to avoid server/client hydration mismatch
+  const d = new Date(dateStr)
+  if (isNaN(d.getTime())) return dateStr
+  return `${MONTHS_SHORT[d.getUTCMonth()]} ${d.getUTCFullYear()}`
 }
 
 function formatSize(kb: number): string {

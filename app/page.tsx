@@ -51,7 +51,7 @@ export default async function Home() {
             title: propheticRepo.name,
             description: propheticRepo.description || "",
             authors: [] as string[],
-            year: new Date(propheticRepo.created_at).getFullYear(),
+            year: new Date(propheticRepo.created_at).getUTCFullYear(),
             type: "repository",
             githubUrl: propheticRepo.html_url,
           },
