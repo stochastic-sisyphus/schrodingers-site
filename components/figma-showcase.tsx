@@ -10,18 +10,22 @@ interface Project {
   tags: string[]
   repoUrl: string
   year: string
+  lastActive: string
   language?: string
   owner: string
   stars: number
+  forks: number
+  size: number
   rawName: string
 }
 
 function transformReposToProjects(repos: GitHubRepo[]): Project[] {
   return repos.slice(0, 6).map((repo) => {
     const year = new Date(repo.created_at).getFullYear().toString()
+    const lastActive = formatRelativeDate(repo.pushed_at || repo.updated_at)
     const tags =
       repo.topics && repo.topics.length > 0
-        ? repo.topics.slice(0, 4)
+        ? repo.topics.slice(0, 5)
         : repo.language
           ? [repo.language]
           : []
@@ -32,9 +36,12 @@ function transformReposToProjects(repos: GitHubRepo[]): Project[] {
       tags,
       repoUrl: repo.html_url,
       year,
+      lastActive,
       language: repo.language || undefined,
       owner: repo.owner.login,
       stars: repo.stargazers_count,
+      forks: repo.forks_count,
+      size: repo.size,
       rawName: repo.name,
     }
   })
@@ -47,66 +54,25 @@ function formatTitle(name: string): string {
     .join(" ")
 }
 
-/** Generates a deterministic pseudo-code snippet based on the project name */
-function generateCodePreview(name: string, language?: string): string[] {
-  const lcName = name.toLowerCase()
-  if (lcName.includes("cartograph")) {
-    return [
-      `def build_graph(repo_path: str):`,
-      `    nodes = parse_ast(repo_path)`,
-      `    edges = trace_imports(nodes)`,
-      `    return CodeGraph(nodes, edges)`,
-      ``,
-      `graph = build_graph("./src")`,
-      `graph.visualize(depth=3)`,
-    ]
-  }
-  if (lcName.includes("extractor") || lcName.includes("span")) {
-    return [
-      `class SpanExtractor(nn.Module):`,
-      `    def forward(self, tokens, mask):`,
-      `        h = self.encoder(tokens)`,
-      `        spans = self.span_head(h, mask)`,
-      `        return spans, self.classifier(h)`,
-    ]
-  }
-  if (lcName.includes("synsearch") || lcName.includes("search")) {
-    return [
-      `async def semantic_search(query: str):`,
-      `    embedding = model.encode(query)`,
-      `    results = index.search(embedding, k=10)`,
-      `    return rerank(results, query)`,
-    ]
-  }
-  if (lcName.includes("capstone") || lcName.includes("bosch") || lcName.includes("metadata")) {
-    return [
-      `pipeline = Pipeline([`,
-      `    ("extract", MetadataExtractor()),`,
-      `    ("embed", LLMEmbedder(model="gpt-4")),`,
-      `    ("classify", HierarchicalClassifier()),`,
-      `])`,
-      `pipeline.fit(training_data)`,
-    ]
-  }
-  if (language === "Python") {
-    return [
-      `import numpy as np`,
-      `from model import Transformer`,
-      ``,
-      `model = Transformer(d_model=512)`,
-      `output = model(input_tensor)`,
-    ]
-  }
-  return [
-    `// ${name}`,
-    `const run = async () => {`,
-    `  const data = await fetch(api)`,
-    `  return process(data)`,
-    `}`,
-  ]
+function formatRelativeDate(dateStr: string): string {
+  const date = new Date(dateStr)
+  const now = new Date()
+  const diffMs = now.getTime() - date.getTime()
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+
+  if (diffDays < 1) return "today"
+  if (diffDays === 1) return "yesterday"
+  if (diffDays < 7) return `${diffDays}d ago`
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`
+  if (diffDays < 365) return `${Math.floor(diffDays / 30)}mo ago`
+  return `${Math.floor(diffDays / 365)}y ago`
 }
 
-/** Language color dot */
+function formatSize(kb: number): string {
+  if (kb < 1024) return `${kb} KB`
+  return `${(kb / 1024).toFixed(1)} MB`
+}
+
 function langColor(language?: string): string {
   const map: Record<string, string> = {
     Python: "#c8b89a",
@@ -115,6 +81,8 @@ function langColor(language?: string): string {
     Rust: "#b5654a",
     Go: "#5a9e8f",
     Jupyter: "#c8b89a",
+    "Jupyter Notebook": "#c8b89a",
+    HTML: "#b5654a",
   }
   return language ? map[language] || "rgba(200,184,154,0.4)" : "rgba(200,184,154,0.2)"
 }
@@ -129,7 +97,6 @@ function ProjectCard({
   const ref = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { once: true, margin: "-80px" })
   const [expanded, setExpanded] = useState(false)
-  const codeLines = generateCodePreview(project.rawName, project.language)
 
   return (
     <motion.div
@@ -139,99 +106,97 @@ function ProjectCard({
       transition={{ duration: 0.8, delay: index * 0.12, ease: [0.16, 1, 0.3, 1] }}
       className="group"
     >
-      {/* Clickable card wrapper */}
       <div
         role="button"
         tabIndex={0}
         onClick={() => setExpanded(!expanded)}
-        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setExpanded(!expanded) }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") setExpanded(!expanded)
+        }}
         className="block cursor-pointer"
         aria-expanded={expanded}
       >
         <div className="relative rounded-lg overflow-hidden border border-foreground/8 bg-card/60 backdrop-blur-sm hover:border-foreground/15 transition-all duration-500 hover:bg-card/80">
-          {/* Terminal chrome */}
-          <div className="flex items-center justify-between px-5 py-3 border-b border-foreground/5">
-            <div className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 rounded-full bg-destructive/60" />
-              <div className="w-2.5 h-2.5 rounded-full bg-primary/40" />
-              <div className="w-2.5 h-2.5 rounded-full bg-foreground/15" />
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="text-[10px] text-foreground/25 tracking-wide font-mono hidden md:inline">
-                {project.owner}/{project.rawName}
-              </span>
-              <motion.div
-                animate={{ rotate: expanded ? 180 : 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <svg className="w-3.5 h-3.5 text-foreground/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
-                </svg>
-              </motion.div>
-            </div>
-          </div>
-
           {/* Card body */}
           <div className="p-5 md:p-6">
-            <div className="flex flex-col md:flex-row md:items-start gap-4 md:gap-8">
-              {/* Left: meta */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-3 mb-3">
-                  <span
-                    className="w-2.5 h-2.5 rounded-full shrink-0"
-                    style={{ backgroundColor: langColor(project.language) }}
-                  />
-                  <span className="text-foreground/30 text-[10px] tracking-wide font-light">
-                    {project.year}
-                  </span>
-                  <div className="w-3 h-px bg-foreground/10" />
-                  {project.language && (
-                    <span className="text-foreground/35 text-[10px] tracking-wide font-light uppercase">
-                      {project.language}
-                    </span>
-                  )}
-                  {project.stars > 0 && (
-                    <span className="text-foreground/25 text-[10px] tracking-wide font-light">
-                      {"*"} {project.stars}
-                    </span>
-                  )}
-                </div>
-
-                <h3 className="text-xl md:text-2xl font-light text-foreground tracking-tight mb-2 group-hover:text-primary transition-colors duration-500">
-                  <span className="instrument italic">{project.title}</span>
-                </h3>
-
-                <p className="text-sm font-light text-foreground/40 leading-relaxed max-w-lg mb-4">
-                  {project.description}
-                </p>
-
-                <div className="flex flex-wrap gap-1.5">
-                  {project.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="text-[9px] tracking-wide uppercase text-foreground/30 border border-foreground/8 rounded-full px-2.5 py-0.5 font-light"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
+            {/* Top meta row */}
+            <div className="flex items-center gap-3 mb-4">
+              <span
+                className="w-2.5 h-2.5 rounded-full shrink-0"
+                style={{ backgroundColor: langColor(project.language) }}
+                aria-hidden="true"
+              />
+              {project.language && (
+                <span className="text-foreground/40 text-[10px] tracking-wide font-light uppercase">
+                  {project.language}
+                </span>
+              )}
+              <div className="w-3 h-px bg-foreground/10" />
+              <span className="text-foreground/25 text-[10px] tracking-wide font-light">
+                est. {project.year}
+              </span>
+              <span className="text-foreground/15 text-[10px]">{"/"}</span>
+              <span className="text-foreground/25 text-[10px] tracking-wide font-light">
+                active {project.lastActive}
+              </span>
+              <div className="ml-auto">
+                <motion.div
+                  animate={{ rotate: expanded ? 180 : 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <svg className="w-3.5 h-3.5 text-foreground/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </motion.div>
               </div>
+            </div>
 
-              {/* Right: code preview */}
-              <div className="md:w-[280px] lg:w-[340px] shrink-0 rounded-md bg-background/80 border border-foreground/5 p-4 overflow-hidden">
-                <div className="font-mono text-[11px] leading-relaxed">
-                  {codeLines.map((line, i) => (
-                    <div key={i} className="flex">
-                      <span className="text-foreground/15 select-none w-5 text-right mr-3 shrink-0">
-                        {line.trim() ? i + 1 : ""}
-                      </span>
-                      <span className="text-foreground/35 whitespace-pre overflow-hidden text-ellipsis">
-                        {line}
-                      </span>
-                    </div>
-                  ))}
+            {/* Title */}
+            <h3 className="text-xl md:text-2xl font-light text-foreground tracking-tight mb-3 group-hover:text-primary transition-colors duration-500">
+              <span className="instrument italic">{project.title}</span>
+            </h3>
+
+            {/* Description */}
+            <p className="text-sm font-light text-foreground/40 leading-relaxed max-w-2xl mb-5">
+              {project.description}
+            </p>
+
+            {/* Stats row */}
+            <div className="flex items-center gap-5 mb-4">
+              {project.stars > 0 && (
+                <div className="flex items-center gap-1.5">
+                  <svg className="w-3.5 h-3.5 text-foreground/25" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                  </svg>
+                  <span className="text-foreground/30 text-xs font-light">{project.stars}</span>
                 </div>
+              )}
+              {project.forks > 0 && (
+                <div className="flex items-center gap-1.5">
+                  <svg className="w-3.5 h-3.5 text-foreground/25" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  </svg>
+                  <span className="text-foreground/30 text-xs font-light">{project.forks}</span>
+                </div>
+              )}
+              <div className="flex items-center gap-1.5">
+                <svg className="w-3.5 h-3.5 text-foreground/25" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
+                </svg>
+                <span className="text-foreground/30 text-xs font-light">{formatSize(project.size)}</span>
               </div>
+            </div>
+
+            {/* Tags */}
+            <div className="flex flex-wrap gap-1.5">
+              {project.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="text-[9px] tracking-wide uppercase text-foreground/30 border border-foreground/8 rounded-full px-2.5 py-0.5 font-light"
+                >
+                  {tag}
+                </span>
+              ))}
             </div>
           </div>
 
@@ -246,15 +211,15 @@ function ProjectCard({
                 className="overflow-hidden"
               >
                 <div className="border-t border-foreground/5 px-5 md:px-6 py-5">
-                  <div className="flex flex-col md:flex-row gap-6 md:items-center justify-between">
+                  <div className="flex flex-col md:flex-row gap-5 md:items-center justify-between">
+                    {/* Repo path */}
                     <div className="flex flex-col gap-2">
-                      <span className="text-foreground/25 text-[10px] tracking-[0.2em] uppercase font-light">
-                        Quick summary
+                      <span className="font-mono text-xs text-foreground/30 tracking-wide">
+                        {project.owner}/{project.rawName}
                       </span>
-                      <p className="text-sm font-light text-foreground/50 leading-relaxed max-w-lg">
+                      <p className="text-sm font-light text-foreground/45 leading-relaxed max-w-lg">
                         {project.description}
-                        {project.language ? ` Built primarily with ${project.language}.` : ""}
-                        {project.tags.length > 0 ? ` Explores ${project.tags.slice(0, 2).join(", ")}.` : ""}
+                        {project.language ? ` Built with ${project.language}.` : ""}
                       </p>
                     </div>
                     <a
@@ -321,9 +286,9 @@ export default function FigmaShowcase({ repos }: FigmaShowcaseProps) {
         </motion.div>
 
         {/* Project cards */}
-        <div className="flex flex-col gap-6 md:gap-8">
+        <div className="flex flex-col gap-5 md:gap-6">
           {projects.map((project, index) => (
-            <ProjectCard key={project.title} project={project} index={index} />
+            <ProjectCard key={project.rawName} project={project} index={index} />
           ))}
         </div>
       </div>
