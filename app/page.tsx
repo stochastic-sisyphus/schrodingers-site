@@ -5,7 +5,7 @@ import { getFeaturedProjects } from "@/lib/content-aggregator"
 import type { GitHubRepo, ResearchPaper, BlogPost } from "@/lib/types"
 import HomeClient from "@/components/home-client"
 
-export const revalidate = 3600 // revalidate every hour
+export const dynamic = "force-dynamic" // always fetch fresh data on request
 
 export default async function Home() {
   // Fetch all data server-side in parallel

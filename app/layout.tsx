@@ -28,9 +28,8 @@ export const viewport = {
 }
 
 export const metadata: Metadata = {
-  title: "Vanessa Beck -- ML Engineer",
-  description: "A space for research, projects, and unfinished ideas at the intersection of machine learning, NLP, and stochastic processes.",
-    generator: 'v0.app'
+  title: "vanessa beck",
+  description: "perpetually uphill, stochastic sisyphus",
 }
 
 export default function RootLayout({
