@@ -50,6 +50,7 @@ export function getFeaturedProjects(repos: GitHubRepo[]): FeaturedProject[] {
     'synsearch',
     'prophetic-emergentomics',
     'self',
+    'Masters-Capstone-Bosch-Metadata-LLM',
   ];
 
   return featured.map(repo => ({

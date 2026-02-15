@@ -19,7 +19,9 @@ export default async function Home() {
   ])
 
   // Sort repos by featured order
+  console.log("[v0] Total repos fetched:", fetchedRepos.length, "names:", fetchedRepos.map(r => r.name))
   const featuredProjects = getFeaturedProjects(fetchedRepos)
+  console.log("[v0] Featured projects:", featuredProjects.length, "names:", featuredProjects.map(fp => fp.repo.name))
   const orderedRepos = featuredProjects.map((fp) => fp.repo)
 
   // Get substack posts
