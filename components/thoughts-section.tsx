@@ -265,34 +265,33 @@ function WritingCard({
                   className="writing-prose max-w-2xl"
                   dangerouslySetInnerHTML={{ __html: thought.htmlContent }}
                 />
-                  <div className="mt-6 pt-4 border-t border-foreground/[0.06]">
-                    <a
-                      href={thought.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border text-xs tracking-wide font-light transition-all duration-300 min-h-[44px]"
-                      style={{
-                        borderColor: `${WRITING_ACCENT}44`,
-                        color: WRITING_ACCENT,
-                      }}
+                <div className="mt-6 pt-4 border-t border-foreground/[0.06]">
+                  <a
+                    href={thought.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border text-xs tracking-wide font-light transition-all duration-300 min-h-[44px]"
+                    style={{
+                      borderColor: `${WRITING_ACCENT}44`,
+                      color: WRITING_ACCENT,
+                    }}
+                  >
+                    Continue reading on Substack
+                    <svg
+                      className="w-3.5 h-3.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
                     >
-                      Continue reading on Substack
-                      <svg
-                        className="w-3.5 h-3.5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={1.5}
-                          d="M7 17L17 7M17 7H7M17 7V17"
-                        />
-                      </svg>
-                    </a>
-                  </div>
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.5}
+                        d="M7 17L17 7M17 7H7M17 7V17"
+                      />
+                    </svg>
+                  </a>
                 </div>
               </div>
             </div>
