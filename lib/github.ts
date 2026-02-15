@@ -28,7 +28,7 @@ function getHeaders(): HeadersInit {
  * Featured repo names - these always bypass filtering
  */
 const FEATURED_NAMES = new Set(
-  'code-cartographer,text-feature-span-extractor,synsearch,prophetic-emergentomics,self,Masters-Capstone-Bosch-Metadata-LLM'
+  'code-cartographer,text-feature-span-extractor,synsearch,self,Masters-Capstone-Bosch-Metadata-LLM'
     .split(',')
 );
 
@@ -295,7 +295,7 @@ function inferLanguageFromPath(path: string): string | undefined {
  */
 export function getFeaturedRepos(repos: GitHubRepo[]): GitHubRepo[] {
   const featuredNames = (process.env.FEATURED_PROJECTS ||
-    'code-cartographer,text-feature-span-extractor,synsearch,prophetic-emergentomics,self,Masters-Capstone-Bosch-Metadata-LLM')
+    'code-cartographer,text-feature-span-extractor,synsearch,self,Masters-Capstone-Bosch-Metadata-LLM')
     .split(',')
     .map((name: string) => name.trim());
 

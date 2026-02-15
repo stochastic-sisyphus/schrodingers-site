@@ -27,6 +27,9 @@ export default async function Home() {
 
   // Build research entries -- deduplicate verification reversal
   const featuredPapers = getKeyPapers(researchData.papers, 4)
+  const propheticRepo = fetchedRepos.find(
+    (r) => r.name === "prophetic-emergentomics"
+  )
 
   // Filter out the ORCID version of verification reversal since we have
   // a merged entry with the interactive viz + paper DOI
@@ -57,6 +60,19 @@ export default async function Home() {
       githubUrl: "/verification-reversal.html",
     },
     ...filteredPapers,
+    ...(propheticRepo
+      ? [
+          {
+            id: `repo-${propheticRepo.id}`,
+            title: "Prophetic Emergentomics",
+            description: propheticRepo.description || "",
+            authors: [] as string[],
+            year: new Date(propheticRepo.created_at).getUTCFullYear(),
+            type: "repository",
+            githubUrl: propheticRepo.html_url,
+          },
+        ]
+      : []),
   ]
 
   // Serialize dates for client component (Date objects can't cross the RSC boundary)
