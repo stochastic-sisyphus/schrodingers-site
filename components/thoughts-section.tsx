@@ -9,6 +9,7 @@ interface ThoughtData {
   title: string
   excerpt: string
   content: string
+  htmlContent: string
   readTime: string
   link: string
 }
@@ -31,6 +32,44 @@ function formatDate(dateStr: string): string {
 
 function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, "").trim()
+}
+
+/**
+ * Sanitize HTML content from RSS for safe rendering.
+ * Keeps structural tags (p, h1-h6, em, strong, a, br, blockquote, ul, ol, li)
+ * and removes everything else (script, style, img, iframe, etc.)
+ */
+function sanitizeHtml(html: string): string {
+  // Remove script/style tags and their content
+  let cleaned = html
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<style[\s\S]*?<\/style>/gi, "")
+    .replace(/<iframe[\s\S]*?<\/iframe>/gi, "")
+
+  // Remove images (Substack images won't load with correct auth)
+  cleaned = cleaned.replace(/<img[^>]*\/?>/gi, "")
+
+  // Remove all tags except allowed ones
+  const allowed =
+    /<\/?(p|h[1-6]|em|strong|b|i|a|br|blockquote|ul|ol|li|hr|div|span|figure|figcaption|pre|code)(\s[^>]*)?>/gi
+  const parts: string[] = []
+  let last = 0
+
+  // Walk through and keep only allowed tags
+  const tagPattern = /<\/?[a-z][a-z0-9]*(\s[^>]*)?>/gi
+  let match
+  while ((match = tagPattern.exec(cleaned)) !== null) {
+    parts.push(cleaned.slice(last, match.index))
+    if (allowed.test(match[0])) {
+      // Reset the allowed regex lastIndex
+      allowed.lastIndex = 0
+      parts.push(match[0])
+    }
+    last = match.index + match[0].length
+  }
+  parts.push(cleaned.slice(last))
+
+  return parts.join("")
 }
 
 const WRITING_ACCENT = "#c8b89a"
@@ -220,12 +259,12 @@ function WritingCard({
                 </a>
               </div>
 
-              {/* Inline reading content */}
-              <div className="px-6 md:px-8 py-6 md:py-8 max-h-[50vh] overflow-y-auto">
-                <div className="max-w-2xl">
-                  <p className="text-sm md:text-base font-light text-foreground/50 leading-relaxed whitespace-pre-line">
-                    {thought.content}
-                  </p>
+              {/* Inline reading content -- rendered from RSS HTML */}
+              <div className="px-6 md:px-8 py-6 md:py-8 max-h-[60vh] overflow-y-auto">
+                <div
+                  className="writing-prose max-w-2xl"
+                  dangerouslySetInnerHTML={{ __html: thought.htmlContent }}
+                />
                   <div className="mt-6 pt-4 border-t border-foreground/[0.06]">
                     <a
                       href={thought.link}
@@ -272,16 +311,20 @@ export default function ThoughtsSection({ posts = [] }: ThoughtsSectionProps) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: "-50px" })
 
-  const thoughts: ThoughtData[] = posts.map((post) => ({
-    date: formatDate(
-      post.date instanceof Date ? post.date.toISOString() : String(post.date)
-    ),
-    title: post.title,
-    excerpt: stripHtml(post.excerpt),
-    content: stripHtml(post.content || post.excerpt),
-    readTime: estimateReadTime(post.content || post.excerpt),
-    link: post.substackUrl || "#",
-  }))
+  const thoughts: ThoughtData[] = posts.map((post) => {
+    const rawContent = post.content || post.excerpt
+    return {
+      date: formatDate(
+        post.date instanceof Date ? post.date.toISOString() : String(post.date)
+      ),
+      title: post.title,
+      excerpt: stripHtml(post.excerpt),
+      content: stripHtml(rawContent),
+      htmlContent: sanitizeHtml(rawContent),
+      readTime: estimateReadTime(rawContent),
+      link: post.substackUrl || "#",
+    }
+  })
 
   if (thoughts.length === 0) return null
 
