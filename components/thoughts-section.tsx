@@ -15,15 +15,16 @@ interface ThoughtData {
 function estimateReadTime(content: string): string {
   const words = content.split(/\s+/).length
   const minutes = Math.max(1, Math.ceil(words / 200))
-  return `${minutes} min read`
+  return `${minutes} min`
 }
 
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+const MONTHS = [
+  "Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec",
+]
 
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr)
   if (isNaN(d.getTime())) return dateStr
-  // Use UTC methods to avoid server/client timezone hydration mismatch
   return `${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTCFullYear()}`
 }
 
@@ -31,11 +32,19 @@ function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, "").trim()
 }
 
-/** Featured / lead story card -- newspaper front-page style */
-function LeadStoryCard({ thought, index }: { thought: ThoughtData; index: number }) {
+/** Lead story -- full-width broadsheet editorial card */
+function LeadStoryCard({
+  thought,
+  index,
+}: {
+  thought: ThoughtData
+  index: number
+}) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: "-60px" })
   const isExternal = thought.link.startsWith("http")
+  const firstLetter = thought.excerpt.charAt(0)
+  const restExcerpt = thought.excerpt.slice(1)
 
   return (
     <motion.article
@@ -51,49 +60,62 @@ function LeadStoryCard({ thought, index }: { thought: ThoughtData; index: number
         rel={isExternal ? "noopener noreferrer" : undefined}
         className="block"
       >
-        <div className="relative rounded-lg overflow-hidden border border-foreground/8 bg-card/30 hover:border-foreground/15 hover:bg-card/50 transition-all duration-500">
-          {/* Newspaper masthead stripe */}
-          <div className="border-b border-foreground/10 px-6 py-3 flex items-center justify-between">
+        <div className="relative rounded-lg overflow-hidden border border-foreground/[0.06] bg-[#0d0c0b]/80 hover:border-foreground/[0.12] hover:bg-[#0d0c0b] transition-all duration-500">
+          {/* Thin gold rule at top */}
+          <div className="h-px bg-primary/20" />
+
+          {/* Masthead */}
+          <div className="border-b border-foreground/[0.06] px-6 md:px-8 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <span className="text-[9px] tracking-[0.3em] uppercase text-primary/50 font-light">
                 Latest
               </span>
-              <div className="w-px h-3 bg-foreground/10" />
-              <span className="text-foreground/25 text-[10px] tracking-wide font-light">
+              <div className="w-px h-3 bg-foreground/[0.08]" />
+              <span className="text-foreground/20 text-[10px] tracking-wide font-light">
                 {thought.date}
               </span>
             </div>
-            <span className="text-foreground/20 text-[10px] tracking-wide font-light">
+            <span className="text-foreground/15 text-[10px] tracking-wide font-light">
               {thought.readTime}
             </span>
           </div>
 
           <div className="p-6 md:p-8">
             {/* Headline */}
-            <h3 className="text-2xl md:text-3xl font-light text-foreground tracking-tight mb-5 group-hover:text-primary transition-colors duration-500 leading-snug text-balance">
+            <h3 className="text-2xl md:text-3xl font-light text-foreground tracking-tight mb-6 group-hover:text-primary transition-colors duration-500 leading-snug text-balance">
               <span className="instrument italic">{thought.title}</span>
             </h3>
 
-            {/* Two-column excerpt on desktop, mimicking newspaper columns */}
-            <div className="md:columns-2 md:gap-8">
-              <p className="text-sm font-light text-foreground/35 leading-relaxed">
-                {thought.excerpt}
+            {/* Two-column editorial excerpt with drop cap */}
+            <div className="md:columns-2 md:gap-10 relative">
+              {/* Column rule (visible on desktop between columns) */}
+              <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-px bg-foreground/[0.06] -translate-x-1/2" />
+              <p className="text-sm font-light text-foreground/30 leading-relaxed">
+                <span className="instrument italic text-3xl text-primary/50 float-left mr-2 mt-0.5 leading-none">
+                  {firstLetter}
+                </span>
+                {restExcerpt}
               </p>
             </div>
 
-            {/* Read more indicator */}
-            <div className="mt-6 pt-4 border-t border-foreground/5 flex items-center gap-2">
-              <div className="w-4 h-px bg-primary/40" />
-              <span className="text-primary/50 text-[10px] tracking-wide uppercase font-light">
+            {/* Read more */}
+            <div className="mt-6 pt-4 border-t border-foreground/[0.04] flex items-center gap-2">
+              <div className="w-5 h-px bg-primary/30 group-hover:w-8 transition-all duration-500" />
+              <span className="text-primary/40 text-[10px] tracking-wide uppercase font-light group-hover:text-primary/60 transition-colors duration-500">
                 Continue reading
               </span>
               <svg
-                className="w-3 h-3 text-primary/50 group-hover:translate-x-1 transition-transform duration-300"
+                className="w-3 h-3 text-primary/40 group-hover:translate-x-1 group-hover:text-primary/60 transition-all duration-300"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M17 8l4 4m0 0l-4 4m4-4H3"
+                />
               </svg>
             </div>
           </div>
@@ -103,8 +125,14 @@ function LeadStoryCard({ thought, index }: { thought: ThoughtData; index: number
   )
 }
 
-/** Column article card -- compact newspaper column style */
-function ColumnCard({ thought, index }: { thought: ThoughtData; index: number }) {
+/** Column article card -- compact editorial style */
+function ColumnCard({
+  thought,
+  index,
+}: {
+  thought: ThoughtData
+  index: number
+}) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: "-60px" })
   const isExternal = thought.link.startsWith("http")
@@ -123,20 +151,23 @@ function ColumnCard({ thought, index }: { thought: ThoughtData; index: number })
         rel={isExternal ? "noopener noreferrer" : undefined}
         className="block h-full"
       >
-        <div className="relative h-full rounded-lg overflow-hidden border border-foreground/5 bg-card/20 hover:border-foreground/12 hover:bg-card/40 transition-all duration-500">
+        <div className="relative h-full rounded-lg overflow-hidden border border-foreground/[0.04] bg-[#0d0c0b]/50 hover:border-foreground/[0.10] hover:bg-[#0d0c0b]/80 transition-all duration-500">
+          {/* Thin accent rule at top */}
+          <div className="h-px bg-primary/10 group-hover:bg-primary/25 transition-colors duration-500" />
+
           <div className="p-5 md:p-6 flex flex-col h-full">
             {/* Date & read time */}
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-foreground/25 text-[10px] tracking-wide font-light">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-foreground/20 text-[10px] tracking-wide font-light">
                 {thought.date}
               </span>
-              <span className="text-foreground/15 text-[10px] tracking-wide font-light">
+              <span className="text-foreground/12 text-[10px] tracking-wide font-light">
                 {thought.readTime}
               </span>
             </div>
 
-            {/* Thin rule separator like a newspaper */}
-            <div className="w-full h-px bg-foreground/8 mb-4" />
+            {/* Thin rule */}
+            <div className="w-full h-px bg-foreground/[0.05] mb-4" />
 
             {/* Title */}
             <h3 className="text-lg md:text-xl font-light text-foreground tracking-tight mb-3 group-hover:text-primary transition-colors duration-500 leading-snug">
@@ -144,23 +175,28 @@ function ColumnCard({ thought, index }: { thought: ThoughtData; index: number })
             </h3>
 
             {/* Excerpt */}
-            <p className="text-sm font-light text-foreground/30 leading-relaxed flex-1 line-clamp-3">
+            <p className="text-sm font-light text-foreground/25 leading-relaxed flex-1 line-clamp-3">
               {thought.excerpt}
             </p>
 
-            {/* Read indicator */}
+            {/* Read indicator -- appears on hover */}
             <div className="mt-5 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-              <div className="w-4 h-px bg-primary/40" />
-              <span className="text-primary/50 text-[10px] tracking-wide uppercase font-light">
+              <div className="w-4 h-px bg-primary/30" />
+              <span className="text-primary/40 text-[10px] tracking-wide uppercase font-light">
                 Read
               </span>
               <svg
-                className="w-3 h-3 text-primary/50"
+                className="w-3 h-3 text-primary/40"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M17 8l4 4m0 0l-4 4m4-4H3"
+                />
               </svg>
             </div>
           </div>
@@ -178,9 +214,10 @@ export default function ThoughtsSection({ posts = [] }: ThoughtsSectionProps) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: "-50px" })
 
-  // Only render real posts from Substack -- no placeholders
   const thoughts: ThoughtData[] = posts.map((post) => ({
-    date: formatDate(post.date instanceof Date ? post.date.toISOString() : String(post.date)),
+    date: formatDate(
+      post.date instanceof Date ? post.date.toISOString() : String(post.date)
+    ),
     title: post.title,
     excerpt: stripHtml(post.excerpt),
     readTime: estimateReadTime(post.content || post.excerpt),
@@ -195,7 +232,6 @@ export default function ThoughtsSection({ posts = [] }: ThoughtsSectionProps) {
       className="relative z-10 bg-background px-6 md:px-10 py-20 md:py-32"
     >
       <div className="max-w-5xl mx-auto">
-        {/* Section header */}
         <motion.div
           ref={ref}
           initial={{ opacity: 0, y: 20 }}
@@ -218,13 +254,21 @@ export default function ThoughtsSection({ posts = [] }: ThoughtsSectionProps) {
           </p>
         </motion.div>
 
-        {/* Newspaper-style grid: lead story full width, rest in columns */}
+        {/* Grid: lead story spans full width, rest in columns */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
           {thoughts.map((thought, index) =>
             index === 0 ? (
-              <LeadStoryCard key={thought.title} thought={thought} index={index} />
+              <LeadStoryCard
+                key={thought.title}
+                thought={thought}
+                index={index}
+              />
             ) : (
-              <ColumnCard key={thought.title} thought={thought} index={index} />
+              <ColumnCard
+                key={thought.title}
+                thought={thought}
+                index={index}
+              />
             )
           )}
         </div>

@@ -31,7 +31,8 @@ function transformReposToProjects(repos: GitHubRepo[]): Project[] {
           ? [repo.language]
           : [],
     repoUrl: repo.html_url,
-    homepageUrl: repo.homepage && repo.homepage.trim() !== "" ? repo.homepage : null,
+    homepageUrl:
+      repo.homepage && repo.homepage.trim() !== "" ? repo.homepage : null,
     year: new Date(repo.created_at).getUTCFullYear().toString(),
     lastActive: formatRelativeDate(repo.pushed_at || repo.updated_at),
     language: repo.language,
@@ -50,10 +51,11 @@ function formatTitle(name: string): string {
     .join(" ")
 }
 
-const MONTHS_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+const MONTHS_SHORT = [
+  "Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec",
+]
 
 function formatRelativeDate(dateStr: string): string {
-  // Use a stable UTC-based format to avoid server/client hydration mismatch
   const d = new Date(dateStr)
   if (isNaN(d.getTime())) return dateStr
   return `${MONTHS_SHORT[d.getUTCMonth()]} ${d.getUTCFullYear()}`
@@ -74,7 +76,13 @@ const LANG_COLORS: Record<string, string> = {
   HTML: "#b5654a",
 }
 
-function ProjectCard({ project, index }: { project: Project; index: number }) {
+function ProjectCard({
+  project,
+  index,
+}: {
+  project: Project
+  index: number
+}) {
   const ref = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { once: true, margin: "-80px" })
   const [expanded, setExpanded] = useState(false)
@@ -89,18 +97,32 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
       ref={ref}
       initial={{ opacity: 0, y: 60 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.8, delay: index * 0.1, ease: [0.16, 1, 0.3, 1] }}
+      transition={{
+        duration: 0.8,
+        delay: index * 0.1,
+        ease: [0.16, 1, 0.3, 1],
+      }}
       className="group"
     >
-      {/* Terminal chrome header */}
-      <div className="flex items-center gap-2 px-4 py-2.5 rounded-t-lg border border-b-0 border-foreground/8 bg-card/80">
+      {/* ── Terminal chrome header ────────────────────────────── */}
+      <div className="relative flex items-center gap-2 px-4 py-2.5 rounded-t-lg border border-b-0 border-foreground/[0.06] bg-[#0d0c0b]">
+        {/* Subtle top-edge glow */}
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0 h-px"
+          style={{
+            background: `linear-gradient(90deg, transparent, ${langColor}33, transparent)`,
+          }}
+        />
         <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-foreground/10" />
-          <span className="w-2.5 h-2.5 rounded-full bg-foreground/10" />
-          <span className="w-2.5 h-2.5 rounded-full bg-foreground/10" />
+          <span
+            className="w-2 h-2 rounded-full"
+            style={{ backgroundColor: `${langColor}55` }}
+          />
+          <span className="w-2 h-2 rounded-full bg-foreground/[0.06]" />
+          <span className="w-2 h-2 rounded-full bg-foreground/[0.06]" />
         </div>
-        <span className="ml-2 text-[10px] font-mono text-foreground/25 tracking-wide truncate">
-          {project.owner}/{project.rawName}
+        <span className="ml-2 text-[10px] font-mono text-foreground/20 tracking-wide truncate">
+          ~/{project.owner}/{project.rawName}
         </span>
         <div className="ml-auto flex items-center gap-3">
           {project.homepageUrl && (
@@ -109,19 +131,24 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
                 e.stopPropagation()
                 setShowEmbed(!showEmbed)
               }}
-              className="text-[9px] tracking-wide uppercase text-primary/50 hover:text-primary transition-colors duration-300 font-light min-h-[44px] min-w-[44px] flex items-center justify-center"
-              aria-label={showEmbed ? "Hide preview" : "Show preview"}
+              className="flex items-center gap-1.5 text-[9px] tracking-wide uppercase font-light transition-colors duration-300 min-h-[44px] px-2"
+              style={{ color: showEmbed ? langColor : `${langColor}88` }}
+              aria-label={showEmbed ? "Hide preview" : "Show live preview"}
             >
-              {showEmbed ? "Hide preview" : "Live preview"}
+              <span
+                className="w-1.5 h-1.5 rounded-full"
+                style={{
+                  backgroundColor: showEmbed ? "#4ade80" : `${langColor}44`,
+                  boxShadow: showEmbed ? "0 0 6px #4ade8066" : "none",
+                }}
+              />
+              {showEmbed ? "Hide" : "Preview"}
             </button>
           )}
-          <span className="text-foreground/15 text-[10px]">
-            {project.language || ""}
-          </span>
         </div>
       </div>
 
-      {/* Card body */}
+      {/* ── Card body ────────────────────────────────────────── */}
       <div
         role="button"
         tabIndex={0}
@@ -132,26 +159,34 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
         className="cursor-pointer"
         aria-expanded={expanded}
       >
-        <div className="relative rounded-b-lg overflow-hidden border border-foreground/8 bg-card/60 backdrop-blur-sm hover:border-foreground/15 transition-all duration-500 hover:bg-card/80">
-          <div className="p-5 md:p-6">
+        <div
+          className="relative overflow-hidden border border-foreground/[0.06] bg-[#0d0c0b]/80 backdrop-blur-sm transition-all duration-500 hover:bg-[#0d0c0b]"
+          style={{
+            borderRadius: showEmbed ? "0" : "0 0 0.5rem 0.5rem",
+          }}
+        >
+          {/* Left accent bar */}
+          <div
+            className="absolute left-0 top-0 bottom-0 w-[2px] opacity-40 group-hover:opacity-80 transition-opacity duration-500"
+            style={{ backgroundColor: langColor }}
+          />
+
+          <div className="p-5 md:p-6 pl-6 md:pl-8">
             {/* Meta row */}
-            <div className="flex items-center gap-3 mb-4">
+            <div className="flex items-center gap-3 mb-4 text-[10px] tracking-wide font-light">
               <span
-                className="w-2.5 h-2.5 rounded-full shrink-0"
+                className="inline-block w-2 h-2 rounded-full shrink-0"
                 style={{ backgroundColor: langColor }}
-                aria-hidden="true"
               />
               {project.language && (
-                <span className="text-foreground/40 text-[10px] tracking-wide font-light uppercase">
+                <span className="text-foreground/35 uppercase">
                   {project.language}
                 </span>
               )}
-              <div className="w-3 h-px bg-foreground/10" />
-              <span className="text-foreground/25 text-[10px] tracking-wide font-light">
-                est. {project.year}
-              </span>
-              <span className="text-foreground/15 text-[10px]">{"/"}</span>
-              <span className="text-foreground/25 text-[10px] tracking-wide font-light">
+              <span className="text-foreground/10">{"/"}</span>
+              <span className="text-foreground/20">est. {project.year}</span>
+              <span className="text-foreground/10">{"/"}</span>
+              <span className="text-foreground/20">
                 active {project.lastActive}
               </span>
               <div className="ml-auto">
@@ -159,8 +194,18 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
                   animate={{ rotate: expanded ? 180 : 0 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <svg className="w-3.5 h-3.5 text-foreground/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
+                  <svg
+                    className="w-3.5 h-3.5 text-foreground/25"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </motion.div>
               </div>
@@ -172,33 +217,69 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
             </h3>
 
             {/* Description */}
-            <p className="text-sm font-light text-foreground/40 leading-relaxed max-w-2xl mb-5">
+            <p className="text-sm font-light text-foreground/35 leading-relaxed max-w-2xl mb-5">
               {project.description}
             </p>
 
-            {/* Stats */}
+            {/* Stats row */}
             <div className="flex items-center gap-5 mb-4">
               {project.stars > 0 && (
                 <div className="flex items-center gap-1.5">
-                  <svg className="w-3.5 h-3.5 text-foreground/25" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                  <svg
+                    className="w-3.5 h-3.5 text-foreground/20"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                    />
                   </svg>
-                  <span className="text-foreground/30 text-xs font-light">{project.stars}</span>
+                  <span className="text-foreground/25 text-xs font-light">
+                    {project.stars}
+                  </span>
                 </div>
               )}
               {project.forks > 0 && (
                 <div className="flex items-center gap-1.5">
-                  <svg className="w-3.5 h-3.5 text-foreground/25" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  <svg
+                    className="w-3.5 h-3.5 text-foreground/20"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                    />
                   </svg>
-                  <span className="text-foreground/30 text-xs font-light">{project.forks}</span>
+                  <span className="text-foreground/25 text-xs font-light">
+                    {project.forks}
+                  </span>
                 </div>
               )}
               <div className="flex items-center gap-1.5">
-                <svg className="w-3.5 h-3.5 text-foreground/25" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
+                <svg
+                  className="w-3.5 h-3.5 text-foreground/20"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"
+                  />
                 </svg>
-                <span className="text-foreground/30 text-xs font-light">{formatSize(project.size)}</span>
+                <span className="text-foreground/25 text-xs font-light">
+                  {formatSize(project.size)}
+                </span>
               </div>
             </div>
 
@@ -207,7 +288,7 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
               {project.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="text-[9px] tracking-wide uppercase text-foreground/30 border border-foreground/8 rounded-full px-2.5 py-0.5 font-light"
+                  className="text-[9px] tracking-wide uppercase text-foreground/25 border border-foreground/[0.06] rounded-full px-2.5 py-0.5 font-light"
                 >
                   {tag}
                 </span>
@@ -215,7 +296,7 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
             </div>
           </div>
 
-          {/* Expanded detail */}
+          {/* ── Expanded detail panel ──────────────────────────── */}
           <AnimatePresence>
             {expanded && (
               <motion.div
@@ -225,11 +306,13 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
                 transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                 className="overflow-hidden"
               >
-                <div className="border-t border-foreground/5 px-5 md:px-6 py-5">
+                <div className="border-t border-foreground/[0.04] px-5 md:px-6 pl-6 md:pl-8 py-5">
                   <div className="flex flex-col md:flex-row gap-5 md:items-center justify-between">
-                    <p className="text-sm font-light text-foreground/45 leading-relaxed max-w-lg">
+                    <p className="text-sm font-light text-foreground/40 leading-relaxed max-w-lg">
                       {project.description}
-                      {project.language ? ` Built with ${project.language}.` : ""}
+                      {project.language
+                        ? ` Built with ${project.language}.`
+                        : ""}
                     </p>
                     <div className="flex items-center gap-3 shrink-0">
                       {project.homepageUrl && (
@@ -238,11 +321,21 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={(e) => e.stopPropagation()}
-                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-foreground/10 text-foreground/50 text-xs tracking-wide font-light hover:text-foreground/70 hover:border-foreground/20 transition-all duration-300 min-h-[44px]"
+                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-foreground/10 text-foreground/45 text-xs tracking-wide font-light hover:text-foreground/70 hover:border-foreground/20 transition-all duration-300 min-h-[44px]"
                         >
                           Visit site
-                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 17L17 7M17 7H7M17 7V17" />
+                          <svg
+                            className="w-3.5 h-3.5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={1.5}
+                              d="M7 17L17 7M17 7H7M17 7V17"
+                            />
                           </svg>
                         </a>
                       )}
@@ -254,8 +347,18 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
                         className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-primary/30 text-primary text-xs tracking-wide font-light hover:bg-primary/10 transition-all duration-300 min-h-[44px]"
                       >
                         View on GitHub
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 17L17 7M17 7H7M17 7V17" />
+                        <svg
+                          className="w-3.5 h-3.5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.5}
+                            d="M7 17L17 7M17 7H7M17 7V17"
+                          />
                         </svg>
                       </a>
                     </div>
@@ -267,7 +370,7 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
         </div>
       </div>
 
-      {/* Embedded live preview (iframe) when homepage exists */}
+      {/* ── Embedded live preview (iframe) ────────────────────── */}
       <AnimatePresence>
         {showEmbed && project.homepageUrl && (
           <motion.div
@@ -275,16 +378,40 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="overflow-hidden mt-2"
+            className="overflow-hidden"
           >
-            <div className="rounded-lg border border-foreground/8 overflow-hidden bg-card/40">
-              <div className="flex items-center gap-2 px-4 py-2 border-b border-foreground/5">
-                <div className="w-2 h-2 rounded-full bg-green-500/40" />
-                <span className="text-[10px] font-mono text-foreground/30 truncate">
-                  {project.homepageUrl}
-                </span>
+            <div className="rounded-b-lg border border-t-0 border-foreground/[0.06] overflow-hidden bg-[#0d0c0b]">
+              {/* Browser-style address bar */}
+              <div className="flex items-center gap-2.5 px-4 py-2 border-b border-foreground/[0.04] bg-[#0a0908]">
+                <div
+                  className="w-1.5 h-1.5 rounded-full bg-green-500/50"
+                  style={{ boxShadow: "0 0 4px #4ade8044" }}
+                />
+                <div className="flex-1 flex items-center rounded bg-foreground/[0.03] px-3 py-1">
+                  <svg
+                    className="w-2.5 h-2.5 text-foreground/15 mr-2 shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"
+                    />
+                  </svg>
+                  <span className="text-[10px] font-mono text-foreground/25 truncate">
+                    {project.homepageUrl}
+                  </span>
+                </div>
               </div>
-              <div className="relative w-full" style={{ height: "min(60vh, 480px)" }}>
+              {/* Iframe container with inner shadow */}
+              <div
+                className="relative w-full"
+                style={{ height: "min(60vh, 500px)" }}
+              >
+                <div className="pointer-events-none absolute inset-0 z-10 rounded-b-lg" style={{ boxShadow: "inset 0 2px 20px rgba(0,0,0,0.5)" }} />
                 <iframe
                   src={project.homepageUrl}
                   title={`Live preview of ${project.title}`}
@@ -341,10 +468,14 @@ export default function ProjectShowcase({ repos }: ProjectShowcaseProps) {
           </p>
         </motion.div>
 
-        {/* Project cards - order preserved from repos array (which comes from getFeaturedProjects) */}
+        {/* Project cards */}
         <div className="flex flex-col gap-6 md:gap-8">
           {projects.map((project, index) => (
-            <ProjectCard key={project.rawName} project={project} index={index} />
+            <ProjectCard
+              key={project.rawName}
+              project={project}
+              index={index}
+            />
           ))}
         </div>
       </div>

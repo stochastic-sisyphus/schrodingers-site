@@ -8,12 +8,29 @@ interface ResearchSectionProps {
   papers: ResearchPaper[]
 }
 
-function typeBadge(type: string): { label: string; className: string } {
-  if (type === "visualization")
-    return { label: "Interactive", className: "border-primary/30 text-primary/60" }
-  if (type === "repository")
-    return { label: "Repository", className: "border-foreground/15 text-foreground/40" }
-  return { label: "Paper", className: "border-primary/20 text-primary/50" }
+const TYPE_STYLES: Record<
+  string,
+  { label: string; accent: string; glow: string }
+> = {
+  visualization: {
+    label: "Interactive",
+    accent: "#4ade80",
+    glow: "0 0 12px #4ade8020",
+  },
+  repository: {
+    label: "Repository",
+    accent: "#6e9fba",
+    glow: "0 0 12px #6e9fba20",
+  },
+  default: {
+    label: "Paper",
+    accent: "#c8b89a",
+    glow: "0 0 12px #c8b89a15",
+  },
+}
+
+function getStyle(type: string) {
+  return TYPE_STYLES[type] || TYPE_STYLES.default
 }
 
 function ResearchCard({
@@ -29,7 +46,7 @@ function ResearchCard({
   const isInView = useInView(ref, { once: true, margin: "-80px" })
   const [expanded, setExpanded] = useState(false)
 
-  const badge = typeBadge(paper.type)
+  const style = getStyle(paper.type)
 
   const isVerificationReversal = paper.doi === "10.5281/zenodo.18159898"
   const href = isVerificationReversal
@@ -58,21 +75,36 @@ function ResearchCard({
         className="cursor-pointer"
         aria-expanded={expanded}
       >
-        <div className="relative rounded-lg overflow-hidden border border-foreground/8 bg-card/40 backdrop-blur-sm hover:border-foreground/15 transition-all duration-500 hover:bg-card/60">
+        <div
+          className="relative rounded-lg overflow-hidden border border-foreground/[0.06] bg-[#0d0c0b]/80 backdrop-blur-sm hover:border-foreground/[0.12] transition-all duration-500 hover:bg-[#0d0c0b]"
+          style={{
+            boxShadow: expanded ? style.glow : "none",
+          }}
+        >
+          {/* Left accent bar */}
+          <div
+            className="absolute left-0 top-0 bottom-0 w-[2px] opacity-30 group-hover:opacity-70 transition-opacity duration-500"
+            style={{ backgroundColor: style.accent }}
+          />
+
           {/* Top bar */}
-          <div className="flex items-center justify-between px-5 py-3 border-b border-foreground/5">
+          <div className="flex items-center justify-between px-5 pl-6 py-3 border-b border-foreground/[0.04]">
             <div className="flex items-center gap-3">
-              <span className="text-foreground/20 text-xs font-light tabular-nums font-mono">
+              <span className="text-foreground/15 text-xs font-light tabular-nums font-mono">
                 {number}
               </span>
               <span
-                className={`text-[9px] tracking-wide uppercase border rounded-full px-2.5 py-0.5 font-light ${badge.className}`}
+                className="text-[9px] tracking-wide uppercase border rounded-full px-2.5 py-0.5 font-light"
+                style={{
+                  borderColor: `${style.accent}33`,
+                  color: `${style.accent}99`,
+                }}
               >
-                {badge.label}
+                {style.label}
               </span>
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-foreground/25 text-[10px] tracking-wide font-light">
+              <span className="text-foreground/20 text-[10px] tracking-wide font-light">
                 {paper.year || "N/A"}
               </span>
               <motion.div
@@ -80,7 +112,7 @@ function ResearchCard({
                 transition={{ duration: 0.3 }}
               >
                 <svg
-                  className="w-3.5 h-3.5 text-foreground/30"
+                  className="w-3.5 h-3.5 text-foreground/25"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -97,31 +129,31 @@ function ResearchCard({
           </div>
 
           {/* Card body */}
-          <div className="p-5 md:p-6">
+          <div className="p-5 md:p-6 pl-6 md:pl-8">
             <h3 className="text-lg md:text-xl font-light text-foreground tracking-tight mb-2 group-hover:text-primary transition-colors duration-500 leading-snug">
               <span className="instrument italic">{paper.title}</span>
             </h3>
 
             {paper.authors.length > 0 && (
-              <p className="text-xs font-light text-foreground/40 mb-2">
+              <p className="text-xs font-light text-foreground/35 mb-2">
                 {paper.authors.join(", ")}
               </p>
             )}
 
             {paper.journal && (
-              <p className="text-xs font-light text-foreground/30 mb-3">
+              <p className="text-xs font-light text-foreground/25 mb-3 italic">
                 {paper.journal}
               </p>
             )}
 
             {paper.description && (
-              <p className="text-sm font-light text-foreground/35 leading-relaxed mb-3 line-clamp-2">
+              <p className="text-sm font-light text-foreground/30 leading-relaxed mb-3 line-clamp-2">
                 {paper.description}
               </p>
             )}
 
             {paper.doi && (
-              <span className="text-[10px] text-primary/40 font-mono tracking-wide">
+              <span className="text-[10px] font-mono tracking-wide" style={{ color: `${style.accent}55` }}>
                 DOI: {paper.doi}
               </span>
             )}
@@ -137,31 +169,37 @@ function ResearchCard({
                 transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                 className="overflow-hidden"
               >
-                <div className="border-t border-foreground/5 px-5 md:px-6 py-5">
+                <div className="border-t border-foreground/[0.04] px-5 md:px-6 pl-6 md:pl-8 py-5">
                   <div className="flex flex-col gap-5">
-                    {/* Abstract / description */}
                     {(paper.abstract || paper.description) && (
                       <div>
-                        <span className="text-foreground/25 text-[10px] tracking-[0.2em] uppercase font-light block mb-2">
+                        <span className="text-foreground/20 text-[10px] tracking-[0.2em] uppercase font-light block mb-2">
                           About this work
                         </span>
-                        <p className="text-sm font-light text-foreground/50 leading-relaxed max-w-2xl">
+                        <p className="text-sm font-light text-foreground/45 leading-relaxed max-w-2xl">
                           {paper.abstract || paper.description}
                         </p>
                       </div>
                     )}
 
-                    {/* Action buttons */}
                     <div className="flex flex-wrap gap-3">
                       {href && (
                         <a
                           href={href}
-                          target={isVerificationReversal ? undefined : "_blank"}
+                          target={
+                            isVerificationReversal ? undefined : "_blank"
+                          }
                           rel={
-                            isVerificationReversal ? undefined : "noopener noreferrer"
+                            isVerificationReversal
+                              ? undefined
+                              : "noopener noreferrer"
                           }
                           onClick={(e) => e.stopPropagation()}
-                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-primary/30 text-primary text-xs tracking-wide font-light hover:bg-primary/10 transition-all duration-300 min-h-[44px]"
+                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border text-xs tracking-wide font-light hover:bg-primary/10 transition-all duration-300 min-h-[44px]"
+                          style={{
+                            borderColor: `${style.accent}44`,
+                            color: style.accent,
+                          }}
                         >
                           {isVerificationReversal
                             ? "View interactive paper"
@@ -193,7 +231,7 @@ function ResearchCard({
                               `Beck, V. (${paper.year}). ${paper.title}. ${paper.journal || ""}. https://doi.org/${paper.doi}`
                             )
                           }}
-                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-foreground/10 text-foreground/40 text-xs tracking-wide font-light hover:text-foreground/60 hover:border-foreground/20 transition-all duration-300 min-h-[44px]"
+                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-foreground/[0.08] text-foreground/35 text-xs tracking-wide font-light hover:text-foreground/55 hover:border-foreground/15 transition-all duration-300 min-h-[44px]"
                         >
                           Copy citation
                         </button>
@@ -220,7 +258,6 @@ export default function ResearchSection({ papers }: ResearchSectionProps) {
       className="relative z-10 bg-background px-6 md:px-10 py-20 md:py-32"
     >
       <div className="max-w-5xl mx-auto">
-        {/* Section Header */}
         <motion.div
           ref={ref}
           initial={{ opacity: 0, y: 20 }}
@@ -235,14 +272,14 @@ export default function ResearchSection({ papers }: ResearchSectionProps) {
             </span>
           </div>
           <h2 className="text-3xl md:text-4xl font-light text-foreground tracking-tight mb-2">
-            thoughts i <span className="instrument italic">fixated on</span>
+            thoughts i{" "}
+            <span className="instrument italic">fixated on</span>
           </h2>
           <p className="text-sm font-light text-foreground/35 leading-relaxed max-w-lg">
             long enough to formalize
           </p>
         </motion.div>
 
-        {/* Research cards */}
         <div className="flex flex-col gap-5 md:gap-6">
           {papers.map((paper, index) => (
             <ResearchCard
