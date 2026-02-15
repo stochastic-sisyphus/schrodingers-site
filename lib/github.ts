@@ -76,7 +76,7 @@ export async function fetchAllRepos(username: string = GITHUB_USERNAME): Promise
   try {
     const response = await fetch(
       `${GITHUB_API}/users/${username}/repos?per_page=100&sort=updated`,
-      { headers: getHeaders() }
+      { headers: getHeaders(), next: { revalidate: 3600 } }
     );
 
     if (!response.ok) {
