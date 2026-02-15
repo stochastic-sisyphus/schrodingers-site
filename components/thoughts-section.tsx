@@ -3,12 +3,12 @@
 import { motion, useInView, AnimatePresence } from "framer-motion"
 import { useRef, useState } from "react"
 import type { BlogPost } from "@/lib/types"
-import EmbedDrawer from "@/components/embed-drawer"
 
 interface ThoughtData {
   date: string
   title: string
   excerpt: string
+  content: string
   readTime: string
   link: string
 }
@@ -45,10 +45,6 @@ function WritingCard({
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: "-60px" })
   const [expanded, setExpanded] = useState(false)
-  const [showEmbed, setShowEmbed] = useState(false)
-
-  const isExternal = thought.link.startsWith("http")
-  const canEmbedPost = isExternal // Substack posts can be embedded
 
   return (
     <motion.article
@@ -78,45 +74,41 @@ function WritingCard({
           substack/{thought.title.toLowerCase().replace(/\s+/g, "-").slice(0, 30)}
         </span>
         <div className="ml-auto flex items-center gap-3">
-          {canEmbedPost && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                setShowEmbed(!showEmbed)
-                if (!showEmbed) setExpanded(false)
-              }}
-              className="flex items-center gap-1.5 text-[9px] tracking-wide uppercase font-light transition-colors duration-300 min-h-[44px] px-2"
-              style={{
-                color: showEmbed ? WRITING_ACCENT : `${WRITING_ACCENT}88`,
-              }}
-              aria-label={showEmbed ? "Hide preview" : "Read inline"}
+          <a
+            href={thought.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="flex items-center gap-1.5 text-[9px] tracking-wide uppercase font-light transition-colors duration-300 min-h-[44px] px-2"
+            style={{ color: `${WRITING_ACCENT}88` }}
+            aria-label="Read on Substack"
+          >
+            <svg
+              className="w-3 h-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
             >
-              <span
-                className="w-1.5 h-1.5 rounded-full"
-                style={{
-                  backgroundColor: showEmbed
-                    ? WRITING_ACCENT
-                    : `${WRITING_ACCENT}44`,
-                  boxShadow: showEmbed ? `0 0 6px ${WRITING_ACCENT}66` : "none",
-                }}
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
               />
-              {showEmbed ? "Hide" : "Read"}
-            </button>
-          )}
+            </svg>
+            Open
+          </a>
           <span className="text-foreground/20 text-[10px] tracking-wide font-light">
             {thought.readTime}
           </span>
         </div>
       </div>
 
-      {/* Card body -- newspaper variant */}
+      {/* Card body */}
       <div
         role="button"
         tabIndex={0}
-        onClick={() => {
-          setExpanded(!expanded)
-          if (expanded) setShowEmbed(false)
-        }}
+        onClick={() => setExpanded(!expanded)}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") setExpanded(!expanded)
         }}
@@ -126,8 +118,7 @@ function WritingCard({
         <div
           className="relative overflow-hidden border border-foreground/[0.08] bg-[#16150f]/80 backdrop-blur-sm transition-all duration-500 hover:bg-[#1a1917]"
           style={{
-            borderRadius:
-              showEmbed || expanded ? "0" : "0 0 0.5rem 0.5rem",
+            borderRadius: expanded ? "0" : "0 0 0.5rem 0.5rem",
           }}
         >
           {/* Left accent bar */}
@@ -156,7 +147,7 @@ function WritingCard({
               <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                 <div className="w-4 h-px bg-primary/30" />
                 <span className="text-primary/40 text-[10px] tracking-wide uppercase font-light">
-                  Expand
+                  {expanded ? "Collapse" : "Read preview"}
                 </span>
               </div>
               <motion.div
@@ -179,64 +170,96 @@ function WritingCard({
               </motion.div>
             </div>
           </div>
-
-          {/* Expanded detail panel */}
-          <AnimatePresence>
-            {expanded && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                className="overflow-hidden"
-              >
-                <div className="border-t border-foreground/[0.06] px-5 md:px-6 pl-6 md:pl-8 py-5">
-                  <p className="text-sm font-light text-foreground/40 leading-relaxed max-w-2xl mb-5">
-                    {thought.excerpt}
-                  </p>
-                  <a
-                    href={thought.link}
-                    target={isExternal ? "_blank" : undefined}
-                    rel={isExternal ? "noopener noreferrer" : undefined}
-                    onClick={(e) => e.stopPropagation()}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border text-xs tracking-wide font-light transition-all duration-300 min-h-[44px]"
-                    style={{
-                      borderColor: `${WRITING_ACCENT}44`,
-                      color: WRITING_ACCENT,
-                    }}
-                  >
-                    Read on Substack
-                    <svg
-                      className="w-3.5 h-3.5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.5}
-                        d="M7 17L17 7M17 7H7M17 7V17"
-                      />
-                    </svg>
-                  </a>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
       </div>
 
-      {/* Embed drawer -- newspaper variant, embeds the Substack post */}
-      {canEmbedPost && (
-        <EmbedDrawer
-          open={showEmbed}
-          url={thought.link}
-          title={thought.title}
-          variant="newspaper"
-          height="min(70vh, 600px)"
-        />
-      )}
+      {/* Expanded reading pane -- inline content from RSS, no iframe */}
+      <AnimatePresence>
+        {expanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            className="overflow-hidden"
+          >
+            <div className="rounded-b-lg border border-t-0 border-foreground/[0.08] bg-[#1a1917] overflow-hidden">
+              {/* Reading pane header bar */}
+              <div className="flex items-center gap-2.5 px-4 py-2 border-b border-foreground/[0.06] bg-[#16150f]">
+                <div
+                  className="w-1.5 h-1.5 rounded-full shrink-0"
+                  style={{
+                    backgroundColor: WRITING_ACCENT,
+                    boxShadow: `0 0 4px ${WRITING_ACCENT}44`,
+                  }}
+                />
+                <span className="text-[10px] font-mono text-foreground/25 truncate">
+                  preview
+                </span>
+                <a
+                  href={thought.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="ml-auto text-foreground/20 hover:text-foreground/40 transition-colors p-1 min-h-[44px] min-w-[44px] flex items-center justify-center shrink-0"
+                  aria-label={`Read ${thought.title} on Substack`}
+                >
+                  <svg
+                    className="w-3.5 h-3.5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                    />
+                  </svg>
+                </a>
+              </div>
+
+              {/* Inline reading content */}
+              <div className="px-6 md:px-8 py-6 md:py-8 max-h-[50vh] overflow-y-auto">
+                <div className="max-w-2xl">
+                  <p className="text-sm md:text-base font-light text-foreground/50 leading-relaxed whitespace-pre-line">
+                    {thought.content}
+                  </p>
+                  <div className="mt-6 pt-4 border-t border-foreground/[0.06]">
+                    <a
+                      href={thought.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border text-xs tracking-wide font-light transition-all duration-300 min-h-[44px]"
+                      style={{
+                        borderColor: `${WRITING_ACCENT}44`,
+                        color: WRITING_ACCENT,
+                      }}
+                    >
+                      Continue reading on Substack
+                      <svg
+                        className="w-3.5 h-3.5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={1.5}
+                          d="M7 17L17 7M17 7H7M17 7V17"
+                        />
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.article>
   )
 }
@@ -255,6 +278,7 @@ export default function ThoughtsSection({ posts = [] }: ThoughtsSectionProps) {
     ),
     title: post.title,
     excerpt: stripHtml(post.excerpt),
+    content: stripHtml(post.content || post.excerpt),
     readTime: estimateReadTime(post.content || post.excerpt),
     link: post.substackUrl || "#",
   }))
