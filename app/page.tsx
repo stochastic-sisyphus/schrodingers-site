@@ -25,25 +25,43 @@ export default async function Home() {
   // Get substack posts
   const substackPosts = getRecentPosts(allPosts, 6)
 
-  // Build research entries
+  // Build research entries -- deduplicate verification reversal
   const featuredPapers = getKeyPapers(researchData.papers, 4)
   const propheticRepo = fetchedRepos.find(
     (r) => r.name === "prophetic-emergentomics"
   )
 
+  // Filter out the ORCID version of verification reversal since we have
+  // a merged entry with the interactive viz + paper DOI
+  const filteredPapers = featuredPapers.filter(
+    (p) => !p.title.toLowerCase().includes("verification reversal")
+  )
+
+  // Find the ORCID paper to pull DOI from it
+  const vrPaper = featuredPapers.find((p) =>
+    p.title.toLowerCase().includes("verification reversal")
+  )
+
   const researchEntries: ResearchPaper[] = [
+    // Merged verification reversal: paper + interactive viz in one card
     {
-      id: "verification-reversal-viz",
-      title: "Verification Reversal (Interactive)",
-      authors: ["Vanessa Beck"],
-      year: 2026,
-      journal: "Interactive Visualization",
-      type: "visualization",
+      id: "verification-reversal",
+      title:
+        vrPaper?.title ||
+        "Verification Reversal: Cascades and Synthetic Productivity in an AI-Mediated Economy",
+      authors: vrPaper?.authors || ["Vanessa Beck"],
+      year: vrPaper?.year || 2026,
+      journal: vrPaper?.journal || "Preprint",
+      doi: vrPaper?.doi || "10.5281/zenodo.18159898",
+      type: "visualization", // enables the embed drawer with /verification-reversal.html
       description:
-        "Interactive p5.js visualization of information cascade dynamics",
+        vrPaper?.description ||
+        "Interactive p5.js visualization of information cascade dynamics alongside the full paper.",
+      abstract: vrPaper?.abstract,
+      orcidUrl: vrPaper?.orcidUrl,
       githubUrl: "/verification-reversal.html",
     },
-    ...featuredPapers,
+    ...filteredPapers,
     ...(propheticRepo
       ? [
           {

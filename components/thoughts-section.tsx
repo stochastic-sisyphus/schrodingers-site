@@ -1,8 +1,9 @@
 "use client"
 
-import { motion, useInView } from "framer-motion"
-import { useRef } from "react"
+import { motion, useInView, AnimatePresence } from "framer-motion"
+import { useRef, useState } from "react"
 import type { BlogPost } from "@/lib/types"
+import EmbedDrawer from "@/components/embed-drawer"
 
 interface ThoughtData {
   date: string
@@ -32,8 +33,9 @@ function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, "").trim()
 }
 
-/** Lead story -- full-width broadsheet editorial card */
-function LeadStoryCard({
+const WRITING_ACCENT = "#c8b89a"
+
+function WritingCard({
   thought,
   index,
 }: {
@@ -42,132 +44,103 @@ function LeadStoryCard({
 }) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: "-60px" })
+  const [expanded, setExpanded] = useState(false)
+  const [showEmbed, setShowEmbed] = useState(false)
+
   const isExternal = thought.link.startsWith("http")
-  const firstLetter = thought.excerpt.charAt(0)
-  const restExcerpt = thought.excerpt.slice(1)
+  const canEmbedPost = isExternal // Substack posts can be embedded
 
   return (
     <motion.article
       ref={ref}
-      initial={{ opacity: 0, y: 30 }}
+      initial={{ opacity: 0, y: 40 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.7, delay: index * 0.08 }}
-      className="group md:col-span-2"
-    >
-      <a
-        href={thought.link}
-        target={isExternal ? "_blank" : undefined}
-        rel={isExternal ? "noopener noreferrer" : undefined}
-        className="block"
-      >
-        <div className="relative rounded-lg overflow-hidden border border-foreground/[0.06] bg-[#0d0c0b]/80 hover:border-foreground/[0.12] hover:bg-[#0d0c0b] transition-all duration-500">
-          {/* Thin gold rule at top */}
-          <div className="h-px bg-primary/20" />
-
-          {/* Masthead */}
-          <div className="border-b border-foreground/[0.06] px-6 md:px-8 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <span className="text-[9px] tracking-[0.3em] uppercase text-primary/50 font-light">
-                Latest
-              </span>
-              <div className="w-px h-3 bg-foreground/[0.08]" />
-              <span className="text-foreground/20 text-[10px] tracking-wide font-light">
-                {thought.date}
-              </span>
-            </div>
-            <span className="text-foreground/15 text-[10px] tracking-wide font-light">
-              {thought.readTime}
-            </span>
-          </div>
-
-          <div className="p-6 md:p-8">
-            {/* Headline */}
-            <h3 className="text-2xl md:text-3xl font-light text-foreground tracking-tight mb-6 group-hover:text-primary transition-colors duration-500 leading-snug text-balance">
-              <span className="instrument italic">{thought.title}</span>
-            </h3>
-
-            {/* Two-column editorial excerpt with drop cap */}
-            <div className="md:columns-2 md:gap-10 relative">
-              {/* Column rule (visible on desktop between columns) */}
-              <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-px bg-foreground/[0.06] -translate-x-1/2" />
-              <p className="text-sm font-light text-foreground/30 leading-relaxed">
-                <span className="instrument italic text-3xl text-primary/50 float-left mr-2 mt-0.5 leading-none">
-                  {firstLetter}
-                </span>
-                {restExcerpt}
-              </p>
-            </div>
-
-            {/* Read more */}
-            <div className="mt-6 pt-4 border-t border-foreground/[0.04] flex items-center gap-2">
-              <div className="w-5 h-px bg-primary/30 group-hover:w-8 transition-all duration-500" />
-              <span className="text-primary/40 text-[10px] tracking-wide uppercase font-light group-hover:text-primary/60 transition-colors duration-500">
-                Continue reading
-              </span>
-              <svg
-                className="w-3 h-3 text-primary/40 group-hover:translate-x-1 group-hover:text-primary/60 transition-all duration-300"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M17 8l4 4m0 0l-4 4m4-4H3"
-                />
-              </svg>
-            </div>
-          </div>
-        </div>
-      </a>
-    </motion.article>
-  )
-}
-
-/** Column article card -- compact editorial style */
-function ColumnCard({
-  thought,
-  index,
-}: {
-  thought: ThoughtData
-  index: number
-}) {
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: "-60px" })
-  const isExternal = thought.link.startsWith("http")
-
-  return (
-    <motion.article
-      ref={ref}
-      initial={{ opacity: 0, y: 30 }}
-      animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.7, delay: index * 0.08 }}
+      transition={{ duration: 0.8, delay: index * 0.08 }}
       className="group"
     >
-      <a
-        href={thought.link}
-        target={isExternal ? "_blank" : undefined}
-        rel={isExternal ? "noopener noreferrer" : undefined}
-        className="block h-full"
+      {/* Newspaper terminal chrome header */}
+      <div className="relative flex items-center gap-2 px-4 py-2.5 rounded-t-lg border border-b-0 border-foreground/[0.08] bg-[#1a1917]">
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0 h-px"
+          style={{
+            background: `linear-gradient(90deg, transparent, ${WRITING_ACCENT}22, transparent)`,
+          }}
+        />
+        <div className="flex items-center gap-1.5">
+          <span
+            className="w-2 h-2 rounded-full"
+            style={{ backgroundColor: `${WRITING_ACCENT}44` }}
+          />
+          <span className="w-2 h-2 rounded-full bg-foreground/[0.05]" />
+          <span className="w-2 h-2 rounded-full bg-foreground/[0.05]" />
+        </div>
+        <span className="ml-2 text-[10px] font-mono text-foreground/20 tracking-wide truncate">
+          substack/{thought.title.toLowerCase().replace(/\s+/g, "-").slice(0, 30)}
+        </span>
+        <div className="ml-auto flex items-center gap-3">
+          {canEmbedPost && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                setShowEmbed(!showEmbed)
+                if (!showEmbed) setExpanded(false)
+              }}
+              className="flex items-center gap-1.5 text-[9px] tracking-wide uppercase font-light transition-colors duration-300 min-h-[44px] px-2"
+              style={{
+                color: showEmbed ? WRITING_ACCENT : `${WRITING_ACCENT}88`,
+              }}
+              aria-label={showEmbed ? "Hide preview" : "Read inline"}
+            >
+              <span
+                className="w-1.5 h-1.5 rounded-full"
+                style={{
+                  backgroundColor: showEmbed
+                    ? "#4ade80"
+                    : `${WRITING_ACCENT}44`,
+                  boxShadow: showEmbed ? "0 0 6px #4ade8066" : "none",
+                }}
+              />
+              {showEmbed ? "Hide" : "Read"}
+            </button>
+          )}
+          <span className="text-foreground/20 text-[10px] tracking-wide font-light">
+            {thought.readTime}
+          </span>
+        </div>
+      </div>
+
+      {/* Card body -- newspaper variant */}
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={() => {
+          setExpanded(!expanded)
+          if (expanded) setShowEmbed(false)
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") setExpanded(!expanded)
+        }}
+        className="cursor-pointer"
+        aria-expanded={expanded}
       >
-        <div className="relative h-full rounded-lg overflow-hidden border border-foreground/[0.04] bg-[#0d0c0b]/50 hover:border-foreground/[0.10] hover:bg-[#0d0c0b]/80 transition-all duration-500">
-          {/* Thin accent rule at top */}
-          <div className="h-px bg-primary/10 group-hover:bg-primary/25 transition-colors duration-500" />
+        <div
+          className="relative overflow-hidden border border-foreground/[0.08] bg-[#16150f]/80 backdrop-blur-sm transition-all duration-500 hover:bg-[#1a1917]"
+          style={{
+            borderRadius:
+              showEmbed || expanded ? "0" : "0 0 0.5rem 0.5rem",
+          }}
+        >
+          {/* Left accent bar */}
+          <div
+            className="absolute left-0 top-0 bottom-0 w-[2px] opacity-25 group-hover:opacity-60 transition-opacity duration-500"
+            style={{ backgroundColor: WRITING_ACCENT }}
+          />
 
-          <div className="p-5 md:p-6 flex flex-col h-full">
-            {/* Date & read time */}
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-foreground/20 text-[10px] tracking-wide font-light">
-                {thought.date}
-              </span>
-              <span className="text-foreground/12 text-[10px] tracking-wide font-light">
-                {thought.readTime}
-              </span>
-            </div>
-
-            {/* Thin rule */}
-            <div className="w-full h-px bg-foreground/[0.05] mb-4" />
+          <div className="p-5 md:p-6 pl-6 md:pl-8">
+            {/* Date */}
+            <span className="text-foreground/25 text-[10px] tracking-wide font-light block mb-3">
+              {thought.date}
+            </span>
 
             {/* Title */}
             <h3 className="text-lg md:text-xl font-light text-foreground tracking-tight mb-3 group-hover:text-primary transition-colors duration-500 leading-snug">
@@ -175,33 +148,95 @@ function ColumnCard({
             </h3>
 
             {/* Excerpt */}
-            <p className="text-sm font-light text-foreground/25 leading-relaxed flex-1 line-clamp-3">
+            <p className="text-sm font-light text-foreground/30 leading-relaxed line-clamp-2 mb-3">
               {thought.excerpt}
             </p>
 
-            {/* Read indicator -- appears on hover */}
-            <div className="mt-5 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-              <div className="w-4 h-px bg-primary/30" />
-              <span className="text-primary/40 text-[10px] tracking-wide uppercase font-light">
-                Read
-              </span>
-              <svg
-                className="w-3 h-3 text-primary/40"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                <div className="w-4 h-px bg-primary/30" />
+                <span className="text-primary/40 text-[10px] tracking-wide uppercase font-light">
+                  Expand
+                </span>
+              </div>
+              <motion.div
+                animate={{ rotate: expanded ? 180 : 0 }}
+                transition={{ duration: 0.3 }}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M17 8l4 4m0 0l-4 4m4-4H3"
-                />
-              </svg>
+                <svg
+                  className="w-3.5 h-3.5 text-foreground/25"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </motion.div>
             </div>
           </div>
+
+          {/* Expanded detail panel */}
+          <AnimatePresence>
+            {expanded && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                className="overflow-hidden"
+              >
+                <div className="border-t border-foreground/[0.06] px-5 md:px-6 pl-6 md:pl-8 py-5">
+                  <p className="text-sm font-light text-foreground/40 leading-relaxed max-w-2xl mb-5">
+                    {thought.excerpt}
+                  </p>
+                  <a
+                    href={thought.link}
+                    target={isExternal ? "_blank" : undefined}
+                    rel={isExternal ? "noopener noreferrer" : undefined}
+                    onClick={(e) => e.stopPropagation()}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border text-xs tracking-wide font-light transition-all duration-300 min-h-[44px]"
+                    style={{
+                      borderColor: `${WRITING_ACCENT}44`,
+                      color: WRITING_ACCENT,
+                    }}
+                  >
+                    Read on Substack
+                    <svg
+                      className="w-3.5 h-3.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.5}
+                        d="M7 17L17 7M17 7H7M17 7V17"
+                      />
+                    </svg>
+                  </a>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-      </a>
+      </div>
+
+      {/* Embed drawer -- newspaper variant, embeds the Substack post */}
+      {canEmbedPost && (
+        <EmbedDrawer
+          open={showEmbed}
+          url={thought.link}
+          title={thought.title}
+          variant="newspaper"
+          height="min(70vh, 600px)"
+        />
+      )}
     </motion.article>
   )
 }
@@ -254,23 +289,14 @@ export default function ThoughtsSection({ posts = [] }: ThoughtsSectionProps) {
           </p>
         </motion.div>
 
-        {/* Grid: lead story spans full width, rest in columns */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
-          {thoughts.map((thought, index) =>
-            index === 0 ? (
-              <LeadStoryCard
-                key={thought.title}
-                thought={thought}
-                index={index}
-              />
-            ) : (
-              <ColumnCard
-                key={thought.title}
-                thought={thought}
-                index={index}
-              />
-            )
-          )}
+        <div className="flex flex-col gap-5 md:gap-6">
+          {thoughts.map((thought, index) => (
+            <WritingCard
+              key={thought.title}
+              thought={thought}
+              index={index}
+            />
+          ))}
         </div>
       </div>
     </section>

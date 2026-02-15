@@ -17,13 +17,18 @@ export default function Header() {
 
       {/* Desktop Navigation */}
       <nav className="hidden md:flex items-center gap-1">
-        {["Projects", "Research", "Thoughts", "Connect"].map((item) => (
+        {[
+          { label: "Projects", href: "#projects" },
+          { label: "Research", href: "#research" },
+          { label: "Writing", href: "#thoughts" },
+          { label: "Connect", href: "#connect" },
+        ].map((item) => (
           <a
-            key={item}
-            href={`#${item.toLowerCase()}`}
+            key={item.label}
+            href={item.href}
             className="text-foreground/60 hover:text-foreground text-xs font-light tracking-wide px-4 py-2 rounded-full hover:bg-foreground/5 transition-all duration-300"
           >
-            {item}
+            {item.label}
           </a>
         ))}
       </nav>
@@ -56,14 +61,19 @@ export default function Header() {
       {menuOpen && (
         <div className="fixed inset-0 top-16 z-50 bg-background/95 backdrop-blur-sm md:hidden">
           <nav className="flex flex-col items-center justify-center gap-8 h-full">
-            {["Projects", "Research", "Thoughts", "Connect"].map((item) => (
+            {[
+              { label: "Projects", href: "#projects" },
+              { label: "Research", href: "#research" },
+              { label: "Writing", href: "#thoughts" },
+              { label: "Connect", href: "#connect" },
+            ].map((item) => (
               <a
-                key={item}
-                href={`#${item.toLowerCase()}`}
+                key={item.label}
+                href={item.href}
                 onClick={() => setMenuOpen(false)}
                 className="text-foreground text-2xl font-light instrument tracking-wide"
               >
-                {item}
+                {item.label}
               </a>
             ))}
           </nav>

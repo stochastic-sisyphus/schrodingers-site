@@ -6,18 +6,6 @@ export default function HeroContent() {
   return (
     <main className="relative z-20 flex flex-col justify-end min-h-[calc(100vh-80px)] px-6 pb-10 md:px-10 md:pb-16">
       <div className="max-w-3xl">
-        {/* Overline */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="mb-6"
-        >
-          <span className="text-foreground/40 text-[10px] md:text-xs tracking-[0.3em] uppercase font-light">
-            ML Engineering / NLP / Research
-          </span>
-        </motion.div>
-
         {/* Main Heading */}
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
