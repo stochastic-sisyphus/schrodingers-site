@@ -149,8 +149,8 @@ function ProjectCard({
               <span
                 className="w-1.5 h-1.5 rounded-full"
                 style={{
-                  backgroundColor: showEmbed ? "#4ade80" : `${langColor}44`,
-                  boxShadow: showEmbed ? "0 0 6px #4ade8066" : "none",
+                  backgroundColor: showEmbed ? langColor : `${langColor}44`,
+                  boxShadow: showEmbed ? `0 0 6px ${langColor}66` : "none",
                 }}
               />
               {showEmbed ? "Hide" : "Preview"}

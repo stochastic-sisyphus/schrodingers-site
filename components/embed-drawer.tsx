@@ -47,8 +47,8 @@ export default function EmbedDrawer({
               className={`flex items-center gap-2.5 px-4 py-2 border-b ${innerBorderColor} ${bgBar}`}
             >
               <div
-                className="w-1.5 h-1.5 rounded-full bg-green-500/50 shrink-0"
-                style={{ boxShadow: "0 0 4px #4ade8044" }}
+                className="w-1.5 h-1.5 rounded-full bg-primary/50 shrink-0"
+                style={{ boxShadow: "0 0 4px rgb(200 184 154 / 0.25)" }}
               />
               <div
                 className={`flex-1 flex items-center rounded ${isTerminal ? "bg-foreground/[0.03]" : "bg-foreground/[0.04]"} px-3 py-1`}

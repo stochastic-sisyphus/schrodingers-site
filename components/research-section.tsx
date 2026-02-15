@@ -10,8 +10,8 @@ interface ResearchSectionProps {
 }
 
 const TYPE_ACCENTS: Record<string, string> = {
-  visualization: "#4ade80",
-  repository: "#6e9fba",
+  visualization: "#c8a84e",
+  repository: "#8a8478",
 }
 const DEFAULT_ACCENT = "#c8b89a"
 
@@ -117,8 +117,8 @@ function ResearchCard({
               <span
                 className="w-1.5 h-1.5 rounded-full"
                 style={{
-                  backgroundColor: showEmbed ? "#4ade80" : `${accent}44`,
-                  boxShadow: showEmbed ? "0 0 6px #4ade8066" : "none",
+                  backgroundColor: showEmbed ? accent : `${accent}44`,
+                  boxShadow: showEmbed ? `0 0 6px ${accent}66` : "none",
                 }}
               />
               {showEmbed ? "Hide" : "Preview"}

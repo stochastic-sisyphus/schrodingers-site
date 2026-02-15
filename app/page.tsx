@@ -54,9 +54,7 @@ export default async function Home() {
       journal: vrPaper?.journal || "Preprint",
       doi: vrPaper?.doi || "10.5281/zenodo.18159898",
       type: "visualization", // enables the embed drawer with /verification-reversal.html
-      description:
-        vrPaper?.description ||
-        "Interactive p5.js visualization of information cascade dynamics alongside the full paper.",
+      description: vrPaper?.description || "",
       abstract: vrPaper?.abstract,
       orcidUrl: vrPaper?.orcidUrl,
       githubUrl: "/verification-reversal.html",
@@ -75,16 +73,6 @@ export default async function Home() {
           },
         ]
       : []),
-    {
-      id: "self",
-      title: "self (Interactive Graph)",
-      authors: ["Vanessa Beck"],
-      year: 2026,
-      journal: "Interactive Visualization",
-      type: "visualization",
-      description: "Self-directed graph visualization",
-      githubUrl: "https://github.com/stochastic-sisyphus/self",
-    },
   ]
 
   // Serialize dates for client component (Date objects can't cross the RSC boundary)

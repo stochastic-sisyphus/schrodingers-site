@@ -95,9 +95,9 @@ function WritingCard({
                 className="w-1.5 h-1.5 rounded-full"
                 style={{
                   backgroundColor: showEmbed
-                    ? "#4ade80"
+                    ? WRITING_ACCENT
                     : `${WRITING_ACCENT}44`,
-                  boxShadow: showEmbed ? "0 0 6px #4ade8066" : "none",
+                  boxShadow: showEmbed ? `0 0 6px ${WRITING_ACCENT}66` : "none",
                 }}
               />
               {showEmbed ? "Hide" : "Read"}
