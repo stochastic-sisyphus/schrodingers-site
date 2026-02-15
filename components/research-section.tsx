@@ -231,16 +231,14 @@ export default function ResearchSection({ papers }: ResearchSectionProps) {
           <div className="flex items-center gap-4 mb-6">
             <div className="w-8 h-px bg-primary/40" />
             <span className="text-primary/60 text-[10px] tracking-[0.3em] uppercase font-light">
-              Research
+              Research & Papers
             </span>
           </div>
-          <h2 className="text-3xl md:text-4xl font-light text-foreground tracking-tight mb-4">
-            some thoughts i{" "}
-            <span className="instrument italic">fixated on</span>
+          <h2 className="text-3xl md:text-4xl font-light text-foreground tracking-tight mb-2">
+            thoughts i <span className="instrument italic">fixated on</span>
           </h2>
           <p className="text-sm font-light text-foreground/35 leading-relaxed max-w-lg">
-            Papers, visualizations, and explorations at the intersection of ML,
-            NLP, and verification systems.
+            long enough to formalize
           </p>
         </motion.div>
 

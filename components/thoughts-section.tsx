@@ -206,15 +206,15 @@ export default function ThoughtsSection({ posts = [] }: ThoughtsSectionProps) {
           <div className="flex items-center gap-4 mb-6">
             <div className="w-8 h-px bg-primary/40" />
             <span className="text-primary/60 text-[10px] tracking-[0.3em] uppercase font-light">
-              Thoughts
+              Writing
             </span>
           </div>
-          <h2 className="text-3xl md:text-4xl font-light text-foreground tracking-tight mb-4">
-            scattered <span className="instrument italic">embers</span>
+          <h2 className="text-3xl md:text-4xl font-light text-foreground tracking-tight mb-2">
+            writing into the{" "}
+            <span className="instrument italic">abyss</span>
           </h2>
           <p className="text-sm font-light text-foreground/35 leading-relaxed max-w-lg">
-            Long-form writing on ML, uncertainty, and the spaces between things
-            that work and things that almost do.
+            just writing into the abyss
           </p>
         </motion.div>
 
