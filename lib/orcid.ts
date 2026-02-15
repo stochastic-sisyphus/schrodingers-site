@@ -24,7 +24,7 @@ export async function fetchORCIDProfile(orcidId: string = ORCID_ID): Promise<ORC
   try {
     const response = await fetch(
       `${ORCID_API}/${orcidId}/person`,
-      { headers: getHeaders(), next: { revalidate: 3600 } }
+      { headers: getHeaders() }
     );
 
     if (!response.ok) {
@@ -46,7 +46,7 @@ export async function fetchORCIDWorks(orcidId: string = ORCID_ID): Promise<ORCID
   try {
     const response = await fetch(
       `${ORCID_API}/${orcidId}/works`,
-      { headers: getHeaders(), next: { revalidate: 3600 } }
+      { headers: getHeaders() }
     );
 
     if (!response.ok) {

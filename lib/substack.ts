@@ -11,7 +11,7 @@ const SUBSTACK_RSS_URL = process.env.SUBSTACK_RSS_URL || 'https://stochasticsisy
  */
 async function parseRSSFeed(rssUrl: string): Promise<SubstackPost[]> {
   try {
-    const response = await fetch(rssUrl, { next: { revalidate: 3600 } });
+    const response = await fetch(rssUrl);
 
     if (!response.ok) {
       console.error(`Substack RSS error: ${response.status}`);
