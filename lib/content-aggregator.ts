@@ -48,8 +48,8 @@ export function getFeaturedProjects(repos: GitHubRepo[]): FeaturedProject[] {
     'code-cartographer',
     'text-feature-span-extractor',
     'synsearch',
-    'prophetic-emergentomics',
     'self',
+    'Masters-Capstone-Bosch-Metadata-LLM',
   ];
 
   return featured.map(repo => ({

@@ -135,3 +135,126 @@
 .instrument {
   font-family: var(--font-instrument-serif);
 }
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--muted-foreground);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+/* Writing prose styles for RSS content rendered in the expand drawer */
+.writing-prose {
+  color: rgb(240 236 228 / 0.45);
+  font-size: 0.9rem;
+  line-height: 1.75;
+  font-weight: 300;
+}
+
+.writing-prose p {
+  margin-bottom: 1.25em;
+}
+
+.writing-prose p:last-child {
+  margin-bottom: 0;
+}
+
+.writing-prose h1,
+.writing-prose h2,
+.writing-prose h3,
+.writing-prose h4 {
+  color: rgb(240 236 228 / 0.7);
+  font-weight: 400;
+  margin-top: 1.5em;
+  margin-bottom: 0.75em;
+  line-height: 1.3;
+  font-family: var(--font-instrument-serif);
+  font-style: italic;
+}
+
+.writing-prose h1 { font-size: 1.5rem; }
+.writing-prose h2 { font-size: 1.25rem; }
+.writing-prose h3 { font-size: 1.1rem; }
+
+.writing-prose a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-decoration-color: rgb(200 184 154 / 0.3);
+  text-underline-offset: 2px;
+  transition: text-decoration-color 0.3s;
+}
+
+.writing-prose a:hover {
+  text-decoration-color: var(--primary);
+}
+
+.writing-prose em {
+  font-family: var(--font-instrument-serif);
+  font-style: italic;
+  color: rgb(240 236 228 / 0.55);
+}
+
+.writing-prose strong {
+  color: rgb(240 236 228 / 0.6);
+  font-weight: 500;
+}
+
+.writing-prose blockquote {
+  border-left: 2px solid rgb(200 184 154 / 0.2);
+  padding-left: 1.25em;
+  margin: 1.5em 0;
+  color: rgb(240 236 228 / 0.35);
+  font-style: italic;
+  font-family: var(--font-instrument-serif);
+}
+
+.writing-prose ul,
+.writing-prose ol {
+  padding-left: 1.5em;
+  margin: 1em 0;
+}
+
+.writing-prose li {
+  margin-bottom: 0.4em;
+}
+
+.writing-prose hr {
+  border: none;
+  border-top: 1px solid rgb(240 236 228 / 0.06);
+  margin: 2em 0;
+}
+
+.writing-prose pre,
+.writing-prose code {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.85em;
+  background: rgb(240 236 228 / 0.04);
+  border-radius: 3px;
+  padding: 0.15em 0.35em;
+}
+
+.writing-prose pre {
+  padding: 1em;
+  overflow-x: auto;
+  margin: 1.5em 0;
+}
+
+.writing-prose pre code {
+  padding: 0;
+  background: none;
+}

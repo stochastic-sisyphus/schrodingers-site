@@ -25,10 +25,22 @@ function getHeaders(): HeadersInit {
 }
 
 /**
+ * Featured repo names - these always bypass filtering
+ */
+const FEATURED_NAMES = new Set(
+  'code-cartographer,text-feature-span-extractor,synsearch,self,Masters-Capstone-Bosch-Metadata-LLM'
+    .split(',')
+);
+
+/**
  * Intelligent repository filtering
  * Excludes: forks, archived repos, disabled repos, very small repos, old unmaintained repos
+ * Featured repos always pass through.
  */
 function shouldIncludeRepo(repo: GitHubRepo): boolean {
+  // Featured repos always pass through
+  if (FEATURED_NAMES.has(repo.name)) return true;
+
   // Exclude forks
   if (repo.fork) return false;
 
@@ -283,7 +295,7 @@ function inferLanguageFromPath(path: string): string | undefined {
  */
 export function getFeaturedRepos(repos: GitHubRepo[]): GitHubRepo[] {
   const featuredNames = (process.env.FEATURED_PROJECTS ||
-    'prophetic-emergentomics,code-cartographer,synsearch,Masters-Capstone-Bosch-Metadata-LLM')
+    'code-cartographer,text-feature-span-extractor,synsearch,self,Masters-Capstone-Bosch-Metadata-LLM')
     .split(',')
     .map((name: string) => name.trim());
 
