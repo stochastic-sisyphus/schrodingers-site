@@ -1,8 +1,13 @@
 "use client"
 
+import dynamic from "next/dynamic"
 import Header from "@/components/header"
 import HeroContent from "@/components/hero-content"
-import ShaderBackground from "@/components/shader-background"
+
+const ShaderBackground = dynamic(() => import("@/components/shader-background"), {
+  ssr: false,
+  loading: () => <div className="min-h-screen bg-black relative overflow-hidden" />,
+})
 import Marquee from "@/components/marquee"
 import ProjectShowcase from "@/components/project-showcase"
 import ResearchSection from "@/components/research-section"
