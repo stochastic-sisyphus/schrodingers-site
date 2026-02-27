@@ -1,10 +1,15 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import dynamic from "next/dynamic"
 import Header from "@/components/header"
 import HeroContent from "@/components/hero-content"
 import PulsingCircle from "@/components/pulsing-circle"
-import ShaderBackground from "@/components/shader-background"
+
+const ShaderBackground = dynamic(() => import("@/components/shader-background"), {
+  ssr: false,
+  loading: () => <div className="min-h-screen bg-black relative overflow-hidden" />,
+})
 import Marquee from "@/components/marquee"
 import FigmaShowcase from "@/components/figma-showcase"
 import ResearchSection from "@/components/research-section"
