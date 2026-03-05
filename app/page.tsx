@@ -1,89 +1,136 @@
+"use client"
+
+import { useEffect, useState } from "react"
+import dynamic from "next/dynamic"
+import Header from "@/components/header"
+import HeroContent from "@/components/hero-content"
+import PulsingCircle from "@/components/pulsing-circle"
+
+const ShaderBackground = dynamic(() => import("@/components/shader-background"), {
+  ssr: false,
+  loading: () => <div className="min-h-screen bg-black relative overflow-hidden" />,
+})
+import Marquee from "@/components/marquee"
+import FigmaShowcase from "@/components/figma-showcase"
+import ResearchSection from "@/components/research-section"
+import ThoughtsSection from "@/components/thoughts-section"
+import ConnectSection from "@/components/connect-section"
+import { fetchAllSubstackPosts, getRecentPosts } from "@/lib/substack"
 import { fetchAllRepos } from "@/lib/github"
 import { fetchAllResearchData, getKeyPapers } from "@/lib/orcid"
-import { fetchAllSubstackPosts, getRecentPosts } from "@/lib/substack"
 import { getFeaturedProjects } from "@/lib/content-aggregator"
-import type { GitHubRepo, ResearchPaper, BlogPost } from "@/lib/types"
-import HomeClient from "@/components/home-client"
+import { buildArtifactRegistry } from "@/lib/artifact-registry"
+import type { Artifact } from "@/lib/artifact-registry"
 
-export default async function Home() {
-  // Fetch all data server-side in parallel
-  const [fetchedRepos, allPosts, researchData] = await Promise.all([
-    fetchAllRepos().catch(() => [] as GitHubRepo[]),
-    fetchAllSubstackPosts().catch(() => [] as BlogPost[]),
-    fetchAllResearchData().catch(() => ({
-      profile: null,
-      papers: [] as ResearchPaper[],
-    })),
-  ])
+export default function Home() {
+  const [repos, setRepos] = useState([])
+  const [substackPosts, setSubstackPosts] = useState([])
+  const [researchEntries, setResearchEntries] = useState([])
+  const [artifacts, setArtifacts] = useState<Artifact[]>([])
 
-  // Sort repos by featured order
-  const featuredProjects = getFeaturedProjects(fetchedRepos)
-  const orderedRepos = featuredProjects.map((fp) => fp.repo)
+  useEffect(() => {
+    async function loadData() {
+      // Fetch GitHub repos
+      const fetchedRepos = await fetchAllRepos()
+      // Sort repos by featured order (code-cartographer first, text-feature-span-extractor second)
+      const featuredProjects = getFeaturedProjects(fetchedRepos)
+      const orderedRepos = featuredProjects.map(fp => fp.repo)
+      setRepos(orderedRepos)
 
-  // Get substack posts
-  const substackPosts = getRecentPosts(allPosts, 6)
+      // Fetch Substack posts
+      try {
+        const allPosts = await fetchAllSubstackPosts()
+        setSubstackPosts(getRecentPosts(allPosts, 4))
+      } catch (error) {
+        console.error("Failed to fetch Substack posts:", error)
+      }
 
-  // Build research entries -- deduplicate verification reversal
-  const featuredPapers = getKeyPapers(researchData.papers, 4)
-  const propheticRepo = fetchedRepos.find(
-    (r) => r.name === "prophetic-emergentomics"
-  )
+      // Fetch research papers from ORCID
+      const { papers } = await fetchAllResearchData()
+      const featuredPapers = getKeyPapers(papers, 4)
 
-  // Filter out the ORCID version of verification reversal since we have
-  // a merged entry with the interactive viz + paper DOI
-  const filteredPapers = featuredPapers.filter(
-    (p) => !p.title.toLowerCase().includes("verification reversal")
-  )
+      // Find prophetic-emergentomics repo
+      const propheticRepo = fetchedRepos.find(r => r.name === 'prophetic-emergentomics')
 
-  // Find the ORCID paper to pull DOI from it
-  const vrPaper = featuredPapers.find((p) =>
-    p.title.toLowerCase().includes("verification reversal")
-  )
+      // Build research entries - verification-reversal featured first
+      const entries = []
 
-  const researchEntries: ResearchPaper[] = [
-    // Merged verification reversal: paper + interactive viz in one card
-    {
-      id: "verification-reversal",
-      title:
-        vrPaper?.title ||
-        "Verification Reversal: Cascades and Synthetic Productivity in an AI-Mediated Economy",
-      authors: vrPaper?.authors || ["Vanessa Beck"],
-      year: vrPaper?.year || 2026,
-      journal: vrPaper?.journal || "Preprint",
-      doi: vrPaper?.doi || "10.5281/zenodo.18159898",
-      type: "visualization",
-      description: vrPaper?.description || "",
-      abstract: vrPaper?.abstract,
-      orcidUrl: vrPaper?.orcidUrl,
-      githubUrl: "/verification-reversal.html",
-    },
-    ...filteredPapers,
-    ...(propheticRepo
-      ? [
-          {
-            id: `repo-${propheticRepo.id}`,
-            title: "Prophetic Emergentomics",
-            description: propheticRepo.description || "",
-            authors: [] as string[],
-            year: new Date(propheticRepo.created_at).getUTCFullYear(),
-            type: "repository",
-            githubUrl: propheticRepo.html_url,
-          },
-        ]
-      : []),
-  ]
+      // Add verification-reversal visualization FIRST (top featured)
+      entries.push({
+        id: 'verification-reversal-viz',
+        title: 'Verification Reversal (Interactive)',
+        authors: ['Vanessa Beck'],
+        year: 2026,
+        journal: 'Interactive Visualization',
+        type: 'visualization',
+        description: 'Interactive p5.js visualization of information cascade dynamics',
+        githubUrl: '/verification-reversal.html',
+      })
 
-  // Serialize dates for client component (Date objects can't cross the RSC boundary)
-  const serializedPosts = substackPosts.map((p) => ({
-    ...p,
-    date: p.date instanceof Date ? p.date.toISOString() : String(p.date),
-  }))
+      // Add ORCID papers
+      entries.push(...featuredPapers)
+
+      // Add prophetic-emergentomics repo
+      if (propheticRepo) {
+        entries.push({
+          id: `repo-${propheticRepo.id}`,
+          title: propheticRepo.name,
+          description: propheticRepo.description || '',
+          authors: [],
+          year: new Date(propheticRepo.created_at).getFullYear(),
+          type: 'repository',
+          githubUrl: propheticRepo.html_url,
+        })
+      }
+
+      // Add self graph
+      entries.push({
+        id: 'self',
+        title: 'self (Interactive Graph)',
+        authors: ['Vanessa Beck'],
+        year: 2026,
+        journal: 'Interactive Visualization',
+        type: 'visualization',
+        description: 'Self-directed graph visualization',
+        githubUrl: 'https://github.com/stochastic-sisyphus/self',
+      })
+
+      setResearchEntries(entries)
+
+      // Build unified artifact registry
+      const allArtifacts = buildArtifactRegistry(fetchedRepos, entries, allPosts || [])
+      setArtifacts(allArtifacts)
+    }
+
+    loadData()
+  }, [])
 
   return (
-    <HomeClient
-      repos={orderedRepos}
-      researchEntries={researchEntries}
-      substackPosts={serializedPosts}
-    />
+    <div className="bg-background">
+      {/* Hero with shader background */}
+      <ShaderBackground>
+        <Header artifacts={artifacts} />
+        <HeroContent />
+        {/* <PulsingCircle /> */}
+      </ShaderBackground>
+
+      {/* Scrolling marquee divider */}
+      <Marquee />
+
+      {/* Project showcase with real GitHub data */}
+      <FigmaShowcase repos={repos} />
+
+      {/* Research publications from ORCID + related repos */}
+      <ResearchSection papers={researchEntries} />
+
+      {/* Thoughts / Writing */}
+      <ThoughtsSection posts={substackPosts} />
+
+      {/* Marquee divider again */}
+      <Marquee />
+
+      {/* Connect / Footer */}
+      <ConnectSection />
+    </div>
   )
 }

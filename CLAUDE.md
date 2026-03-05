@@ -1,146 +1,104 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code when working with this repository.
 
 ## Project Overview
 
-**stochastic-sisyphus**: A computational portfolio where identity and work exist as living data—revealed through color, depth, and elegant interaction. Built with Astro, featuring atmospheric particle effects, D3 visualizations, and content aggregation from GitHub, ORCID, and Substack.
+**stochastic-sisyphus**: A computational portfolio where identity and work exist as living data—revealed through color, depth, and elegant interaction. Built with Next.js 15, featuring shader backgrounds, Framer Motion animations, and content aggregation from GitHub, ORCID, and Substack.
 
-**Current Phase**: Phase 7 complete (all content zones, blog, research, projects fully functional and deployed)
+**Current Architecture**: Portal navigation system - single "Explore" trigger opens full-screen artifact overlay with unified registry of all projects, research, and writing.
 
 ## Essential Commands
 
 ### Development
 ```bash
-npm run dev          # Start dev server (http://localhost:3000)
-npm start            # Alias for dev
-npm run build        # Production build
-npm run build:check  # Type-check + build
-npm run preview      # Preview production build locally
+npm run dev    # Start dev server (http://localhost:3000)
+npm run build  # Production build
+npm run start  # Start production server
+npm run lint   # Run ESLint
 ```
 
-### Build & Deployment
-- **Dev branch**: `git push origin development` → builds automatically
-- **Production**: Merge `development` → `main` → auto-deploys to Cloudflare Pages
-- **Deploy URL**: https://schrodingers-site.pages.dev
+### Deployment
+- **Framework**: Next.js 15 (App Router, client-side rendering)
+- **Platform**: Cloudflare Pages (static export)
+- **URL**: https://schrodingers-site.pages.dev
 
 ## Architecture
 
 ### Core Structure
 ```
-src/
-├── pages/          # Astro page routes (index, blog, projects, research, about)
-├── components/     # Astro & Svelte components
-│   ├── Atmosphere.astro              # Canvas particle system entry point
-│   ├── ShaderGradient.astro          # WebGL gradient shader rendering
-│   ├── ContentZone.astro             # Frosted glass content container
-│   ├── BlogCard.astro, BlogList.astro, BlogPost.astro
-│   ├── ProjectCard.svelte            # Interactive project cards
-│   ├── ResearchCard.astro
-│   └── visualizations/               # D3.js visualization components
-│       ├── CitationNetwork.svelte
-│       ├── PublicationTimeline.svelte
-│       ├── VerificationCascade.svelte
-│       ├── CodeGraph.svelte
-│       ├── ContributorNetwork.svelte
-│       ├── DependencyTree.svelte
-│       └── ActivityTimeline.svelte
-├── layouts/        # Base & content layout templates
-├── content/        # Content collections (blog, projects, research)
-│   ├── config.ts   # Zod schemas for frontmatter validation
-│   ├── blog/       # Markdown blog posts
-│   ├── projects/   # Project metadata files
-│   └── research/   # Research paper metadata
-├── lib/            # Core utilities & API integrations
-│   ├── types.ts    # TypeScript interfaces for all data structures
-│   ├── github.ts   # GitHub API client (repos, commits, contributors)
-│   ├── orcid.ts    # ORCID API client (research profile & publications)
-│   ├── substack.ts # Substack RSS parser
-│   ├── content-aggregator.ts  # Main data orchestrator
-│   ├── particles.ts           # Canvas particle system
-│   ├── scroll-animations.ts   # Intersection observer animations
-│   ├── shaders/      # WebGL shader code (Simplex noise, gradients)
-│   └── visualizations/  # D3 data analysis utilities
-└── styles/
-    └── global.css    # CSS custom properties (locked palette v5)
+app/
+├── page.tsx                          # Main homepage (client component with data fetching)
+├── layout.tsx                        # Root layout with theme provider
+├── globals.css                       # Global styles
+└── research/
+    └── verification-reversal/        # Research paper detail page
+
+components/
+├── header.tsx                        # Header with Explore portal trigger
+├── portal-overlay.tsx                # Full-screen artifact browser (Radix Dialog + Framer Motion)
+├── artifact-card.tsx                 # Individual artifact card in portal grid
+├── shader-background.tsx             # WebGL shader background (@paper-design/shaders-react)
+├── hero-content.tsx                  # Hero section content
+├── figma-showcase.tsx                # Projects section (GitHub repos)
+├── research-section.tsx              # Research papers section (ORCID + custom)
+├── thoughts-section.tsx              # Blog posts section (Substack)
+├── connect-section.tsx               # Footer/contact section
+├── marquee.tsx                       # Scrolling text divider
+└── ui/                               # Radix UI components (shadcn/ui)
+
+lib/
+├── types.ts                          # TypeScript interfaces for all data structures
+├── github.ts                         # GitHub API client (repos, commits, contributors)
+├── orcid.ts                          # ORCID API client (research profile & publications)
+├── substack.ts                       # Substack RSS parser
+├── content-aggregator.ts             # Data orchestrator (featured projects, key papers)
+├── artifact-registry.ts              # Unified artifact normalization (NEW)
+└── utils.ts                          # Utility functions (cn, etc.)
+
+public/
+├── verification-reversal.html        # P5.js visualization
+└── data/                             # Static data cache (optional)
 ```
 
 ### Data Flow
 
-**Static Build (Build Time)**:
-1. Astro pages call `getAggregatedContent()` from `content-aggregator.ts`
-2. Aggregator fetches in parallel:
-   - GitHub API → repos, commits, contributors
-   - ORCID API → research profile, papers
-   - Substack RSS → blog posts
-3. Local `/src/content/` files override/supplement external data
-4. Data passed to Svelte components & Astro templates
-5. HTML + CSS + client-side JS bundled for Cloudflare Pages
+**Client-Side Fetching** (`app/page.tsx`):
+1. `useEffect` triggers parallel fetches on mount:
+   - `fetchAllRepos()` → GitHub API
+   - `fetchAllResearchData()` → ORCID API
+   - `fetchAllSubstackPosts()` → Substack RSS
+2. Data is processed:
+   - Repos → `getFeaturedProjects()` → ordered by featured list
+   - Papers → `getKeyPapers()` → featured research entries
+   - Custom entries added (verification-reversal viz, prophetic-emergentomics, self graph)
+3. **Unified artifact registry** built via `buildArtifactRegistry(repos, papers, posts)`
+4. Data passed to components:
+   - `Header` receives `artifacts` for portal
+   - `FigmaShowcase` receives `repos`
+   - `ResearchSection` receives `researchEntries`
+   - `ThoughtsSection` receives `substackPosts`
 
-**Client-Side (Runtime)**:
-- Canvas particle system renders on page load
-- D3 visualizations initialize when components mount
-- Scroll animations trigger via Intersection Observer
-- Svelte components handle hover/interactive states
-
-### Content Collections (Astro Content API)
-
-**Blog** (`src/content/blog/`):
-- Frontmatter: `title`, `date`, `excerpt`, `tags`, `featured`, `draft`, `substackUrl`
-- Markdown + frontmatter = full blog entry
-- Can reference Substack posts via `substackUrl`
-
-**Projects** (`src/content/projects/`):
-- Frontmatter: `name`, `description`, `tags`, `githubUrl`, `featured`, `stars`, `language`, `homepage`, `demo`, `highlights`
-- Typically references existing GitHub repos
-- Can override/supplement GitHub API data
-
-**Research** (`src/content/research/`):
-- Frontmatter: `title`, `authors`, `year`, `journal`, `doi`, `orcidUrl`, `abstract`, `type`, `featured`
-- References ORCID profile (default: `ORCID_ID=0009-0008-6611-535X`)
-- Can create custom research entries
-
-### Locked Design System
-
-**Color Palette (v5)** — Stored in CSS custom properties:
-```css
---deep: #141a20;           /* Base background */
---base: #2a3844;
---mid: #445868;
---light: #627888;
---accent: #8498a6;
---highlight: #a6b6c2;      /* Glows, accents */
---text-body: #d4dde4;      /* Body text legibility */
---text-heading: #e8f0f5;   /* Heading legibility */
-```
-
-**Rules** (enforced by `.cursor/rules/locked-palette.mdc`):
-- NO neon colors, electric colors, vaporwave pink
-- NO inline styles except D3 transforms and dynamic positioning
-- Use CSS classes with custom properties instead
-- Minimum 0.9 opacity for card backgrounds
-- All text must be legible (use `--text-body` or `--text-heading`)
-
-**Anti-Patterns** (NEVER do):
-- Flat/static layouts
-- Colorful charts as pure decoration
-- Explicit nav menus in atmosphere
-- Playful/bouncy animations
-- Pure saturated colors
+**Portal System** (NEW):
+- `Header` contains "Explore →" button that opens `PortalOverlay`
+- `PortalOverlay` uses Radix Dialog for accessibility + Framer Motion for animations
+- Artifacts displayed in filterable grid (All / Projects / Research / Writing)
+- Each `ArtifactCard` can expand inline to show details + action links
+- Scroll managed by Radix ScrollArea (independent of page scroll)
 
 ### Key External APIs
 
-**GitHub** (`src/lib/github.ts`):
+**GitHub** (`lib/github.ts`):
 - Token: `GITHUB_TOKEN` (optional, increases rate limit 60→5000/hr)
-- Fetches all public repos for username `GITHUB_USERNAME`
+- Fetches all public repos for `GITHUB_USERNAME`
 - Featured repos: hardcoded in `content-aggregator.ts` or set via `FEATURED_PROJECTS`
 
-**ORCID** (`src/lib/orcid.ts`):
+**ORCID** (`lib/orcid.ts`):
 - Profile ID: `ORCID_ID=0009-0008-6611-535X`
 - Fetches publications, biography, profile metadata
 - No authentication needed (public API)
 
-**Substack** (`src/lib/substack.ts`):
+**Substack** (`lib/substack.ts`):
 - RSS URL: `SUBSTACK_RSS_URL`
 - Parses recent posts (date-ordered)
 
@@ -148,67 +106,104 @@ src/
 
 Defined in `.env` (copy from `.env.example`):
 ```
-GITHUB_TOKEN=...              # Optional, increases API rate limit
-GITHUB_USERNAME=...           # Required for repo fetching
-SUBSTACK_RSS_URL=...          # Optional, for blog syndication
-ORCID_ID=...                  # Required for research papers
-FEATURED_PROJECTS=...         # Comma-separated repo names for featured order
+GITHUB_TOKEN=...          # Optional, increases API rate limit
+GITHUB_USERNAME=...       # Required for repo fetching
+SUBSTACK_RSS_URL=...      # Optional, for blog syndication
+ORCID_ID=...              # Required for research papers
+FEATURED_PROJECTS=...     # Comma-separated repo names for featured order
 ```
 
 ## Common Development Tasks
 
-### Add a Blog Post
-1. Create `src/content/blog/my-post.md`
-2. Add frontmatter: `title`, `date`, `excerpt`, `tags`, `draft: false`
-3. Write markdown content
-4. Run `npm run build` to validate schema
+### Add Content to Portal
 
-### Add a Research Paper
-1. Create `src/content/research/paper-id.md`
-2. Add frontmatter: `title`, `authors`, `year`, `journal`, `doi`, `featured: true`
-3. Optional: reference ORCID ID or add custom abstract
-4. Run `npm run build` to validate schema
+The portal automatically includes:
+- All GitHub repos (up to 10 most recent)
+- All research papers from ORCID + custom entries
+- Recent Substack posts (up to 6)
 
-### Add/Feature a Project
-1. To feature a GitHub repo: add to `FEATURED_PROJECTS` in `.env` and `featuredOrder` array in `content-aggregator.ts`
-2. To create custom project: add file to `src/content/projects/`
-3. Repo data auto-fetches from GitHub API; frontmatter overrides fields
+To feature specific projects, update `featuredOrder` array in `lib/content-aggregator.ts`.
 
-### Update Colors
-1. Edit CSS custom properties in `src/styles/global.css` (currently v5 locked)
-2. Respect locked palette—changes must stay within steel-teal range
-3. Test legibility of text colors (body/headings must be bright)
+### Modify Portal Appearance
 
-### Create a Visualization Component
-1. Create new Svelte component in `src/components/visualizations/`
-2. Import D3 types from `@types/d3`
-3. Use data analyzers from `src/lib/visualizations/` (activity-analyzer, code-analyzer)
-4. Style with CSS classes using custom properties (no inline styles except transforms)
-5. Mount D3 selection in `onMount()` hook
+**Portal Overlay** (`components/portal-overlay.tsx`):
+- Radix Dialog for accessibility (Esc, backdrop click, focus trap)
+- Framer Motion entrance: `initial={{ opacity: 0, y: 24, scale: 0.98 }}`
+- Filter pills at top (All / Projects / Research / Writing)
+- Grid layout: `grid-cols-1 md:grid-cols-2 lg:grid-cols-3`
 
-### Add a New Page
-1. Create `.astro` file in `src/pages/`
-2. Use `BaseLayout.astro` (plain) or `ContentLayout.astro` (with frosted glass card)
-3. Call `getAggregatedContent()` to fetch external data if needed
-4. Astro handles routing automatically (file path = URL route)
+**Artifact Cards** (`components/artifact-card.tsx`):
+- Terminal-style header with category badge
+- Color-coded accent bar (language/type indicator)
+- Hover tooltip shows metadata (language, authors, DOI)
+- Click to expand inline detail panel with action links
+- Uses `LANG_COLORS` from `lib/artifact-registry.ts`
+
+### Update Navigation
+
+The traditional nav menu has been replaced with a single "Explore →" trigger in `components/header.tsx`. To restore anchor links or add new navigation:
+
+1. Edit `components/header.tsx`
+2. The portal trigger is: `onClick={() => setPortalOpen(true)}`
+3. Portal state managed via `useState<boolean>`
+
+### Add a New Section
+
+1. Create component in `components/`
+2. Import and render in `app/page.tsx`
+3. Add section ID for anchor linking (if needed)
+4. Fetch data in `useEffect` if external API needed
 
 ## Type Safety
 
-**Key Interfaces** (in `src/lib/types.ts`):
+**Key Interfaces** (in `lib/types.ts`):
 - `GitHubRepo` — GitHub API response
-- `RepoDetails` — Extended repo with readme, file structure, commits, contributors
-- `ORCIDProfile`, `ORCIDWork` — ORCID API structures
-- `BlogPost`, `ResearchPaper` — Content collection models
-- `FeaturedProject` — Repo + metadata for featured display
+- `ResearchPaper` — Research paper metadata
+- `SubstackPost` — Substack RSS post
+- `FeaturedProject` — Repo + featured metadata
 
-Use these types when fetching/processing data. Content collections auto-validate against Zod schemas in `src/content/config.ts`.
+**New Types** (in `lib/artifact-registry.ts`):
+- `Artifact` — Unified type for all content (projects, research, writing)
+- `ArtifactCategory` — `'project' | 'research' | 'writing'`
+- `LANG_COLORS` — Language/type color mapping
 
-## Performance Notes
+## Design System
 
-- **Build time**: ~3s (GitHub + ORCID API calls are slow; consider caching for frequent rebuilds)
-- **Canvas particles**: Optimized for 60fps; avoid adding new shader passes
-- **D3 visualizations**: Render on-demand in Svelte components (not static HTML)
-- **Static export**: Pages pre-rendered at build time; dynamic data loaded via JS
+**Color Palette** (in `app/globals.css`):
+- Uses CSS custom properties
+- Dark theme with subtle accents
+- Terminal-inspired aesthetic
+- Frosted glass effects on cards
+
+**Animation Patterns**:
+- Framer Motion for all animations
+- Easing curve: `[0.16, 1, 0.3, 1]` (consistent throughout)
+- Scroll-triggered animations via `useInView`
+- Portal entrance: depth-shift effect (scale + y-translate)
+
+**Component Patterns**:
+- Terminal chrome headers (3 dots + metadata)
+- Rounded-full pill buttons for tags/filters
+- Italic titles using `instrument` font class
+- Minimal hover states (opacity/color transitions)
+
+## Dependencies
+
+**Core**:
+- `next@15.5.10` — Framework
+- `react@19.2.0` — UI library
+- `framer-motion@12.34.0` — Animations
+- `@paper-design/shaders-react@0.0.71` — Shader background
+
+**UI Components**:
+- `@radix-ui/react-dialog@1.1.4` — Portal overlay
+- `@radix-ui/react-scroll-area@1.2.2` — Portal scroll
+- Full shadcn/ui component library
+
+**Styling**:
+- `tailwindcss@4.1.9` — Utility-first CSS
+- `tailwindcss-animate@1.0.7` — Animation utilities
+- `next-themes@0.4.6` — Theme management
 
 ## Known Constraints
 
@@ -216,16 +211,21 @@ Use these types when fetching/processing data. Content collections auto-validate
 - ORCID API: Public access, no rate limits published
 - Substack RSS: Standard RSS parsing (no secrets needed)
 - Cloudflare Pages: Static output only (no server-side rendering)
+- All data fetching happens client-side in `useEffect`
 
 ## Testing & Validation
 
 ```bash
-npm run build:check  # Type-check + build (catches schema errors early)
-npm run build        # Full build (includes data fetching)
-npm run preview      # Test production build locally
+npm run build  # Type-check + build (catches errors)
+npm run lint   # ESLint checks
 ```
 
-Monitor `.astro/` directory after build for any schema validation warnings.
+No linter errors should exist in:
+- `lib/artifact-registry.ts`
+- `components/portal-overlay.tsx`
+- `components/artifact-card.tsx`
+- `components/header.tsx`
+- `app/page.tsx`
 
 ## Git Workflow
 
@@ -234,10 +234,12 @@ Monitor `.astro/` directory after build for any schema validation warnings.
 - **Feature branches**: Branch from `development`, PR back to `development`
 - Merge `development` → `main` to deploy
 
-## Cursor/IDE Rules
+## Recent Changes
 
-Palette enforcement rules are defined in `.cursor/rules/locked-palette.mdc`. This ensures:
-- No unauthorized color changes
-- CSS-first styling (no inline styles)
-- Text legibility standards
-- Consistent frosted glass aesthetic
+**Portal Navigation System** (Latest):
+- Replaced traditional nav menu with single "Explore →" trigger
+- Created unified artifact registry (`lib/artifact-registry.ts`)
+- Built full-screen portal overlay with Radix Dialog + Framer Motion
+- Implemented filterable artifact grid (All / Projects / Research / Writing)
+- Added expandable artifact cards with inline detail panels
+- All existing sections (projects, research, thoughts) remain unchanged
