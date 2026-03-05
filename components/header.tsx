@@ -1,74 +1,55 @@
 "use client"
 
 import { useState } from "react"
+import PortalOverlay from "./portal-overlay"
+import type { Artifact } from "@/lib/artifact-registry"
 
-export default function Header() {
-  const [menuOpen, setMenuOpen] = useState(false)
+interface HeaderProps {
+  artifacts?: Artifact[]
+}
+
+export default function Header({ artifacts = [] }: HeaderProps) {
+  const [portalOpen, setPortalOpen] = useState(false)
 
   return (
-    <header className="relative z-20 flex items-center justify-between px-6 py-5 md:px-10 md:py-6">
-      {/* Logo / Name */}
-      <div className="flex items-center gap-3">
-        <div className="w-2 h-2 rounded-full bg-foreground" />
-        <span className="text-foreground text-sm font-light tracking-widest uppercase">
-          V. Beck
-        </span>
-      </div>
-
-      {/* Desktop Navigation */}
-      <nav className="hidden md:flex items-center gap-1">
-        {["Projects", "Research", "Thoughts", "Connect"].map((item) => (
-          <a
-            key={item}
-            href={`#${item.toLowerCase()}`}
-            className="text-foreground/60 hover:text-foreground text-xs font-light tracking-wide px-4 py-2 rounded-full hover:bg-foreground/5 transition-all duration-300"
-          >
-            {item}
-          </a>
-        ))}
-      </nav>
-
-      {/* Mobile Menu Button */}
-      <button
-        onClick={() => setMenuOpen(!menuOpen)}
-        className="md:hidden flex flex-col gap-1.5 p-2 cursor-pointer"
-        aria-label={menuOpen ? "Close menu" : "Open menu"}
-      >
-        <span
-          className={`block w-5 h-px bg-foreground transition-all duration-300 ${menuOpen ? "rotate-45 translate-y-[3.5px]" : ""}`}
-        />
-        <span
-          className={`block w-5 h-px bg-foreground transition-all duration-300 ${menuOpen ? "-rotate-45 -translate-y-[3.5px]" : ""}`}
-        />
-      </button>
-
-      {/* Desktop CTA */}
-      <div className="hidden md:block">
-        <a
-          href="#connect"
-          className="text-foreground/60 hover:text-foreground text-xs font-light tracking-wide transition-all duration-300"
-        >
-          Say hello
-        </a>
-      </div>
-
-      {/* Mobile Menu Overlay */}
-      {menuOpen && (
-        <div className="fixed inset-0 top-16 z-50 bg-background/95 backdrop-blur-sm md:hidden">
-          <nav className="flex flex-col items-center justify-center gap-8 h-full">
-            {["Projects", "Research", "Thoughts", "Connect"].map((item) => (
-              <a
-                key={item}
-                href={`#${item.toLowerCase()}`}
-                onClick={() => setMenuOpen(false)}
-                className="text-foreground text-2xl font-light instrument tracking-wide"
-              >
-                {item}
-              </a>
-            ))}
-          </nav>
+    <>
+      <header className="relative z-20 flex items-center justify-between px-6 py-5 md:px-10 md:py-6">
+        {/* Logo / Name */}
+        <div className="flex items-center gap-3">
+          <div className="w-2 h-2 rounded-full bg-foreground" />
+          <span className="text-foreground text-sm font-light tracking-widest uppercase">
+            V. Beck
+          </span>
         </div>
-      )}
-    </header>
+
+        {/* Explore trigger button */}
+        <button
+          onClick={() => setPortalOpen(true)}
+          className="text-foreground/60 hover:text-foreground text-xs font-light tracking-wide transition-all duration-300 flex items-center gap-2 px-4 py-2 rounded-full hover:bg-foreground/5"
+        >
+          <span className="hidden sm:inline">Explore</span>
+          <svg
+            className="w-3.5 h-3.5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.5}
+              d="M13 7l5 5m0 0l-5 5m5-5H6"
+            />
+          </svg>
+        </button>
+      </header>
+
+      {/* Portal overlay */}
+      <PortalOverlay
+        open={portalOpen}
+        onClose={() => setPortalOpen(false)}
+        artifacts={artifacts}
+      />
+    </>
   )
 }

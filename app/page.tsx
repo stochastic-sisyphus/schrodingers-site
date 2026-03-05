@@ -19,11 +19,14 @@ import { fetchAllSubstackPosts, getRecentPosts } from "@/lib/substack"
 import { fetchAllRepos } from "@/lib/github"
 import { fetchAllResearchData, getKeyPapers } from "@/lib/orcid"
 import { getFeaturedProjects } from "@/lib/content-aggregator"
+import { buildArtifactRegistry } from "@/lib/artifact-registry"
+import type { Artifact } from "@/lib/artifact-registry"
 
 export default function Home() {
   const [repos, setRepos] = useState([])
   const [substackPosts, setSubstackPosts] = useState([])
   const [researchEntries, setResearchEntries] = useState([])
+  const [artifacts, setArtifacts] = useState<Artifact[]>([])
 
   useEffect(() => {
     async function loadData() {
@@ -93,6 +96,10 @@ export default function Home() {
       })
 
       setResearchEntries(entries)
+
+      // Build unified artifact registry
+      const allArtifacts = buildArtifactRegistry(fetchedRepos, entries, allPosts || [])
+      setArtifacts(allArtifacts)
     }
 
     loadData()
@@ -102,7 +109,7 @@ export default function Home() {
     <div className="bg-background">
       {/* Hero with shader background */}
       <ShaderBackground>
-        <Header />
+        <Header artifacts={artifacts} />
         <HeroContent />
         {/* <PulsingCircle /> */}
       </ShaderBackground>
