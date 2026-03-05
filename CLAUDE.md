@@ -21,7 +21,8 @@ npm run lint   # Run ESLint
 ### Deployment
 - **Framework**: Next.js 15 (App Router, client-side rendering)
 - **Platform**: Cloudflare Pages (static export)
-- **URL**: https://schrodingers-site.pages.dev
+- **URL**: https://schrodingers.site (custom domain)
+- **Cloudflare Pages URL**: https://schrodingers-site.pages.dev
 
 ## Architecture
 
