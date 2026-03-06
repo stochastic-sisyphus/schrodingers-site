@@ -11,7 +11,7 @@ const ShaderBackground = dynamic(() => import("@/components/shader-background"),
   loading: () => <div className="min-h-screen bg-black relative overflow-hidden" />,
 })
 import Marquee from "@/components/marquee"
-import FigmaShowcase from "@/components/figma-showcase"
+import ProjectShowcase from "@/components/project-showcase"
 import ResearchSection from "@/components/research-section"
 import ThoughtsSection from "@/components/thoughts-section"
 import ConnectSection from "@/components/connect-section"
@@ -118,7 +118,7 @@ export default function Home() {
       <Marquee />
 
       {/* Project showcase with real GitHub data */}
-      <FigmaShowcase repos={repos} />
+      <ProjectShowcase repos={repos} />
 
       {/* Research publications from ORCID + related repos */}
       <ResearchSection papers={researchEntries} />
