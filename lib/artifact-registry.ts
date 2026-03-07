@@ -3,7 +3,7 @@
  * Normalizes repos, papers, and posts into a single searchable artifact type
  */
 
-import type { GitHubRepo, ResearchPaper, SubstackPost } from './types';
+import type { GitHubRepo, ResearchPaper, SubstackPost, BlogPost } from './types';
 
 export type ArtifactCategory = 'project' | 'research' | 'writing';
 
@@ -89,19 +89,18 @@ function paperToArtifact(paper: ResearchPaper): Artifact {
 /**
  * Transform Substack post into artifact
  */
-function postToArtifact(post: SubstackPost): Artifact {
-  const year = new Date(post.pubDate).getFullYear();
-  
+function postToArtifact(post: BlogPost): Artifact {
+  const year = post.date instanceof Date ? post.date.getFullYear() : new Date(post.date).getFullYear();
+
   return {
-    id: `post-${post.guid}`,
+    id: `post-${post.slug}`,
     title: post.title,
     category: 'writing',
     year,
-    tags: ['substack', 'writing'],
-    description: post.description || 'A written piece.',
-    externalUrl: post.link,
+    tags: post.tags?.length ? post.tags : ['substack', 'writing'],
+    description: post.excerpt || 'A written piece.',
+    externalUrl: post.substackUrl,
     thumbnailHint: 'writing',
-    authors: [post.author],
   };
 }
 
@@ -121,7 +120,7 @@ function formatRepoName(name: string): string {
 export function buildArtifactRegistry(
   repos: GitHubRepo[],
   papers: ResearchPaper[],
-  posts: SubstackPost[]
+  posts: BlogPost[]
 ): Artifact[] {
   const artifacts: Artifact[] = [];
 

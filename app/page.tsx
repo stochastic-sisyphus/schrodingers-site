@@ -38,8 +38,9 @@ export default function Home() {
       setRepos(orderedRepos)
 
       // Fetch Substack posts
+      let allPosts: Awaited<ReturnType<typeof fetchAllSubstackPosts>> = []
       try {
-        const allPosts = await fetchAllSubstackPosts()
+        allPosts = await fetchAllSubstackPosts()
         setSubstackPosts(getRecentPosts(allPosts, 4))
       } catch (error) {
         console.error("Failed to fetch Substack posts:", error)
