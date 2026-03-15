@@ -586,33 +586,7 @@ export default function PortalOverlay({ open, onClose, artifacts }: PortalOverla
                           <div className="w-6 h-px bg-foreground/10" />
                         </motion.div>
                       </motion.div>
-                    ) : (
-                      <motion.div
-                        key="empty"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="flex-1 flex flex-col items-center justify-center gap-4 px-6"
-                      >
-                        <motion.div
-                          className="w-12 h-px bg-foreground/10"
-                          initial={{ scaleX: 0 }}
-                          animate={{ scaleX: 1 }}
-                          transition={{ delay: 0.2, duration: 0.5 }}
-                        />
-                        <p className="text-foreground/25 text-sm font-light tracking-wide">
-                          {artifacts.length === 0
-                            ? "Loading artifacts..."
-                            : "Nothing here yet."}
-                        </p>
-                        <motion.div
-                          className="w-12 h-px bg-foreground/10"
-                          initial={{ scaleX: 0 }}
-                          animate={{ scaleX: 1 }}
-                          transition={{ delay: 0.3, duration: 0.5 }}
-                        />
-                      </motion.div>
-                    )}
+                    ) : null}
                   </AnimatePresence>
                 </div>
               </motion.div>

@@ -22,10 +22,15 @@ export default function Header({ artifacts = [] }: HeaderProps) {
           </span>
         </div>
 
-        {/* Explore trigger button */}
+        {/* Explore trigger button — hidden until artifacts load */}
         <button
           onClick={() => setPortalOpen(true)}
-          className="text-foreground/60 hover:text-foreground text-xs font-light tracking-wide transition-all duration-300 flex items-center gap-2 px-4 py-2 rounded-full hover:bg-foreground/5"
+          disabled={artifacts.length === 0}
+          className={`text-xs font-light tracking-wide transition-all duration-300 flex items-center gap-2 px-4 py-2 rounded-full ${
+            artifacts.length === 0
+              ? 'text-foreground/20 cursor-default'
+              : 'text-foreground/60 hover:text-foreground hover:bg-foreground/5'
+          }`}
         >
           <span className="hidden sm:inline">Explore</span>
           <svg
