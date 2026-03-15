@@ -16,6 +16,15 @@ type FilterOption = 'all' | ArtifactCategory
 
 const DRAG_THRESHOLD = 5 // pixels before considering it a drag vs click
 
+function isHttpUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url)
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:'
+  } catch {
+    return false
+  }
+}
+
 // --- Category style maps ---
 const categoryDotColors: Record<ArtifactCategory, string> = {
   project: 'bg-blue-400',
@@ -236,7 +245,7 @@ function DetailPanel({ artifact, onClose }: { artifact: Artifact; onClose: () =>
               View Interactive
             </a>
           )}
-          {artifact.externalUrl && (
+          {artifact.externalUrl && isHttpUrl(artifact.externalUrl) && (
             <a
               href={artifact.externalUrl}
               target="_blank"
@@ -352,7 +361,10 @@ export default function PortalOverlay({ open, onClose, artifacts }: PortalOverla
 
   // Node selection (only if not dragging)
   const handleNodeSelect = useCallback((id: string) => {
-    if (hasDragged.current) return
+    if (hasDragged.current) {
+      hasDragged.current = false
+      return
+    }
     setSelectedId(prev => prev === id ? null : id)
   }, [])
 
