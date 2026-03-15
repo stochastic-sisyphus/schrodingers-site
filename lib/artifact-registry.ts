@@ -3,7 +3,7 @@
  * Normalizes repos, papers, and posts into a single searchable artifact type
  */
 
-import type { GitHubRepo, ResearchPaper, SubstackPost, BlogPost } from './types';
+import type { GitHubRepo, ResearchPaper, BlogPost } from './types';
 
 export type ArtifactCategory = 'project' | 'research' | 'writing';
 
@@ -87,7 +87,7 @@ function paperToArtifact(paper: ResearchPaper): Artifact {
 }
 
 /**
- * Transform Substack post into artifact
+ * Transform blog post into artifact
  */
 function postToArtifact(post: BlogPost): Artifact {
   const year = post.date instanceof Date ? post.date.getFullYear() : new Date(post.date).getFullYear();

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo, useRef, useEffect, useCallback } from "react"
-import { motion, AnimatePresence, useMotionValue } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import * as Dialog from "@radix-ui/react-dialog"
 import type { Artifact, ArtifactCategory } from "@/lib/artifact-registry"
 import { LANG_COLORS } from "@/lib/artifact-registry"
@@ -13,6 +13,27 @@ interface PortalOverlayProps {
 }
 
 type FilterOption = 'all' | ArtifactCategory
+
+const DRAG_THRESHOLD = 5 // pixels before considering it a drag vs click
+
+// --- Category style maps ---
+const categoryDotColors: Record<ArtifactCategory, string> = {
+  project: 'bg-blue-400',
+  research: 'bg-primary',
+  writing: 'bg-foreground/60',
+}
+
+const categoryRingBg: Record<ArtifactCategory, string> = {
+  project: 'bg-blue-400/30',
+  research: 'bg-primary/30',
+  writing: 'bg-foreground/20',
+}
+
+const categoryTextColors: Record<ArtifactCategory, string> = {
+  project: 'text-blue-400/50',
+  research: 'text-primary/50',
+  writing: 'text-foreground/30',
+}
 
 // --- Timeline Node Component ---
 function TimelineNode({
@@ -30,18 +51,6 @@ function TimelineNode({
 }) {
   const [isHovered, setIsHovered] = useState(false)
   const colorClass = LANG_COLORS[artifact.thumbnailHint] || LANG_COLORS['code']
-
-  const categoryColors: Record<ArtifactCategory, string> = {
-    project: 'bg-blue-400',
-    research: 'bg-primary',
-    writing: 'bg-foreground/60',
-  }
-
-  const categoryRingColors: Record<ArtifactCategory, string> = {
-    project: 'ring-blue-400/30',
-    research: 'ring-primary/30',
-    writing: 'ring-foreground/20',
-  }
 
   return (
     <motion.div
@@ -64,23 +73,23 @@ function TimelineNode({
         onClick={onSelect}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        className="relative z-10 group focus:outline-none"
+        className="relative z-10 group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-full"
         aria-label={`View ${artifact.title}`}
       >
         {/* Outer ring - pulses on hover */}
         <motion.div
-          className={`absolute inset-0 rounded-full ${categoryRingColors[artifact.category]}`}
+          className={`absolute rounded-full ${categoryRingBg[artifact.category]}`}
           animate={{
             scale: isHovered ? 2.2 : 1.4,
             opacity: isHovered ? 0.6 : 0,
           }}
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          style={{ width: 14, height: 14, margin: '-3px' }}
+          style={{ width: 14, height: 14, top: -3, left: -3 }}
         />
 
         {/* Core dot */}
         <motion.div
-          className={`w-2 h-2 rounded-full ${categoryColors[artifact.category]} transition-colors duration-300`}
+          className={`w-2 h-2 rounded-full ${categoryDotColors[artifact.category]} transition-colors duration-300`}
           animate={{
             scale: isHovered || isSelected ? 1.8 : 1,
           }}
@@ -89,8 +98,8 @@ function TimelineNode({
       </button>
 
       {/* Card below the dot */}
-      <motion.div
-        className="mt-6 w-full cursor-pointer"
+      <motion.button
+        className="mt-6 w-full text-left cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-sm"
         onClick={onSelect}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
@@ -98,6 +107,7 @@ function TimelineNode({
           y: isHovered ? -4 : 0,
         }}
         transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+        aria-label={`${artifact.title} — ${artifact.category}, ${artifact.year}`}
       >
         <div className={`relative rounded-sm border transition-all duration-500 overflow-hidden ${
           isSelected
@@ -113,11 +123,7 @@ function TimelineNode({
               <span className="text-foreground/25 text-[10px] font-light tabular-nums tracking-wide">
                 {artifact.year}
               </span>
-              <span className={`text-[9px] tracking-widest uppercase font-light ${
-                artifact.category === 'project' ? 'text-blue-400/50' :
-                artifact.category === 'research' ? 'text-primary/50' :
-                'text-foreground/30'
-              }`}>
+              <span className={`text-[9px] tracking-widest uppercase font-light ${categoryTextColors[artifact.category]}`}>
                 {artifact.category}
               </span>
             </div>
@@ -137,7 +143,7 @@ function TimelineNode({
               <div className="flex flex-wrap gap-1">
                 {artifact.tags.slice(0, 2).map((tag, i) => (
                   <span
-                    key={i}
+                    key={`${tag}-${i}`}
                     className="text-[8px] tracking-wide uppercase text-foreground/20 border border-foreground/[0.06] rounded-full px-2 py-0.5 font-light"
                   >
                     {tag}
@@ -155,7 +161,7 @@ function TimelineNode({
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           />
         </div>
-      </motion.div>
+      </motion.button>
     </motion.div>
   )
 }
@@ -164,9 +170,9 @@ function TimelineNode({
 function DetailPanel({ artifact, onClose }: { artifact: Artifact; onClose: () => void }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20, height: 0 }}
-      animate={{ opacity: 1, y: 0, height: 'auto' }}
-      exit={{ opacity: 0, y: 10, height: 0 }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 10 }}
       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
       className="overflow-hidden"
     >
@@ -210,7 +216,7 @@ function DetailPanel({ artifact, onClose }: { artifact: Artifact; onClose: () =>
           <div className="flex flex-wrap gap-1.5 mb-5">
             {artifact.tags.map((tag, i) => (
               <span
-                key={i}
+                key={`${tag}-${i}`}
                 className="text-[9px] tracking-wide uppercase text-foreground/25 border border-foreground/8 rounded-full px-2.5 py-0.5 font-light"
               >
                 {tag}
@@ -220,7 +226,7 @@ function DetailPanel({ artifact, onClose }: { artifact: Artifact; onClose: () =>
         )}
 
         <div className="flex gap-3">
-          {artifact.embedUrl && (
+          {artifact.embedUrl && /^(\/|https?:\/\/)/.test(artifact.embedUrl) && (
             <a
               href={artifact.embedUrl}
               target={artifact.embedUrl.startsWith('http') ? '_blank' : undefined}
@@ -252,10 +258,10 @@ export default function PortalOverlay({ open, onClose, artifacts }: PortalOverla
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const isDragging = useRef(false)
+  const hasDragged = useRef(false)
   const dragStart = useRef({ x: 0, scrollLeft: 0 })
-  const scrollX = useMotionValue(0)
 
-  // Group artifacts by year
+  // Filter artifacts
   const filteredArtifacts = useMemo(() => {
     if (filter === 'all') return artifacts
     return artifacts.filter(a => a.category === filter)
@@ -277,31 +283,47 @@ export default function PortalOverlay({ open, onClose, artifacts }: PortalOverla
     return map
   }, [filteredArtifacts])
 
+  // Pre-calculate stagger indices
+  const staggerIndices = useMemo(() => {
+    const indices = new Map<string, number>()
+    let i = 0
+    for (const year of years) {
+      const yearArtifacts = byYear.get(year) || []
+      for (const artifact of yearArtifacts) {
+        indices.set(artifact.id, i++)
+      }
+    }
+    return indices
+  }, [years, byYear])
+
   const selectedArtifact = useMemo(
     () => artifacts.find(a => a.id === selectedId) || null,
     [artifacts, selectedId]
   )
 
-  // Drag-to-scroll
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+  // Shared pointer handling for both mouse and touch
+  const startDrag = useCallback((clientX: number) => {
     if (!scrollRef.current) return
     isDragging.current = true
+    hasDragged.current = false
     dragStart.current = {
-      x: e.clientX,
+      x: clientX,
       scrollLeft: scrollRef.current.scrollLeft,
     }
     scrollRef.current.style.cursor = 'grabbing'
     scrollRef.current.style.userSelect = 'none'
   }, [])
 
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+  const moveDrag = useCallback((clientX: number) => {
     if (!isDragging.current || !scrollRef.current) return
-    const dx = e.clientX - dragStart.current.x
+    const dx = clientX - dragStart.current.x
+    if (Math.abs(dx) > DRAG_THRESHOLD) {
+      hasDragged.current = true
+    }
     scrollRef.current.scrollLeft = dragStart.current.scrollLeft - dx
-    scrollX.set(scrollRef.current.scrollLeft)
-  }, [scrollX])
+  }, [])
 
-  const handleMouseUp = useCallback(() => {
+  const endDrag = useCallback(() => {
     isDragging.current = false
     if (scrollRef.current) {
       scrollRef.current.style.cursor = 'grab'
@@ -309,12 +331,30 @@ export default function PortalOverlay({ open, onClose, artifacts }: PortalOverla
     }
   }, [])
 
-  // Track scroll position
-  const handleScroll = useCallback(() => {
-    if (scrollRef.current) {
-      scrollX.set(scrollRef.current.scrollLeft)
-    }
-  }, [scrollX])
+  // Mouse handlers
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    if (e.button !== 0) return
+    startDrag(e.clientX)
+  }, [startDrag])
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    moveDrag(e.clientX)
+  }, [moveDrag])
+
+  // Touch handlers
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    startDrag(e.touches[0].clientX)
+  }, [startDrag])
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    moveDrag(e.touches[0].clientX)
+  }, [moveDrag])
+
+  // Node selection (only if not dragging)
+  const handleNodeSelect = useCallback((id: string) => {
+    if (hasDragged.current) return
+    setSelectedId(prev => prev === id ? null : id)
+  }, [])
 
   // Reset state on close
   useEffect(() => {
@@ -330,9 +370,6 @@ export default function PortalOverlay({ open, onClose, artifacts }: PortalOverla
     { value: 'research', label: 'Research' },
     { value: 'writing', label: 'Writing' },
   ]
-
-  // Flat ordered list for stagger index
-  let staggerIndex = 0
 
   return (
     <Dialog.Root open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
@@ -453,9 +490,12 @@ export default function PortalOverlay({ open, onClose, artifacts }: PortalOverla
                           className="flex-1 overflow-x-auto overflow-y-hidden cursor-grab scrollbar-thin"
                           onMouseDown={handleMouseDown}
                           onMouseMove={handleMouseMove}
-                          onMouseUp={handleMouseUp}
-                          onMouseLeave={handleMouseUp}
-                          onScroll={handleScroll}
+                          onMouseUp={endDrag}
+                          onMouseLeave={endDrag}
+                          onTouchStart={handleTouchStart}
+                          onTouchMove={handleTouchMove}
+                          onTouchEnd={endDrag}
+                          onTouchCancel={endDrag}
                           style={{
                             scrollbarWidth: 'thin',
                             scrollbarColor: 'rgba(200,184,154,0.15) transparent',
@@ -487,10 +527,9 @@ export default function PortalOverlay({ open, onClose, artifacts }: PortalOverla
 
                                   {/* Timeline track segment */}
                                   <div className="flex items-start">
-                                    {/* Horizontal line connects through nodes */}
                                     <div className="flex items-start gap-6">
                                       {yearArtifacts.map((artifact) => {
-                                        const idx = staggerIndex++
+                                        const idx = staggerIndices.get(artifact.id) ?? 0
                                         return (
                                           <div key={artifact.id} className="flex items-start">
                                             {/* Connecting line before node */}
@@ -505,8 +544,8 @@ export default function PortalOverlay({ open, onClose, artifacts }: PortalOverla
                                               artifact={artifact}
                                               index={idx}
                                               isSelected={selectedId === artifact.id}
-                                              onSelect={() => setSelectedId(prev => prev === artifact.id ? null : artifact.id)}
-                                              isDimmed={false}
+                                              onSelect={() => handleNodeSelect(artifact.id)}
+                                              isDimmed={selectedId !== null && selectedId !== artifact.id}
                                             />
                                           </div>
                                         )
@@ -562,7 +601,9 @@ export default function PortalOverlay({ open, onClose, artifacts }: PortalOverla
                           transition={{ delay: 0.2, duration: 0.5 }}
                         />
                         <p className="text-foreground/25 text-sm font-light tracking-wide">
-                          Loading artifacts...
+                          {artifacts.length === 0
+                            ? "Loading artifacts..."
+                            : "Nothing here yet."}
                         </p>
                         <motion.div
                           className="w-12 h-px bg-foreground/10"
