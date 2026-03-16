@@ -11,28 +11,34 @@ interface ShaderBackgroundProps {
 
 export default function ShaderBackground({ children }: ShaderBackgroundProps) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const [isActive, setIsActive] = useState(false)
+  const [showShader, setShowShader] = useState(false)
 
   useEffect(() => {
-    const handleMouseEnter = () => setIsActive(true)
-    const handleMouseLeave = () => setIsActive(false)
-
     const container = containerRef.current
-    if (container) {
-      container.addEventListener("mouseenter", handleMouseEnter)
-      container.addEventListener("mouseleave", handleMouseLeave)
-    }
+    if (!container) return
+
+    const canvas = document.createElement("canvas")
+    const gl =
+      canvas.getContext("webgl2") ??
+      canvas.getContext("webgl") ??
+      canvas.getContext("experimental-webgl")
+
+    setShowShader(Boolean(gl))
 
     return () => {
-      if (container) {
-        container.removeEventListener("mouseenter", handleMouseEnter)
-        container.removeEventListener("mouseleave", handleMouseLeave)
-      }
     }
   }, [])
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-black relative overflow-hidden">
+    <div ref={containerRef} className="min-h-screen bg-background relative overflow-hidden">
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(circle at 20% 75%, rgba(240,236,228,0.28), transparent 42%), radial-gradient(circle at 82% 82%, rgba(200,184,154,0.24), transparent 36%), linear-gradient(135deg, #2b2620 0%, #141312 45%, #090909 100%)",
+        }}
+      />
+
       {/* SVG Filters */}
       <svg className="absolute inset-0 w-0 h-0">
         <defs>
@@ -61,17 +67,21 @@ export default function ShaderBackground({ children }: ShaderBackgroundProps) {
         </defs>
       </svg>
 
-      {/* Background Shaders */}
-      <MeshGradient
-        className="absolute inset-0 w-full h-full"
-        colors={["#050505", "#c8b89a", "#f0ece4", "#1a1510", "#2a2318"]}
-        speed={0.15}
-      />
-      <MeshGradient
-        className="absolute inset-0 w-full h-full opacity-40"
-        colors={["#050505", "#f0ece4", "#c8b89a", "#050505"]}
-        speed={0.1}
-      />
+      {/* Only mount the shader when WebGL is available; otherwise keep the CSS gradient fallback. */}
+      {showShader ? (
+        <>
+          <MeshGradient
+            className="absolute inset-0 w-full h-full"
+            colors={["#050505", "#c8b89a", "#f0ece4", "#1a1510", "#2a2318"]}
+            speed={0.15}
+          />
+          <MeshGradient
+            className="absolute inset-0 w-full h-full opacity-40"
+            colors={["#050505", "#f0ece4", "#c8b89a", "#050505"]}
+            speed={0.1}
+          />
+        </>
+      ) : null}
 
       {children}
     </div>
