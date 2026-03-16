@@ -4,7 +4,7 @@ import { motion, useInView, AnimatePresence } from "framer-motion"
 import { useRef, useState } from "react"
 import type { GitHubRepo } from "@/lib/types"
 import EmbedDrawer from "@/components/embed-drawer"
-import { getRepoDisplayTopics } from "@/lib/github"
+import { compareReposForDisplay, getRepoDisplayTopics } from "@/lib/github"
 
 interface Project {
   title: string
@@ -348,7 +348,7 @@ interface ProjectShowcaseProps {
 export default function ProjectShowcase({ repos }: ProjectShowcaseProps) {
   const sectionRef = useRef(null)
   const headerInView = useInView(sectionRef, { once: true, margin: "-50px" })
-  const projects = transformReposToProjects(repos)
+  const projects = transformReposToProjects([...repos].sort(compareReposForDisplay))
 
   return (
     <section

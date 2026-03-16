@@ -381,6 +381,10 @@ export default function PortalOverlay({ open, onClose, artifacts }: PortalOverla
                 transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                 className="fixed inset-0 z-50 flex flex-col"
               >
+                <Dialog.Title className="sr-only">Artifact timeline</Dialog.Title>
+                <Dialog.Description className="sr-only">
+                  Explore projects, research, and writing artifacts in ranked timeline order.
+                </Dialog.Description>
                 <div className="flex items-center justify-between px-6 md:px-10 py-5 shrink-0">
                   <div className="flex items-center gap-3">
                     <motion.div
