@@ -30,6 +30,7 @@ export interface GitHubRepo {
     login: string;
     avatar_url: string;
   };
+  pinned?: boolean;
 }
 
 export interface RepoDetails extends GitHubRepo {

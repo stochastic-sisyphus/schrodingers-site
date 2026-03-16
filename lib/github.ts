@@ -29,6 +29,35 @@ function getRepoTopics(repo: GitHubRepo): string[] {
   return Array.isArray(repo.topics) ? repo.topics : [];
 }
 
+async function fetchPinnedRepoNamesFromProfile(username: string): Promise<Set<string>> {
+  if (typeof window !== 'undefined') {
+    return new Set();
+  }
+
+  try {
+    const response = await fetch(`https://github.com/${username}`, {
+      headers: {
+        'User-Agent': 'stochastic-sisyphus-site',
+      },
+      next: { revalidate: 3600 },
+    });
+
+    if (!response.ok) return new Set();
+
+    const html = await response.text();
+    const pinnedSectionMatch = html.match(/js-pinned-items-reorder-list[\s\S]*?<\/ol>/i);
+    const pinnedSection = pinnedSectionMatch ? pinnedSectionMatch[0] : html;
+    const repoMatches = pinnedSection.matchAll(new RegExp(`href="/${username}/([^"/?#]+)"`, 'g'));
+
+    return new Set(
+      Array.from(repoMatches, (match) => decodeURIComponent(match[1]))
+    );
+  } catch (error) {
+    console.error('Error fetching pinned GitHub repos from profile:', error);
+    return new Set();
+  }
+}
+
 export function hasRepoTopic(repo: GitHubRepo, topic: string): boolean {
   return getRepoTopics(repo).includes(topic);
 }
@@ -38,7 +67,7 @@ export function isRepoHidden(repo: GitHubRepo): boolean {
 }
 
 export function isRepoPinned(repo: GitHubRepo): boolean {
-  return hasRepoTopic(repo, 'site-pin');
+  return Boolean(repo.pinned) || hasRepoTopic(repo, 'site-pin');
 }
 
 export function getRepoPriority(repo: GitHubRepo): number {
@@ -120,16 +149,21 @@ function shouldIncludeRepo(repo: GitHubRepo): boolean {
  */
 export async function fetchAllRepos(username: string = GITHUB_USERNAME): Promise<GitHubRepo[]> {
   try {
-    const response = await fetch(
-      `${GITHUB_API}/users/${username}/repos?per_page=100&sort=updated`,
-      { headers: getHeaders() }
-    );
+    const [response, pinnedRepoNames] = await Promise.all([
+      fetch(`${GITHUB_API}/users/${username}/repos?per_page=100&sort=updated`, {
+        headers: getHeaders(),
+      }),
+      fetchPinnedRepoNamesFromProfile(username),
+    ]);
 
     if (!response.ok) {
       throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
     }
 
-    const repos: GitHubRepo[] = await response.json();
+    const repos: GitHubRepo[] = (await response.json()).map((repo: GitHubRepo) => ({
+      ...repo,
+      pinned: pinnedRepoNames.has(repo.name),
+    }));
 
     // Apply intelligent filtering
     const filteredRepos = repos.filter(shouldIncludeRepo);
