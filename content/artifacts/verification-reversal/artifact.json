@@ -1,0 +1,18 @@
+{
+  "id": "verification-reversal-viz",
+  "title": "Verification Reversal (Interactive)",
+  "category": "research",
+  "kind": "visualization",
+  "description": "Interactive p5.js visualization of information cascade dynamics.",
+  "displayDate": "2026-01-01",
+  "authors": ["Vanessa Beck"],
+  "journal": "Interactive Visualization",
+  "doi": "10.5281/zenodo.18159898",
+  "embedUrl": "/verification-reversal.html",
+  "detailUrl": "/research/verification-reversal",
+  "externalUrl": "https://doi.org/10.5281/zenodo.18159898",
+  "thumbnailHint": "visualization",
+  "tags": ["visualization", "research"],
+  "pinned": true,
+  "priority": 10
+}

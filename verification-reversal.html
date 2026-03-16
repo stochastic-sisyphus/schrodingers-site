@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verification Reversal</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,300;8..60,400;8..60,600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { 
+            overflow: hidden; 
+            background: #1a1816;
+            font-family: 'IBM Plex Mono', monospace;
+            width: 100vw;
+            height: 100vh;
+        }
+        canvas { display: block; cursor: crosshair; }
+        
+        .margin-note {
+            position: fixed;
+            font-family: 'Source Serif 4', serif;
+            font-size: 11px;
+            font-weight: 300;
+            line-height: 1.7;
+            color: rgba(210, 190, 170, 0.7);
+            pointer-events: none;
+            max-width: 175px;
+        }
+        .margin-note.left { left: 28px; }
+        .margin-note.right { right: 28px; text-align: right; }
+        .margin-note .label {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 8px;
+            font-weight: 500;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: rgba(200, 160, 120, 0.6);
+            margin-bottom: 6px;
+        }
+        .margin-note .value {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 12px;
+            font-weight: 400;
+            color: rgba(230, 180, 130, 0.9);
+        }
+        .margin-note .unit {
+            font-size: 9px;
+            color: rgba(180, 160, 140, 0.6);
+        }
+        .margin-note em {
+            font-style: italic;
+            color: rgba(220, 175, 140, 0.8);
+        }
+        
+        #note-tl { top: 50px; }
+        #note-tr { top: 50px; }
+        #note-bl { bottom: 70px; }
+        #note-br { bottom: 70px; }
+        
+        .title-block {
+            position: fixed;
+            top: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            pointer-events: none;
+        }
+        .title-block .title {
+            font-family: 'Source Serif 4', serif;
+            font-size: 14px;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+            color: rgba(220, 200, 180, 0.8);
+        }
+        .title-block .subtitle {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 0.5px;
+            color: rgba(180, 160, 140, 0.5);
+            margin-top: 4px;
+        }
+        
+        .hint {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Source Serif 4', serif;
+            font-size: 12px;
+            font-style: italic;
+            color: rgba(180, 160, 140, 0.5);
+            pointer-events: none;
+            transition: opacity 0.8s;
+        }
+        
+        .bar {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 28px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        body:hover .bar { opacity: 1; }
+        
+        .bar button {
+            background: none;
+            border: none;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 9px;
+            font-weight: 300;
+            letter-spacing: 0.5px;
+            color: rgba(180, 160, 140, 0.5);
+            cursor: pointer;
+            padding: 6px 12px;
+            transition: color 0.2s;
+        }
+        .bar button:hover { color: rgba(230, 180, 130, 0.9); }
+        
+        .legend {
+            position: fixed;
+            bottom: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 24px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 8px;
+            letter-spacing: 0.5px;
+            color: rgba(180, 160, 140, 0.6);
+            pointer-events: none;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        .legend-dot.verified { background: rgba(120, 180, 140, 0.8); }
+        .legend-dot.unverified { background: rgba(200, 120, 100, 0.8); }
+        .legend-dot.cascade { background: rgba(220, 160, 90, 0.8); }
+    </style>
+</head>
+<body>
+    <div class="title-block">
+        <div class="title">Verification Reversal</div>
+        <div class="subtitle">information cascade dynamics</div>
+    </div>
+    
+    <div class="margin-note left" id="note-tl">
+        <div class="label">Phase Transition</div>
+        <div>When <em>∂C<sub>prod</sub> &lt; ∂C<sub>ver</sub></em>, rational agents forward unverified outputs. Cascades form.</div>
+    </div>
+    
+    <div class="margin-note right" id="note-tr">
+        <div class="label">State</div>
+        <div><span class="value" id="val-agents">0</span> <span class="unit">agents</span></div>
+        <div><span class="value" id="val-signals">0</span> <span class="unit">signals</span></div>
+        <div style="margin-top: 6px;"><span class="value" id="val-verified">0%</span> <span class="unit">verified</span></div>
+        <div><span class="value" id="val-cascade">0%</span> <span class="unit">in cascade</span></div>
+    </div>
+    
+    <div class="margin-note left" id="note-bl">
+        <div class="label">Epistemic Debt</div>
+        <div>Unverified artifacts accumulate. Measurement systems, calibrated to the old regime, cannot detect the shift.</div>
+    </div>
+    
+    <div class="margin-note right" id="note-br">
+        <div class="label">Session</div>
+        <div><span class="unit">t</span> = <span class="value" id="val-t">00:00</span></div>
+        <div><span class="unit">debt</span> <span class="value" id="val-debt">0</span></div>
+    </div>
+    
+    <div class="hint" id="hint">click to place agents</div>
+    
+    <div class="legend">
+        <div class="legend-item"><div class="legend-dot verified"></div>verified</div>
+        <div class="legend-item"><div class="legend-dot unverified"></div>unverified</div>
+        <div class="legend-item"><div class="legend-dot cascade"></div>forwarded</div>
+    </div>
+    
+    <div class="bar">
+        <button onclick="clearAll()">clear</button>
+        <button onclick="reseed()">reseed</button>
+        <button onclick="capture()">capture</button>
+    </div>
+
+    <script>
+        // ═══════════════════════════════════════════════════════════════════════
+        // VERIFICATION REVERSAL
+        // Information cascades in an AI-mediated economy
+        // ═══════════════════════════════════════════════════════════════════════
+
+        const BG = [26, 24, 22];
+        const MARGIN = { left: 210, right: 210, top: 65, bottom: 100 };
+        
+        // Warm earth palette on dark
+        const C = {
+            axis: [120, 110, 100],
+            axisLabel: [160, 145, 130],
+            grid: [50, 45, 42],
+            
+            // Agent states
+            verified: [100, 170, 130],      // muted green
+            unverified: [190, 110, 95],     // terracotta red
+            cascade: [210, 155, 85],        // amber/gold
+            neutral: [180, 165, 150],       // warm gray
+            
+            // Signals
+            signalVerified: [120, 190, 150],
+            signalUnverified: [210, 130, 110],
+            signalCascade: [230, 175, 100],
+            
+            connection: [100, 90, 80],
+            annotation: [170, 150, 130]
+        };
+
+        let agents = [];
+        let signals = [];
+        let epistemicDebt = 0;
+        let seed = Math.floor(Math.random() * 99999);
+        let startTime;
+        let hasClicked = false;
+        let plotBounds;
+
+        function setup() {
+            createCanvas(windowWidth, windowHeight);
+            pixelDensity(1);
+            textFont('IBM Plex Mono');
+            updatePlotBounds();
+            startTime = millis();
+        }
+
+        function updatePlotBounds() {
+            plotBounds = {
+                x: MARGIN.left,
+                y: MARGIN.top,
+                w: width - MARGIN.left - MARGIN.right,
+                h: height - MARGIN.top - MARGIN.bottom
+            };
+        }
+
+        class Agent {
+            constructor(x, y, idx) {
+                this.x = x;
+                this.y = y;
+                this.idx = idx;
+                this.birth = frameCount;
+                this.strength = 0;
+                
+                // Verification capacity - some agents can verify, most can't afford to
+                this.verificationCapacity = random() < 0.2 ? random(0.5, 1) : random(0.05, 0.2);
+                
+                // State: 'neutral', 'verified', 'unverified', 'cascade'
+                this.state = 'neutral';
+                this.stateTime = 0;
+                
+                // Production rate (high - it's cheap to produce)
+                this.productionRate = random(80, 160);
+                this.lastProduction = random(60);
+                
+                // Connections
+                this.connections = [];
+                
+                // Pulse
+                this.pulsePhase = random(TWO_PI);
+            }
+            
+            update() {
+                this.strength = min(1, (frameCount - this.birth) / 40);
+                
+                // Produce signals periodically
+                if (frameCount - this.lastProduction > this.productionRate && this.strength > 0.5) {
+                    this.produceSignal();
+                    this.lastProduction = frameCount;
+                }
+                
+                // Decay state back to neutral over time
+                if (this.state !== 'neutral' && frameCount - this.stateTime > 180) {
+                    this.state = 'neutral';
+                }
+            }
+            
+            produceSignal() {
+                // Can we afford to verify?
+                const canVerify = random() < this.verificationCapacity;
+                
+                let signalType;
+                if (canVerify) {
+                    signalType = 'verified';
+                    this.state = 'verified';
+                } else {
+                    // Forward unverified or join cascade
+                    const inCascade = this.connections.some(c => c.agent.state === 'cascade' || c.agent.state === 'unverified');
+                    if (inCascade && random() < 0.7) {
+                        signalType = 'cascade';
+                        this.state = 'cascade';
+                        epistemicDebt += 2;
+                    } else {
+                        signalType = 'unverified';
+                        this.state = 'unverified';
+                        epistemicDebt += 1;
+                    }
+                }
+                
+                this.stateTime = frameCount;
+                
+                // Emit signal to connected agents
+                for (let conn of this.connections) {
+                    signals.push(new Signal(this.x, this.y, conn.agent.x, conn.agent.y, signalType, conn.strength));
+                }
+            }
+            
+            receiveSignal(type) {
+                // Receiving unverified/cascade signals can pull agent into cascade
+                if ((type === 'unverified' || type === 'cascade') && this.state === 'neutral') {
+                    if (random() < 0.4) {
+                        this.state = type === 'cascade' ? 'cascade' : 'unverified';
+                        this.stateTime = frameCount;
+                    }
+                }
+            }
+            
+            draw() {
+                const pulse = sin(frameCount * 0.03 + this.pulsePhase) * 0.08 + 1;
+                const a = this.strength;
+                
+                // Get state color
+                let stateColor;
+                switch(this.state) {
+                    case 'verified': stateColor = C.verified; break;
+                    case 'unverified': stateColor = C.unverified; break;
+                    case 'cascade': stateColor = C.cascade; break;
+                    default: stateColor = C.neutral;
+                }
+                
+                // Outer measurement rings
+                noFill();
+                strokeWeight(0.6);
+                for (let r = 1; r <= 3; r++) {
+                    const radius = 12 + r * 10;
+                    stroke(...stateColor, (50 - r * 12) * a);
+                    this.drawGappedRing(radius * pulse);
+                }
+                
+                // Crosshairs
+                stroke(...stateColor, 50 * a);
+                strokeWeight(0.5);
+                const inner = 5, outer = 12 * pulse;
+                line(this.x - outer, this.y, this.x - inner, this.y);
+                line(this.x + inner, this.y, this.x + outer, this.y);
+                line(this.x, this.y - outer, this.x, this.y - inner);
+                line(this.x, this.y + inner, this.x, this.y + outer);
+                
+                // Core ring
+                stroke(...stateColor, 120 * a);
+                strokeWeight(1.2);
+                noFill();
+                ellipse(this.x, this.y, 10 * pulse, 10 * pulse);
+                
+                // Center fill
+                noStroke();
+                fill(...stateColor, 200 * a);
+                ellipse(this.x, this.y, 5, 5);
+                
+                // Hot center
+                fill(255, 255, 250, 140 * a);
+                ellipse(this.x, this.y, 2, 2);
+                
+                // Verification capacity indicator (small bar)
+                const barW = 20;
+                const barH = 2;
+                const barX = this.x - barW/2;
+                const barY = this.y + 18;
+                
+                stroke(...C.neutral, 40 * a);
+                strokeWeight(0.5);
+                noFill();
+                rect(barX, barY, barW, barH);
+                
+                noStroke();
+                fill(...C.verified, 100 * a);
+                rect(barX, barY, barW * this.verificationCapacity, barH);
+                
+                // Agent index
+                fill(...C.annotation, 120 * a);
+                textSize(8);
+                textAlign(CENTER, TOP);
+                text('a' + this.idx, this.x, this.y + 24);
+            }
+            
+            drawGappedRing(radius) {
+                const gap = 0.18;
+                for (let q = 0; q < 4; q++) {
+                    const startA = q * HALF_PI + gap;
+                    const endA = (q + 1) * HALF_PI - gap;
+                    beginShape();
+                    for (let a = startA; a <= endA; a += 0.05) {
+                        vertex(this.x + cos(a) * radius, this.y + sin(a) * radius);
+                    }
+                    endShape();
+                }
+            }
+        }
+
+        class Signal {
+            constructor(x1, y1, x2, y2, type, strength) {
+                this.x1 = x1;
+                this.y1 = y1;
+                this.x2 = x2;
+                this.y2 = y2;
+                this.type = type;
+                this.strength = strength;
+                this.progress = 0;
+                this.speed = random(0.015, 0.025);
+                this.delivered = false;
+            }
+            
+            update() {
+                this.progress += this.speed;
+                
+                if (this.progress >= 1 && !this.delivered) {
+                    this.delivered = true;
+                    // Find receiving agent
+                    for (let agent of agents) {
+                        if (abs(agent.x - this.x2) < 5 && abs(agent.y - this.y2) < 5) {
+                            agent.receiveSignal(this.type);
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            draw() {
+                if (this.progress > 1.2) return;
+                
+                let col;
+                switch(this.type) {
+                    case 'verified': col = C.signalVerified; break;
+                    case 'unverified': col = C.signalUnverified; break;
+                    case 'cascade': col = C.signalCascade; break;
+                }
+                
+                const alpha = (1 - abs(this.progress - 0.5) * 1.5) * this.strength * 180;
+                
+                // Current position
+                const x = lerp(this.x1, this.x2, this.progress);
+                const y = lerp(this.y1, this.y2, this.progress);
+                
+                // Trail
+                const trailLen = 0.15;
+                const trailStart = max(0, this.progress - trailLen);
+                
+                stroke(...col, alpha * 0.6);
+                strokeWeight(1.5);
+                line(
+                    lerp(this.x1, this.x2, trailStart),
+                    lerp(this.y1, this.y2, trailStart),
+                    x, y
+                );
+                
+                // Head
+                noStroke();
+                fill(...col, alpha);
+                ellipse(x, y, 4, 4);
+            }
+            
+            isDead() {
+                return this.progress > 1.3;
+            }
+        }
+
+        function updateConnections() {
+            for (let a of agents) a.connections = [];
+            
+            for (let i = 0; i < agents.length; i++) {
+                for (let j = i + 1; j < agents.length; j++) {
+                    const d = dist(agents[i].x, agents[i].y, agents[j].x, agents[j].y);
+                    if (d < 200 && d > 30) {
+                        const strength = pow(1 - d / 200, 1.2) * min(agents[i].strength, agents[j].strength);
+                        agents[i].connections.push({ agent: agents[j], strength, dist: d });
+                        agents[j].connections.push({ agent: agents[i], strength, dist: d });
+                    }
+                }
+            }
+        }
+
+        function drawConnections() {
+            for (let a of agents) {
+                for (let conn of a.connections) {
+                    if (conn.agent.idx > a.idx) {
+                        const alpha = conn.strength * 60;
+                        
+                        stroke(...C.connection, alpha);
+                        strokeWeight(0.5);
+                        
+                        // Slight curve
+                        const mx = (a.x + conn.agent.x) / 2;
+                        const my = (a.y + conn.agent.y) / 2 + conn.dist * 0.03;
+                        
+                        noFill();
+                        beginShape();
+                        vertex(a.x, a.y);
+                        quadraticVertex(mx, my, conn.agent.x, conn.agent.y);
+                        endShape();
+                    }
+                }
+            }
+        }
+
+        function drawAxes() {
+            const b = plotBounds;
+            
+            // Axis lines
+            stroke(...C.axis, 80);
+            strokeWeight(1);
+            line(b.x, b.y + b.h, b.x + b.w, b.y + b.h);
+            line(b.x, b.y, b.x, b.y + b.h);
+            
+            // Grid
+            stroke(...C.grid, 80);
+            strokeWeight(0.3);
+            for (let i = 1; i < 10; i++) {
+                const x = b.x + (i / 10) * b.w;
+                const y = b.y + (i / 10) * b.h;
+                line(x, b.y, x, b.y + b.h);
+                line(b.x, y, b.x + b.w, y);
+            }
+            
+            // Tick labels
+            textSize(8);
+            fill(...C.axisLabel, 100);
+            textAlign(CENTER, TOP);
+            for (let i = 0; i <= 10; i += 2) {
+                const x = b.x + (i / 10) * b.w;
+                noStroke();
+                text(i * 10, x, b.y + b.h + 8);
+            }
+            
+            textAlign(RIGHT, CENTER);
+            for (let i = 0; i <= 10; i += 2) {
+                const y = b.y + b.h - (i / 10) * b.h;
+                text(i * 10, b.x - 8, y);
+            }
+        }
+
+        function draw() {
+            background(...BG);
+            
+            drawAxes();
+            
+            if (frameCount % 8 === 0) updateConnections();
+            drawConnections();
+            
+            for (let s of signals) {
+                s.update();
+                s.draw();
+            }
+            
+            for (let a of agents) {
+                a.update();
+                a.draw();
+            }
+            
+            signals = signals.filter(s => !s.isDead());
+            
+            if (frameCount % 10 === 0) updateTelemetry();
+        }
+
+        function updateTelemetry() {
+            const elapsed = floor((millis() - startTime) / 1000);
+            const mins = floor(elapsed / 60).toString().padStart(2, '0');
+            const secs = (elapsed % 60).toString().padStart(2, '0');
+            
+            document.getElementById('val-agents').textContent = agents.length;
+            document.getElementById('val-signals').textContent = signals.length;
+            
+            if (agents.length > 0) {
+                const verified = agents.filter(a => a.state === 'verified').length;
+                const cascade = agents.filter(a => a.state === 'cascade').length;
+                const unverified = agents.filter(a => a.state === 'unverified').length;
+                
+                document.getElementById('val-verified').textContent = floor(verified / agents.length * 100) + '%';
+                document.getElementById('val-cascade').textContent = floor((cascade + unverified) / agents.length * 100) + '%';
+            } else {
+                document.getElementById('val-verified').textContent = '0%';
+                document.getElementById('val-cascade').textContent = '0%';
+            }
+            
+            document.getElementById('val-t').textContent = mins + ':' + secs;
+            document.getElementById('val-debt').textContent = floor(epistemicDebt);
+        }
+
+        function mousePressed() {
+            const b = plotBounds;
+            if (mouseX < b.x || mouseX > b.x + b.w || mouseY < b.y || mouseY > b.y + b.h) return;
+            
+            if (!hasClicked) {
+                hasClicked = true;
+                document.getElementById('hint').style.opacity = '0';
+            }
+            
+            agents.push(new Agent(mouseX, mouseY, agents.length));
+        }
+
+        function keyPressed() {
+            if (key === 'c') clearAll();
+            if (key === 'r') reseed();
+            if (key === 's' && !keyIsDown(91) && !keyIsDown(17)) capture();
+        }
+
+        function clearAll() {
+            agents = [];
+            signals = [];
+            epistemicDebt = 0;
+            startTime = millis();
+        }
+
+        function reseed() {
+            clearAll();
+            seed = floor(random(99999));
+        }
+
+        function capture() {
+            saveCanvas('verification-reversal-' + seed, 'png');
+        }
+
+        function windowResized() {
+            resizeCanvas(windowWidth, windowHeight);
+            updatePlotBounds();
+        }
+    </script>
+</body>
+</html>
