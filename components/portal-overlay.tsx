@@ -16,7 +16,8 @@ type FilterOption = 'all' | ArtifactCategory
 
 const DRAG_THRESHOLD = 5 // pixels before considering it a drag vs click
 
-function isHttpUrl(url: string): boolean {
+function isSafeUrl(url: string): boolean {
+  if (url.startsWith('/')) return true
   try {
     const parsed = new URL(url)
     return parsed.protocol === 'http:' || parsed.protocol === 'https:'
@@ -235,7 +236,7 @@ function DetailPanel({ artifact, onClose }: { artifact: Artifact; onClose: () =>
         )}
 
         <div className="flex gap-3">
-          {artifact.embedUrl && /^(\/|https?:\/\/)/.test(artifact.embedUrl) && (
+          {artifact.embedUrl && isSafeUrl(artifact.embedUrl) && (
             <a
               href={artifact.embedUrl}
               target={artifact.embedUrl.startsWith('http') ? '_blank' : undefined}
@@ -245,7 +246,7 @@ function DetailPanel({ artifact, onClose }: { artifact: Artifact; onClose: () =>
               View Interactive
             </a>
           )}
-          {artifact.externalUrl && isHttpUrl(artifact.externalUrl) && (
+          {artifact.externalUrl && isSafeUrl(artifact.externalUrl) && (
             <a
               href={artifact.externalUrl}
               target="_blank"
