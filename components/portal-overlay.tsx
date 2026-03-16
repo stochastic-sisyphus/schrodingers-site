@@ -266,8 +266,13 @@ export default function PortalOverlay({ open, onClose, artifacts }: PortalOverla
   }, [artifacts, filter])
 
   const years = useMemo(() => {
-    const uniqueYears = [...new Set(filteredArtifacts.map((artifact) => artifact.year))]
-    return uniqueYears.sort((a, b) => b - a)
+    return filteredArtifacts.reduce<number[]>((orderedYears, artifact) => {
+      if (!orderedYears.includes(artifact.year)) {
+        orderedYears.push(artifact.year)
+      }
+
+      return orderedYears
+    }, [])
   }, [filteredArtifacts])
 
   const byYear = useMemo(() => {

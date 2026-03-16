@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import Header from "@/components/header"
 import HeroContent from "@/components/hero-content"
 import ShaderBackground from "@/components/shader-background"
@@ -15,18 +15,32 @@ import { getDisplayProjectRepos, getDisplayResearchEntries } from "@/lib/content
 import { fetchAllRepos } from "@/lib/github"
 import type { LocalArtifactMetadata } from "@/lib/local-artifacts"
 import { fetchAllResearchData } from "@/lib/orcid"
-import { fetchAllSubstackPosts, getRecentPosts } from "@/lib/substack"
 import type { BlogPost, GitHubRepo, ResearchPaper } from "@/lib/types"
+
+type SerializedBlogPost = Omit<BlogPost, "date"> & {
+  date: string
+}
 
 interface HomeClientProps {
   localArtifacts: LocalArtifactMetadata[]
+  initialPosts: SerializedBlogPost[]
 }
 
-export default function HomeClient({ localArtifacts }: HomeClientProps) {
+export default function HomeClient({ localArtifacts, initialPosts }: HomeClientProps) {
+  const hydratedPosts = useMemo<BlogPost[]>(
+    () =>
+      initialPosts.map((post) => ({
+        ...post,
+        date: new Date(post.date),
+      })),
+    [initialPosts]
+  )
   const [repos, setRepos] = useState<GitHubRepo[]>([])
-  const [substackPosts, setSubstackPosts] = useState<BlogPost[]>([])
+  const [substackPosts] = useState<BlogPost[]>(hydratedPosts)
   const [researchEntries, setResearchEntries] = useState<ResearchPaper[]>([])
-  const [artifacts, setArtifacts] = useState<Artifact[]>([])
+  const [artifacts, setArtifacts] = useState<Artifact[]>(
+    buildArtifactRegistry([], [], hydratedPosts, localArtifacts)
+  )
 
   useEffect(() => {
     async function loadData() {
@@ -34,23 +48,20 @@ export default function HomeClient({ localArtifacts }: HomeClientProps) {
       setRepos(getDisplayProjectRepos(fetchedRepos))
 
       try {
-        const allPosts = await fetchAllSubstackPosts()
-        setSubstackPosts(getRecentPosts(allPosts, 4))
-
         const { papers } = await fetchAllResearchData()
         setResearchEntries(getDisplayResearchEntries(papers, fetchedRepos, localArtifacts))
-        setArtifacts(buildArtifactRegistry(fetchedRepos, papers, allPosts, localArtifacts))
+        setArtifacts(buildArtifactRegistry(fetchedRepos, papers, hydratedPosts, localArtifacts))
       } catch (error) {
         console.error("Failed to load site content:", error)
 
         const { papers } = await fetchAllResearchData()
         setResearchEntries(getDisplayResearchEntries(papers, fetchedRepos, localArtifacts))
-        setArtifacts(buildArtifactRegistry(fetchedRepos, papers, [], localArtifacts))
+        setArtifacts(buildArtifactRegistry(fetchedRepos, papers, hydratedPosts, localArtifacts))
       }
     }
 
     loadData()
-  }, [localArtifacts])
+  }, [hydratedPosts, localArtifacts])
 
   return (
     <div className="bg-background">
