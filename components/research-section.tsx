@@ -74,7 +74,7 @@ function ResearchCard({
       className="group"
     >
       {/* Newspaper terminal chrome header */}
-      <div className="relative flex items-center gap-2 px-4 py-2.5 rounded-t-lg border border-b-0 border-foreground/[0.08] bg-[#1a1917]">
+      <div className="relative flex items-center gap-2 px-4 py-2.5 rounded-t-lg border border-b-0 border-foreground/[0.12] bg-[#201c16]">
         <div
           className="pointer-events-none absolute inset-x-0 top-0 h-px"
           style={{
@@ -146,7 +146,7 @@ function ResearchCard({
         aria-expanded={expanded}
       >
         <div
-          className="relative overflow-hidden border border-foreground/[0.08] bg-[#16150f]/80 backdrop-blur-sm transition-all duration-500 hover:bg-[#1a1917]"
+          className="relative overflow-hidden border border-foreground/[0.12] bg-[#201a14]/92 backdrop-blur-sm transition-all duration-500 hover:bg-[#2a221a]"
           style={{
             borderRadius:
               showEmbed || expanded ? "0" : "0 0 0.5rem 0.5rem",
@@ -165,19 +165,19 @@ function ResearchCard({
             </h3>
 
             {paper.authors.length > 0 && (
-              <p className="text-xs font-light text-foreground/35 mb-2">
+              <p className="text-xs font-light text-foreground/55 mb-2">
                 {paper.authors.join(", ")}
               </p>
             )}
 
             {paper.journal && (
-              <p className="text-xs font-light text-foreground/25 mb-3 italic">
+              <p className="text-xs font-light text-foreground/45 mb-3 italic">
                 {paper.journal}
               </p>
             )}
 
             {paper.description && (
-              <p className="text-sm font-light text-foreground/30 leading-relaxed mb-3 line-clamp-2">
+              <p className="text-sm font-light text-foreground/60 leading-relaxed mb-3 line-clamp-3">
                 {paper.description}
               </p>
             )}

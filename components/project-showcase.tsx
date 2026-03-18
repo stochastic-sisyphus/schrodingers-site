@@ -23,11 +23,26 @@ interface Project {
 }
 
 /** URLs that refuse iframe embedding (X-Frame-Options / CSP) */
-const BLOCKED_EMBED_URLS = ["pypi.org", "npmjs.com"]
+const BLOCKED_EMBED_URLS = [
+  "pypi.org",
+  "npmjs.com",
+  "doi.org",
+  "zenodo.org",
+  "github.com",
+  "arxiv.org",
+]
 
 function canEmbed(url: string | null): boolean {
   if (!url) return false
-  return !BLOCKED_EMBED_URLS.some((blocked) => url.includes(blocked))
+  try {
+    const parsed = new URL(url)
+    if (!["http:", "https:"].includes(parsed.protocol)) return false
+    if (BLOCKED_EMBED_URLS.some((blocked) => parsed.hostname.includes(blocked))) return false
+    if (parsed.pathname.endsWith(".pdf")) return false
+    return true
+  } catch {
+    return false
+  }
 }
 
 function transformReposToProjects(repos: GitHubRepo[]): Project[] {
@@ -117,7 +132,7 @@ function ProjectCard({
       className="group"
     >
       {/* Terminal chrome header */}
-      <div className="relative flex items-center gap-2 px-4 py-2.5 rounded-t-lg border border-b-0 border-foreground/[0.06] bg-[#0d0c0b]">
+      <div className="relative flex items-center gap-2 px-4 py-2.5 rounded-t-lg border border-b-0 border-foreground/[0.12] bg-[#16130f]">
         <div
           className="pointer-events-none absolute inset-x-0 top-0 h-px"
           style={{
@@ -175,7 +190,7 @@ function ProjectCard({
         aria-expanded={expanded}
       >
         <div
-          className="relative overflow-hidden border border-foreground/[0.06] bg-[#0d0c0b]/80 backdrop-blur-sm transition-all duration-500 hover:bg-[#0d0c0b]"
+          className="relative overflow-hidden border border-foreground/[0.12] bg-[#1b1712]/92 backdrop-blur-sm transition-all duration-500 hover:bg-[#241f19]"
           style={{
             borderRadius:
               showEmbed || expanded ? "0" : "0 0 0.5rem 0.5rem",
@@ -233,7 +248,7 @@ function ProjectCard({
             </h3>
 
             {/* Description */}
-            <p className="text-sm font-light text-foreground/35 leading-relaxed max-w-2xl mb-5">
+            <p className="text-sm font-light text-foreground/55 leading-relaxed max-w-2xl mb-5">
               {project.description}
             </p>
 
@@ -244,7 +259,7 @@ function ProjectCard({
                   <svg className="w-3.5 h-3.5 text-foreground/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                   </svg>
-                  <span className="text-foreground/25 text-xs font-light">{project.stars}</span>
+                  <span className="text-foreground/50 text-xs font-light">{project.stars}</span>
                 </div>
               )}
               {project.forks > 0 && (
@@ -252,14 +267,14 @@ function ProjectCard({
                   <svg className="w-3.5 h-3.5 text-foreground/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                   </svg>
-                  <span className="text-foreground/25 text-xs font-light">{project.forks}</span>
+                  <span className="text-foreground/50 text-xs font-light">{project.forks}</span>
                 </div>
               )}
               <div className="flex items-center gap-1.5">
                 <svg className="w-3.5 h-3.5 text-foreground/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
                 </svg>
-                <span className="text-foreground/25 text-xs font-light">{formatSize(project.size)}</span>
+                <span className="text-foreground/50 text-xs font-light">{formatSize(project.size)}</span>
               </div>
             </div>
 
@@ -268,7 +283,7 @@ function ProjectCard({
               {project.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="text-[9px] tracking-wide uppercase text-foreground/25 border border-foreground/[0.06] rounded-full px-2.5 py-0.5 font-light"
+                  className="text-[9px] tracking-wide uppercase text-foreground/45 border border-foreground/[0.12] rounded-full px-2.5 py-0.5 font-light"
                 >
                   {tag}
                 </span>

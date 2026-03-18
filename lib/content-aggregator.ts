@@ -18,6 +18,8 @@ import type { GitHubRepo, ResearchPaper, BlogPost, FeaturedProject } from './typ
 import type { LocalArtifactMetadata } from './local-artifacts';
 import { compareRankableItems } from './display-ranking';
 
+const VERIFICATION_REVERSAL_DOI = '10.5281/zenodo.18159898';
+
 function formatRepoTitle(name: string): string {
   return name
     .split('-')
@@ -156,6 +158,22 @@ function compareResearchEntries(a: ResearchPaper, b: ResearchPaper): number {
   );
 }
 
+function normalizeResearchPaper(paper: ResearchPaper): ResearchPaper {
+  const doi = (paper.doi || '').toLowerCase();
+  const title = (paper.title || '').toLowerCase();
+  const isVerificationReversal =
+    doi === VERIFICATION_REVERSAL_DOI || title.includes('verification reversal');
+
+  return {
+    ...paper,
+    source: paper.source || 'orcid',
+    sortDate: paper.sortDate || `${paper.year || 0}-01-01`,
+    description: paper.description || paper.abstract || paper.journal || undefined,
+    pinned: isVerificationReversal ? true : paper.pinned || false,
+    priority: isVerificationReversal ? Math.max(paper.priority || 0, 100) : paper.priority || 0,
+  };
+}
+
 export function getDisplayResearchEntries(
   papers: ResearchPaper[],
   repos: GitHubRepo[],
@@ -169,15 +187,11 @@ export function getDisplayResearchEntries(
     .filter((repo) => !isRepoHidden(repo) && getRepoCategory(repo) === 'research')
     .map(repoToResearchPaper);
 
-  const orcidResearch = papers.map((paper) => ({
-    ...paper,
-    source: paper.source || 'orcid',
-    sortDate: paper.sortDate || `${paper.year || 0}-01-01`,
-    pinned: paper.pinned || false,
-    priority: paper.priority || 0,
-  }));
+  const orcidResearch = papers.map(normalizeResearchPaper);
 
-  return [...localResearch, ...repoResearch, ...orcidResearch].sort(compareResearchEntries);
+  return [...localResearch, ...repoResearch, ...orcidResearch]
+    .map(normalizeResearchPaper)
+    .sort(compareResearchEntries);
 }
 
 /**

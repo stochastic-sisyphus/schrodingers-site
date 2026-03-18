@@ -351,7 +351,7 @@ export default function ThoughtsSection({ posts = [] }: ThoughtsSectionProps) {
             <span className="instrument italic">abyss</span>
           </h2>
           <p className="text-sm font-light text-foreground/35 leading-relaxed max-w-lg">
-            just writing into the abyss
+            i simply, on occasion, write words
           </p>
         </motion.div>
 
