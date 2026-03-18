@@ -8,13 +8,18 @@ import { compareRankableItems } from './display-ranking';
 const GITHUB_API = 'https://api.github.com';
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const GITHUB_USERNAME = process.env.GITHUB_USERNAME || 'stochastic-sisyphus';
-const PINNED_PROJECTS_OVERRIDE = (
-  process.env.PINNED_PROJECTS_OVERRIDE ||
-  'verification-reversal,text-feature-span-extractor,code-cartographer'
-)
+const DEFAULT_PINNED_PROJECTS_OVERRIDE = [
+  'verification-reversal',
+  'text-feature-span-extractor',
+  'code-cartographer',
+];
+const ENV_PINNED_PROJECTS_OVERRIDE = (process.env.PINNED_PROJECTS_OVERRIDE || '')
   .split(',')
   .map((name) => name.trim().toLowerCase())
   .filter(Boolean);
+const PINNED_PROJECTS_OVERRIDE = Array.from(
+  new Set([...DEFAULT_PINNED_PROJECTS_OVERRIDE, ...ENV_PINNED_PROJECTS_OVERRIDE])
+);
 
 /**
  * Get headers for GitHub API requests
