@@ -127,7 +127,7 @@ export default function VerificationReversalPage() {
             </div>
 
             <p className="mt-4 text-sm font-light text-foreground/50 text-center">
-              Click and drag to interact with the verification cascade simulation
+              Tap or click to place agents and interact with the verification cascade simulation
             </p>
           </div>
 

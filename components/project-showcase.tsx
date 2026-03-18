@@ -12,6 +12,7 @@ interface Project {
   tags: string[]
   repoUrl: string
   homepageUrl: string | null
+  previewUrl: string | null
   year: string
   lastActive: string
   language: string | null
@@ -31,6 +32,10 @@ const BLOCKED_EMBED_URLS = [
   "github.com",
   "arxiv.org",
 ]
+
+const REPO_PREVIEW_OVERRIDES: Record<string, string> = {
+  "verification-reversal": "/verification-reversal.html",
+}
 
 function canEmbed(url: string | null): boolean {
   if (!url) return false
@@ -56,8 +61,10 @@ function transformReposToProjects(repos: GitHubRepo[]): Project[] {
           ? [repo.language]
           : [],
     repoUrl: repo.html_url,
-    homepageUrl:
-      repo.homepage && repo.homepage.trim() !== "" ? repo.homepage : null,
+    homepageUrl: repo.homepage && repo.homepage.trim() !== "" ? repo.homepage : null,
+    previewUrl:
+      REPO_PREVIEW_OVERRIDES[repo.name.toLowerCase()] ||
+      (repo.homepage && repo.homepage.trim() !== "" ? repo.homepage : null),
     year: new Date(repo.created_at).getUTCFullYear().toString(),
     lastActive: formatRelativeDate(repo.pushed_at || repo.updated_at),
     language: repo.language,
@@ -117,7 +124,7 @@ function ProjectCard({
     ? LANG_COLORS[project.language] || "rgba(200,184,154,0.4)"
     : "rgba(200,184,154,0.2)"
 
-  const embeddable = canEmbed(project.homepageUrl)
+  const embeddable = canEmbed(project.previewUrl)
 
   return (
     <motion.div
@@ -344,10 +351,10 @@ function ProjectCard({
       </div>
 
       {/* Embed drawer */}
-      {embeddable && project.homepageUrl && (
+      {embeddable && project.previewUrl && (
         <EmbedDrawer
           open={showEmbed}
-          url={project.homepageUrl}
+          url={project.previewUrl}
           title={project.title}
           variant="terminal"
         />

@@ -146,6 +146,41 @@
         .legend-dot.verified { background: rgba(120, 180, 140, 0.8); }
         .legend-dot.unverified { background: rgba(200, 120, 100, 0.8); }
         .legend-dot.cascade { background: rgba(220, 160, 90, 0.8); }
+
+        @media (max-width: 900px) {
+            .margin-note {
+                max-width: none;
+                left: 12px !important;
+                right: 12px !important;
+                text-align: left !important;
+            }
+            #note-tr, #note-br { display: none; }
+            #note-tl { top: 56px; }
+            #note-bl { bottom: 86px; }
+            .title-block { top: 12px; }
+            .title-block .title { font-size: 12px; }
+            .title-block .subtitle { font-size: 8px; }
+            .legend {
+                bottom: 56px;
+                gap: 12px;
+                font-size: 7px;
+            }
+            .bar {
+                opacity: 1;
+                bottom: 14px;
+                gap: 16px;
+            }
+            .bar button {
+                font-size: 8px;
+                padding: 8px 10px;
+            }
+            .hint { font-size: 11px; }
+        }
+
+        @media (pointer: coarse) {
+            canvas { cursor: default; }
+            .bar { opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -178,7 +213,7 @@
         <div><span class="unit">debt</span> <span class="value" id="val-debt">0</span></div>
     </div>
     
-    <div class="hint" id="hint">click to place agents</div>
+    <div class="hint" id="hint">tap or click to place agents</div>
     
     <div class="legend">
         <div class="legend-item"><div class="legend-dot verified"></div>verified</div>
@@ -199,7 +234,8 @@
         // ═══════════════════════════════════════════════════════════════════════
 
         const BG = [26, 24, 22];
-        const MARGIN = { left: 210, right: 210, top: 65, bottom: 100 };
+        const DESKTOP_MARGIN = { left: 210, right: 210, top: 65, bottom: 100 };
+        const MOBILE_MARGIN = { left: 18, right: 18, top: 120, bottom: 110 };
         
         // Warm earth palette on dark
         const C = {
@@ -239,11 +275,13 @@
         }
 
         function updatePlotBounds() {
+            const isMobile = window.innerWidth <= 900;
+            const margin = isMobile ? MOBILE_MARGIN : DESKTOP_MARGIN;
             plotBounds = {
-                x: MARGIN.left,
-                y: MARGIN.top,
-                w: width - MARGIN.left - MARGIN.right,
-                h: height - MARGIN.top - MARGIN.bottom
+                x: margin.left,
+                y: margin.top,
+                w: width - margin.left - margin.right,
+                h: height - margin.top - margin.bottom
             };
         }
 
@@ -598,16 +636,26 @@
             document.getElementById('val-debt').textContent = floor(epistemicDebt);
         }
 
-        function mousePressed() {
+        function addAgentAt(x, y) {
             const b = plotBounds;
-            if (mouseX < b.x || mouseX > b.x + b.w || mouseY < b.y || mouseY > b.y + b.h) return;
+            if (x < b.x || x > b.x + b.w || y < b.y || y > b.y + b.h) return;
             
             if (!hasClicked) {
                 hasClicked = true;
                 document.getElementById('hint').style.opacity = '0';
             }
             
-            agents.push(new Agent(mouseX, mouseY, agents.length));
+            agents.push(new Agent(x, y, agents.length));
+        }
+
+        function mousePressed() {
+            addAgentAt(mouseX, mouseY);
+        }
+
+        function touchStarted() {
+            if (!touches || touches.length === 0) return false;
+            addAgentAt(touches[0].x, touches[0].y);
+            return false;
         }
 
         function keyPressed() {
