@@ -58,6 +58,55 @@ async function fetchPinnedRepoNamesFromProfile(username: string): Promise<Set<st
   }
 }
 
+async function fetchPinnedRepoNamesFromGraphQL(username: string): Promise<Set<string>> {
+  if (!GITHUB_TOKEN || typeof window !== 'undefined') {
+    return new Set();
+  }
+
+  try {
+    const response = await fetch('https://api.github.com/graphql', {
+      method: 'POST',
+      headers: {
+        'Authorization': `bearer ${GITHUB_TOKEN}`,
+        'Content-Type': 'application/json',
+        'User-Agent': 'stochastic-sisyphus-site',
+      },
+      body: JSON.stringify({
+        query: `
+          query($login: String!) {
+            user(login: $login) {
+              pinnedItems(first: 6, types: REPOSITORY) {
+                nodes {
+                  ... on Repository {
+                    name
+                  }
+                }
+              }
+            }
+          }
+        `,
+        variables: { login: username },
+      }),
+      next: { revalidate: 3600 },
+    });
+
+    if (!response.ok) return new Set();
+
+    const data = await response.json();
+    const nodes = data?.data?.user?.pinnedItems?.nodes;
+    if (!Array.isArray(nodes)) return new Set();
+
+    return new Set(
+      nodes
+        .map((node: { name?: unknown }) => (typeof node?.name === 'string' ? node.name : null))
+        .filter((name: string | null): name is string => Boolean(name))
+    );
+  } catch (error) {
+    console.error('Error fetching pinned GitHub repos from GraphQL:', error);
+    return new Set();
+  }
+}
+
 export function hasRepoTopic(repo: GitHubRepo, topic: string): boolean {
   return getRepoTopics(repo).includes(topic);
 }
@@ -67,7 +116,7 @@ export function isRepoHidden(repo: GitHubRepo): boolean {
 }
 
 export function isRepoPinned(repo: GitHubRepo): boolean {
-  return Boolean(repo.pinned) || hasRepoTopic(repo, 'site-pin');
+  return Boolean(repo.pinned);
 }
 
 export function getRepoPriority(repo: GitHubRepo): number {
@@ -149,16 +198,19 @@ function shouldIncludeRepo(repo: GitHubRepo): boolean {
  */
 export async function fetchAllRepos(username: string = GITHUB_USERNAME): Promise<GitHubRepo[]> {
   try {
-    const [response, pinnedRepoNames] = await Promise.all([
+    const [response, graphqlPinnedRepoNames, fallbackPinnedRepoNames] = await Promise.all([
       fetch(`${GITHUB_API}/users/${username}/repos?per_page=100&sort=updated`, {
         headers: getHeaders(),
       }),
+      fetchPinnedRepoNamesFromGraphQL(username),
       fetchPinnedRepoNamesFromProfile(username),
     ]);
 
     if (!response.ok) {
       throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
     }
+
+    const pinnedRepoNames = graphqlPinnedRepoNames.size > 0 ? graphqlPinnedRepoNames : fallbackPinnedRepoNames;
 
     const repos: GitHubRepo[] = (await response.json()).map((repo: GitHubRepo) => ({
       ...repo,
