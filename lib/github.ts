@@ -8,6 +8,13 @@ import { compareRankableItems } from './display-ranking';
 const GITHUB_API = 'https://api.github.com';
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const GITHUB_USERNAME = process.env.GITHUB_USERNAME || 'stochastic-sisyphus';
+const PINNED_PROJECTS_OVERRIDE = (
+  process.env.PINNED_PROJECTS_OVERRIDE ||
+  'code-cartographer,text-feature-span-extractor'
+)
+  .split(',')
+  .map((name) => name.trim().toLowerCase())
+  .filter(Boolean);
 
 /**
  * Get headers for GitHub API requests
@@ -27,6 +34,10 @@ function getHeaders(): HeadersInit {
 
 function getRepoTopics(repo: GitHubRepo): string[] {
   return Array.isArray(repo.topics) ? repo.topics : [];
+}
+
+function getManualPinRank(repoName: string): number {
+  return PINNED_PROJECTS_OVERRIDE.indexOf(repoName.toLowerCase());
 }
 
 async function fetchPinnedRepoNamesFromProfile(username: string): Promise<Set<string>> {
@@ -116,7 +127,7 @@ export function isRepoHidden(repo: GitHubRepo): boolean {
 }
 
 export function isRepoPinned(repo: GitHubRepo): boolean {
-  return Boolean(repo.pinned);
+  return getManualPinRank(repo.name) >= 0 || Boolean(repo.pinned);
 }
 
 export function getRepoPriority(repo: GitHubRepo): number {
@@ -137,6 +148,14 @@ export function getRepoDisplayTopics(repo: GitHubRepo): string[] {
 }
 
 export function compareReposForDisplay(a: GitHubRepo, b: GitHubRepo): number {
+  const aManualRank = getManualPinRank(a.name);
+  const bManualRank = getManualPinRank(b.name);
+
+  if (aManualRank >= 0 || bManualRank >= 0) {
+    if (aManualRank >= 0 && bManualRank >= 0) return aManualRank - bManualRank;
+    return aManualRank >= 0 ? -1 : 1;
+  }
+
   return compareRankableItems(
     {
       title: a.name,
@@ -214,7 +233,7 @@ export async function fetchAllRepos(username: string = GITHUB_USERNAME): Promise
 
     const repos: GitHubRepo[] = (await response.json()).map((repo: GitHubRepo) => ({
       ...repo,
-      pinned: pinnedRepoNames.has(repo.name),
+      pinned: getManualPinRank(repo.name) >= 0 || pinnedRepoNames.has(repo.name),
     }));
 
     // Apply intelligent filtering
