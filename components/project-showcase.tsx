@@ -18,9 +18,6 @@ interface Project {
   lastActive: string
   language: string | null
   owner: string
-  stars: number
-  forks: number
-  size: number
   rawName: string
 }
 
@@ -70,9 +67,6 @@ function transformReposToProjects(repos: GitHubRepo[]): Project[] {
     lastActive: formatRelativeDate(repo.pushed_at || repo.updated_at),
     language: repo.language,
     owner: repo.owner.login,
-    stars: repo.stargazers_count,
-    forks: repo.forks_count,
-    size: repo.size,
     rawName: repo.name,
   }))
 }
@@ -92,11 +86,6 @@ function formatRelativeDate(dateStr: string): string {
   const d = new Date(dateStr)
   if (isNaN(d.getTime())) return dateStr
   return `${MONTHS_SHORT[d.getUTCMonth()]} ${d.getUTCFullYear()}`
-}
-
-function formatSize(kb: number): string {
-  if (kb < 1024) return `${kb} KB`
-  return `${(kb / 1024).toFixed(1)} MB`
 }
 
 const LANG_COLORS: Record<string, string> = {
@@ -258,32 +247,6 @@ function ProjectCard({
               {project.description}
             </p>
 
-            {/* Stats */}
-            <div className="flex items-center gap-5 mb-4">
-              {project.stars > 0 && (
-                <div className="flex items-center gap-1.5">
-                  <svg className="w-3.5 h-3.5 text-foreground/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                  </svg>
-                  <span className="text-foreground/50 text-xs font-light">{project.stars}</span>
-                </div>
-              )}
-              {project.forks > 0 && (
-                <div className="flex items-center gap-1.5">
-                  <svg className="w-3.5 h-3.5 text-foreground/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                  </svg>
-                  <span className="text-foreground/50 text-xs font-light">{project.forks}</span>
-                </div>
-              )}
-              <div className="flex items-center gap-1.5">
-                <svg className="w-3.5 h-3.5 text-foreground/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
-                </svg>
-                <span className="text-foreground/50 text-xs font-light">{formatSize(project.size)}</span>
-              </div>
-            </div>
-
             {/* Tags */}
             <div className="flex flex-wrap gap-1.5">
               {project.tags.map((tag) => (
@@ -365,10 +328,16 @@ function ProjectCard({
           description={project.description || "Project snapshot"}
           tags={project.tags}
           metrics={[
-            { label: "Language", value: project.language || "n/a" },
-            { label: "Stars", value: String(project.stars) },
-            { label: "Forks", value: String(project.forks) },
-            { label: "Updated", value: project.lastActive },
+            {
+              label: "Focus",
+              value:
+                project.tags.length > 0
+                  ? project.tags.slice(0, 2).join(" • ")
+                  : "computational project",
+            },
+            { label: "Stack", value: project.language || "mixed" },
+            { label: "Maintained", value: project.lastActive },
+            { label: "Path", value: `${project.owner}/${project.rawName}` },
           ]}
           actions={[
             ...(project.homepageUrl
