@@ -10,7 +10,7 @@ const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const GITHUB_USERNAME = process.env.GITHUB_USERNAME || 'stochastic-sisyphus';
 const PINNED_PROJECTS_OVERRIDE = (
   process.env.PINNED_PROJECTS_OVERRIDE ||
-  'code-cartographer,text-feature-span-extractor'
+  'verification-reversal,text-feature-span-extractor,code-cartographer'
 )
   .split(',')
   .map((name) => name.trim().toLowerCase())
