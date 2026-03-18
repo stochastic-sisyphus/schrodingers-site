@@ -46,12 +46,18 @@ function sanitizeHtml(html: string): string {
     .replace(/<style[\s\S]*?<\/style>/gi, "")
     .replace(/<iframe[\s\S]*?<\/iframe>/gi, "")
 
+  // Preserve intended title treatment for "The Map Eaters"
+  cleaned = cleaned.replace(
+    /<h([1-6])>\s*<s>\s*We the People\s*<\/s>\s*We the Map Eaters\s*<\/h\1>/gi,
+    "<h$1><s>We the People</s><br />The Map Eaters</h$1>"
+  )
+
   // Remove images (Substack images won't load with correct auth)
   cleaned = cleaned.replace(/<img[^>]*\/?>/gi, "")
 
   // Remove all tags except allowed ones
   const allowed =
-    /<\/?(p|h[1-6]|em|strong|b|i|a|br|blockquote|ul|ol|li|hr|div|span|figure|figcaption|pre|code)(\s[^>]*)?>/gi
+    /<\/?(p|h[1-6]|em|strong|b|i|a|br|blockquote|ul|ol|li|hr|div|span|figure|figcaption|pre|code|s|strike|del)(\s[^>]*)?>/gi
   const parts: string[] = []
   let last = 0
 

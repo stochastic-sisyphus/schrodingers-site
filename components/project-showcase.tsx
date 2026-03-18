@@ -4,6 +4,7 @@ import { motion, useInView, AnimatePresence } from "framer-motion"
 import { useRef, useState } from "react"
 import type { GitHubRepo } from "@/lib/types"
 import EmbedDrawer from "@/components/embed-drawer"
+import ContentPreviewDrawer from "@/components/content-preview-drawer"
 import { compareReposForDisplay, getRepoDisplayTopics } from "@/lib/github"
 
 interface Project {
@@ -158,27 +159,25 @@ function ProjectCard({
           ~/{project.owner}/{project.rawName}
         </span>
         <div className="ml-auto flex items-center gap-3">
-          {embeddable && project.homepageUrl && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                setShowEmbed(!showEmbed)
-                if (!showEmbed) setExpanded(false)
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              setShowEmbed(!showEmbed)
+              if (!showEmbed) setExpanded(false)
+            }}
+            className="flex items-center gap-1.5 text-[9px] tracking-wide uppercase font-light transition-colors duration-300 min-h-[44px] px-2"
+            style={{ color: showEmbed ? langColor : `${langColor}88` }}
+            aria-label={showEmbed ? "Hide preview" : "Show preview"}
+          >
+            <span
+              className="w-1.5 h-1.5 rounded-full"
+              style={{
+                backgroundColor: showEmbed ? langColor : `${langColor}44`,
+                boxShadow: showEmbed ? `0 0 6px ${langColor}66` : "none",
               }}
-              className="flex items-center gap-1.5 text-[9px] tracking-wide uppercase font-light transition-colors duration-300 min-h-[44px] px-2"
-              style={{ color: showEmbed ? langColor : `${langColor}88` }}
-              aria-label={showEmbed ? "Hide preview" : "Show live preview"}
-            >
-              <span
-                className="w-1.5 h-1.5 rounded-full"
-                style={{
-                  backgroundColor: showEmbed ? langColor : `${langColor}44`,
-                  boxShadow: showEmbed ? `0 0 6px ${langColor}66` : "none",
-                }}
-              />
-              {showEmbed ? "Hide" : "Preview"}
-            </button>
-          )}
+            />
+            {showEmbed ? "Hide" : "Preview"}
+          </button>
         </div>
       </div>
 
@@ -356,6 +355,27 @@ function ProjectCard({
           open={showEmbed}
           url={project.previewUrl}
           title={project.title}
+          variant="terminal"
+        />
+      )}
+      {!embeddable && (
+        <ContentPreviewDrawer
+          open={showEmbed}
+          title={project.title}
+          description={project.description || "Project snapshot"}
+          tags={project.tags}
+          metrics={[
+            { label: "Language", value: project.language || "n/a" },
+            { label: "Stars", value: String(project.stars) },
+            { label: "Forks", value: String(project.forks) },
+            { label: "Updated", value: project.lastActive },
+          ]}
+          actions={[
+            ...(project.homepageUrl
+              ? [{ label: "Visit site", url: project.homepageUrl }]
+              : []),
+            { label: "View on GitHub", url: project.repoUrl },
+          ]}
           variant="terminal"
         />
       )}

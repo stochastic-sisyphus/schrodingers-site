@@ -4,6 +4,7 @@ import { motion, useInView, AnimatePresence } from "framer-motion"
 import { useRef, useState } from "react"
 import type { ResearchPaper } from "@/lib/types"
 import EmbedDrawer from "@/components/embed-drawer"
+import ContentPreviewDrawer from "@/components/content-preview-drawer"
 
 interface ResearchSectionProps {
   papers: ResearchPaper[]
@@ -104,27 +105,25 @@ function ResearchCard({
           </span>
         </div>
         <div className="ml-auto flex items-center gap-3">
-          {embedUrl && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                setShowEmbed(!showEmbed)
-                if (!showEmbed) setExpanded(false)
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              setShowEmbed(!showEmbed)
+              if (!showEmbed) setExpanded(false)
+            }}
+            className="flex items-center gap-1.5 text-[9px] tracking-wide uppercase font-light transition-colors duration-300 min-h-[44px] px-2"
+            style={{ color: showEmbed ? accent : `${accent}88` }}
+            aria-label={showEmbed ? "Hide preview" : "Show preview"}
+          >
+            <span
+              className="w-1.5 h-1.5 rounded-full"
+              style={{
+                backgroundColor: showEmbed ? accent : `${accent}44`,
+                boxShadow: showEmbed ? `0 0 6px ${accent}66` : "none",
               }}
-              className="flex items-center gap-1.5 text-[9px] tracking-wide uppercase font-light transition-colors duration-300 min-h-[44px] px-2"
-              style={{ color: showEmbed ? accent : `${accent}88` }}
-              aria-label={showEmbed ? "Hide preview" : "Show preview"}
-            >
-              <span
-                className="w-1.5 h-1.5 rounded-full"
-                style={{
-                  backgroundColor: showEmbed ? accent : `${accent}44`,
-                  boxShadow: showEmbed ? `0 0 6px ${accent}66` : "none",
-                }}
-              />
-              {showEmbed ? "Hide" : "Preview"}
-            </button>
-          )}
+            />
+            {showEmbed ? "Hide" : "Preview"}
+          </button>
           <span className="text-foreground/20 text-[10px] tracking-wide font-light">
             {paper.year || "N/A"}
           </span>
@@ -292,6 +291,32 @@ function ResearchCard({
           open={showEmbed}
           url={embedUrl}
           title={paper.title}
+          variant="newspaper"
+        />
+      )}
+      {!embedUrl && (
+        <ContentPreviewDrawer
+          open={showEmbed}
+          title={paper.title}
+          description={paper.abstract || paper.description || "Research snapshot"}
+          tags={[
+            getTypeLabel(paper.type),
+            ...(paper.journal ? [paper.journal] : []),
+            ...(paper.doi ? ["doi"] : []),
+          ]}
+          metrics={[
+            { label: "Year", value: String(paper.year || "n/a") },
+            { label: "Type", value: getTypeLabel(paper.type) },
+            { label: "Authors", value: String(paper.authors.length || 0) },
+            {
+              label: "DOI",
+              value: paper.doi ? paper.doi.slice(0, 16) + "..." : "n/a",
+            },
+          ]}
+          actions={[
+            ...(externalUrl ? [{ label: "Open source", url: externalUrl }] : []),
+            ...(paper.detailUrl ? [{ label: "Open detail", url: paper.detailUrl }] : []),
+          ]}
           variant="newspaper"
         />
       )}

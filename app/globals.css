@@ -187,6 +187,30 @@ html {
   font-style: italic;
 }
 
+.writing-prose h1:first-child,
+.writing-prose h2:first-child,
+.writing-prose h3:first-child,
+.writing-prose h4:first-child {
+  margin-top: 0;
+}
+
+.writing-prose s,
+.writing-prose del,
+.writing-prose strike {
+  text-decoration: line-through;
+  text-decoration-color: rgb(240 236 228 / 0.45);
+  color: rgb(240 236 228 / 0.55);
+}
+
+.writing-prose h1 br,
+.writing-prose h2 br,
+.writing-prose h3 br,
+.writing-prose h4 br {
+  content: "";
+  display: block;
+  margin-top: 0.2em;
+}
+
 .writing-prose h1 { font-size: 1.5rem; }
 .writing-prose h2 { font-size: 1.25rem; }
 .writing-prose h3 { font-size: 1.1rem; }
